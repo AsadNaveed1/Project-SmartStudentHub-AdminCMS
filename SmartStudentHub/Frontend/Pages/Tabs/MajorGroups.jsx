@@ -24,6 +24,5 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 18,
-    // fontFamily: 'Roboto-Medium',
   },
 });

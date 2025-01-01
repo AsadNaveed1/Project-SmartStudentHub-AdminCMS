@@ -10,6 +10,10 @@ const Profile = () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text style={[styles.text, { color: theme.colors.onBackground }]}>Profile Page</Text>
+      
+      {/* Removed the toggle switch and reset button as they're no longer needed */}
+      
+      {/* You can add other profile-related components here */}
     </View>
   );
 };
@@ -21,9 +25,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 16,
   },
   text: {
     fontSize: 18,
-    // fontFamily: 'Roboto-Medium',
+    marginBottom: 20,
   },
 });

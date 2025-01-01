@@ -1,28 +1,38 @@
 // App.js
 
-import React, { useState, useEffect } from 'react';
+import 'react-native-gesture-handler'; // Must be at the very top
+import React from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider as PaperProvider } from 'react-native-paper';
-import MainNavigation from './Frontend/Pages/Tabs/MainNavigation';
-import { lightTheme, darkTheme } from './Frontend/Theme';
+import SecondaryNavigation from './Frontend/Pages/SecondaryNavigation';
 import { StatusBar } from 'expo-status-bar';
-import { Appearance, useColorScheme } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ThemeProvider, ThemeContext } from './Frontend/Context/ThemeContext'; // Correct import
 
 export default function App() {
-  const colorScheme = useColorScheme();
-  const [isDarkTheme, setIsDarkTheme] = useState(colorScheme === 'dark');
-
-  useEffect(() => {
-    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-      setIsDarkTheme(colorScheme === 'dark');
-    });
-
-    return () => subscription.remove();
-  }, []);
-
   return (
-    <PaperProvider theme={isDarkTheme ? darkTheme : lightTheme}>
-      <StatusBar style={isDarkTheme ? "light" : "dark"} />
-      <MainNavigation />
-    </PaperProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}> 
+      <SafeAreaProvider>
+        <ThemeProvider> 
+          <ThemeConsumer /> 
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
+
+const ThemeConsumer = () => {
+  const { theme } = React.useContext(ThemeContext); 
+
+  if (!theme || !theme.colors) {
+    console.error('Theme is undefined or missing colors.');
+    return null;
+  }
+
+  return (
+    <PaperProvider theme={theme}> 
+      <StatusBar style={theme.dark ? "light" : "dark"} /> 
+      <SecondaryNavigation /> 
+    </PaperProvider>
+  );
+};
