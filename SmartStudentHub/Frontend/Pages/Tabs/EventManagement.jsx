@@ -299,6 +299,7 @@ const sampleEvents = [
   },
 ];
 
+
 export default function EventManagement({ navigation }) {
   const theme = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
@@ -328,8 +329,24 @@ export default function EventManagement({ navigation }) {
   };
 
   const handleFilter = (selectedFilter) => {
-    setFilter(selectedFilter);
-    applyFilters(searchQuery, selectedFilter);
+    // If the selected filter is already active and it's a subcategory, reset to main category
+    if (
+      (societies.includes(selectedFilter) || externalEvents.includes(selectedFilter)) &&
+      filter === selectedFilter
+    ) {
+      // Reset to main category
+      if (societies.includes(selectedFilter)) {
+        setFilter("Society Event");
+        applyFilters(searchQuery, "Society Event");
+      } else if (externalEvents.includes(selectedFilter)) {
+        setFilter("External Event");
+        applyFilters(searchQuery, "External Event");
+      }
+    } else {
+      // Set to the selected filter
+      setFilter(selectedFilter);
+      applyFilters(searchQuery, selectedFilter);
+    }
   };
 
   const applyFilters = (query, selectedFilter) => {
@@ -356,17 +373,27 @@ export default function EventManagement({ navigation }) {
             event.name === selectedFilter
         );
       }
+      // Check if the filter is "Society Event" without a specific subcategory
+      else if (selectedFilter === "Society Event") {
+        filtered = filtered.filter(
+          (event) =>
+            event.type === "University Event" && event.subtype === "Society Event"
+        );
+      }
       // Check if the filter matches any external event subtype
       else if (externalEvents.includes(selectedFilter)) {
         filtered = filtered.filter(
           (event) =>
-            event.type === "External Event" &&
-            event.subtype === selectedFilter
+            event.type === "External Event" && event.subtype === selectedFilter
         );
       }
-      // Check for broader categories if any
-      else {
-        filtered = filtered.filter((event) => event.type === selectedFilter);
+      // Check for broader categories if any (e.g., "External Event" main category)
+      else if (selectedFilter === "External Event") {
+        filtered = filtered.filter((event) => event.type === "External Event");
+      }
+      // Handle "University Event" filter
+      else if (selectedFilter === "University Event") {
+        filtered = filtered.filter((event) => event.type === "University Event");
       }
     }
   
@@ -379,219 +406,252 @@ export default function EventManagement({ navigation }) {
       onPress={() => navigation.navigate("EventDetails", { event: item })}
     />
   );
-
-  return (
   
-      <SafeAreaView
+  return (
+    <SafeAreaView
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.colors.surface,
+          color: theme.colors.onSurface,
+        },
+      ]}
+    >
+      {/* Search Bar */}
+      <View
         style={[
-          styles.container,
+          styles.searchBarContainer,
           {
             backgroundColor: theme.colors.surface,
             color: theme.colors.onSurface,
           },
         ]}
       >
-        <View
-          style={[
-            styles.searchBarContainer,
-            {
-              backgroundColor: theme.colors.surface,
-              color: theme.colors.onSurface,
-            },
-          ]}
-        >
-          <TextInput
-            style={[styles.searchBar, { color: theme.colors.onSurface }]}
-            placeholder="Search"
-            placeholderTextColor={theme.colors.onSurfaceVariant}
-            value={searchQuery}
-            onChangeText={handleSearch}
-          />
-          <Icon
-            name="search"
-            size={20}
-            color={theme.colors.onSurface}
-            style={[styles.searchIcon]}
-          />
-        </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={[
-            styles.filterContainer,
-            {
-              backgroundColor: theme.colors.surface,
-              color: theme.colors.onSurface,
-            },
-          ]}
-          contentContainerStyle={{ marginBottom: 27 }}
-        >
-          {/* All Filter Button */}
-          <TouchableOpacity
-            key="All"
-            style={[
-              styles.filterButton,
-              filter === "All" && { backgroundColor: theme.colors.primary },
-            ]}
-            onPress={() => handleFilter("All")}
-          >
-            <Text
-              style={{
-                color: filter === "All" ? "#fff" : theme.colors.onSurface,
-              }}
-            >
-              All
-            </Text>
-          </TouchableOpacity>
-
-          {/* University Event Filter Button */}
-          <TouchableOpacity
-            key="University Event"
-            style={[
-              styles.filterButton,
-              filter === "University Event" && {
-                backgroundColor: theme.colors.primary,
-              },
-            ]}
-            onPress={() => handleFilter("University Event")}
-          >
-            <Text
-              style={{
-                color:
-                  filter === "University Event" ? "#fff" : theme.colors.Surface,
-              }}
-            >
-              University Event
-            </Text>
-          </TouchableOpacity>
-
-          {/* Society Event with Dropdown */}
-          <Menu
-            visible={societyMenuVisible}
-            onDismiss={() => setSocietyMenuVisible(false)}
-            anchor={
-              <TouchableOpacity
-                style={[
-                  styles.filterButton,
-                  societies.includes(filter) && {
-                    backgroundColor: theme.colors.primary,
-                  },
-                ]}
-                onPress={() => setSocietyMenuVisible(true)}
-              >
-                <Text
-                  style={{
-                    color: societies.includes(filter)
-                      ? "#fff"
-                      : theme.colors.onSurface,
-                  }}
-                >
-                  Society Event
-                </Text>
-                <Icon
-                  name="caret-down"
-                  size={16}
-                  color={
-                    societies.includes(filter) ? "#fff" : theme.colors.onSurface
-                  }
-                  style={{ marginLeft: 4 }}
-                />
-              </TouchableOpacity>
-            }
-            contentStyle={{
-              backgroundColor: theme.colors.surface,
-              borderColor: theme.colors.onSurfaceVariant,
-              borderWidth: 0.5,
-              borderRadius: 8,
-            }}
-          >
-            {societies.map((society) => (
-              <Menu.Item
-                key={society}
-                onPress={() => {
-                  handleFilter(society);
-                  setSocietyMenuVisible(false);
-                }}
-                title={society}
-                titleStyle={{ color: theme.colors.onSurface }}
-                style={{
-                  backgroundColor: theme.colors.surface,
-                  // Optional: Adjust padding or other styles here
-                }}
-              />
-            ))}
-          </Menu>
-
-          {/* External Event with Dropdown */}
-          <Menu
-            visible={externalMenuVisible}
-            onDismiss={() => setExternalMenuVisible(false)}
-            anchor={
-              <TouchableOpacity
-                style={[
-                  styles.filterButton,
-                  externalEvents.includes(filter) && {
-                    backgroundColor: theme.colors.primary,
-                  },
-                ]}
-                onPress={() => setExternalMenuVisible(true)}
-              >
-                <Text
-                  style={{
-                    color: externalEvents.includes(filter)
-                      ? "#fff"
-                      : theme.colors.onSurface,
-                  }}
-                >
-                  External Event
-                </Text>
-                <Icon
-                  name="caret-down"
-                  size={16}
-                  color={
-                    externalEvents.includes(filter)
-                      ? "#fff"
-                      : theme.colors.onSurface
-                  }
-                  style={{ marginLeft: 4 }}
-                />
-              </TouchableOpacity>
-            }
-            contentStyle={{
-              backgroundColor: theme.colors.surface,
-              borderColor: theme.colors.onSurfaceVariant,
-              borderWidth: 0.5,
-              borderRadius: 8,
-            }}
-          >
-            {externalEvents.map((eventType) => (
-              <Menu.Item
-                key={eventType}
-                onPress={() => {
-                  handleFilter(eventType);
-                  setExternalMenuVisible(false);
-                }}
-                title={eventType}
-                titleStyle={{ color: theme.colors.onSurface }}
-                style={{
-                  backgroundColor: theme.colors.surface,
-                  // Optional: Adjust padding or other styles here
-                }}
-              />
-            ))}
-          </Menu>
-        </ScrollView>
-
-        <FlatList
-          showsVerticalScrollIndicator={false}
-          data={filteredEvents}
-          renderItem={renderEvent}
-          keyExtractor={(item) => item.id}
-          style={styles.flatListStyle}
+        <TextInput
+          style={[styles.searchBar, { color: theme.colors.onSurface }]}
+          placeholder="Search"
+          placeholderTextColor={theme.colors.onSurfaceVariant}
+          value={searchQuery}
+          onChangeText={handleSearch}
         />
-      </SafeAreaView>
+        <Icon
+          name="search"
+          size={20}
+          color={theme.colors.onSurface}
+          style={[styles.searchIcon]}
+        />
+      </View>
 
+      {/* Filter Buttons */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={[
+          styles.filterContainer,
+          {
+            backgroundColor: theme.colors.surface,
+            color: theme.colors.onSurface,
+          },
+        ]}
+        contentContainerStyle={{ marginBottom: 27 }}
+      >
+        {/* All Filter Button */}
+        <TouchableOpacity
+          key="All"
+          style={[
+            styles.filterButton,
+            filter === "All" && { backgroundColor: theme.colors.primary },
+          ]}
+          onPress={() => handleFilter("All")}
+        >
+          <Text
+            style={{
+              color: filter === "All" ? "#fff" : theme.colors.Surface,
+            }}
+          >
+            All
+          </Text>
+        </TouchableOpacity>
+
+        {/* University Event Filter Button */}
+        <TouchableOpacity
+          key="University Event"
+          style={[
+            styles.filterButton,
+            filter === "University Event" && {
+              backgroundColor: theme.colors.primary,
+            },
+          ]}
+          onPress={() => handleFilter("University Event")}
+        >
+          <Text
+            style={{
+              color:
+                filter === "University Event" ? "#fff" : theme.colors.Surface,
+            }}
+          >
+            University Event
+          </Text>
+        </TouchableOpacity>
+
+        {/* Society Event with Dropdown */}
+        <Menu
+          visible={societyMenuVisible}
+          onDismiss={() => setSocietyMenuVisible(false)}
+          anchor={
+            <View
+              style={[
+                styles.filterButton,
+                (societies.includes(filter) || filter === "Society Event") && {
+                  backgroundColor: theme.colors.primary,
+                },
+              ]}
+            >
+              <TouchableOpacity
+                style={styles.filterLabel}
+                onPress={() => {
+                  // If a subcategory is selected, reset to "Society Event"
+                  if (societies.includes(filter)) {
+                    handleFilter("Society Event");
+                  } else {
+                    handleFilter("Society Event");
+                  }
+                }}
+              >
+                <Text
+                  style={{
+                    color:
+                      societies.includes(filter) || filter === "Society Event"
+                        ? "#fff"
+                        : theme.colors.Surface,
+                  }}
+                >
+                  {societies.includes(filter) ? filter : "Society Event"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setSocietyMenuVisible(true)}
+                style={styles.iconButton}
+              >
+                <Icon
+                  name="caret-down"
+                  size={16}
+                  color={
+                    societies.includes(filter) || filter === "Society Event"
+                      ? "#fff"
+                      : theme.colors.Surface
+                  }
+                />
+              </TouchableOpacity>
+            </View>
+          }
+          contentStyle={{
+            backgroundColor: theme.colors.surface,
+            borderColor: theme.colors.onSurfaceVariant,
+            borderWidth: 0.5,
+            borderRadius: 8,
+          }}
+        >
+          {societies.map((society) => (
+            <Menu.Item
+              key={society}
+              onPress={() => {
+                handleFilter(society);
+                setSocietyMenuVisible(false);
+              }}
+              title={society}
+              titleStyle={{ color: theme.colors.onSurface }}
+              style={{
+                backgroundColor: theme.colors.surface,
+                // Optional: Adjust padding or other styles here
+              }}
+            />
+          ))}
+        </Menu>
+
+        {/* External Event with Dropdown */}
+        <Menu
+          visible={externalMenuVisible}
+          onDismiss={() => setExternalMenuVisible(false)}
+          anchor={
+            <View
+              style={[
+                styles.filterButton,
+                (externalEvents.includes(filter) || filter === "External Event") && {
+                  backgroundColor: theme.colors.primary,
+                },
+              ]}
+            >
+              <TouchableOpacity
+                style={styles.filterLabel}
+                onPress={() => {
+                  // Reset to "External Event" when clicking the main button
+                  handleFilter("External Event");
+                }}
+              >
+                <Text
+                  style={{
+                    color:
+                      externalEvents.includes(filter) || filter === "External Event"
+                        ? "#fff"
+                        : theme.colors.Surface,
+                  }}
+                >
+                  {externalEvents.includes(filter) || filter === "External Event"
+                    ? filter
+                    : "External Event"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setExternalMenuVisible(true)}
+                style={styles.iconButton}
+              >
+                <Icon
+                  name="caret-down"
+                  size={16}
+                  color={
+                    externalEvents.includes(filter) || filter === "External Event"
+                      ? "#fff"
+                      : theme.colors.Surface
+                  }
+                />
+              </TouchableOpacity>
+            </View>
+          }
+          contentStyle={{
+            backgroundColor: theme.colors.surface,
+            borderColor: theme.colors.onSurfaceVariant,
+            borderWidth: 0.5,
+            borderRadius: 8,
+          }}
+        >
+          {externalEvents.map((eventType) => (
+            <Menu.Item
+              key={eventType}
+              onPress={() => {
+                handleFilter(eventType);
+                setExternalMenuVisible(false);
+              }}
+              title={eventType}
+              titleStyle={{ color: theme.colors.onSurface }}
+              style={{
+                backgroundColor: theme.colors.surface,
+                // Optional: Adjust padding or other styles here
+              }}
+            />
+          ))}
+        </Menu>
+      </ScrollView>
+
+      {/* Events List */}
+      <FlatList
+        showsVerticalScrollIndicator={false}
+        data={filteredEvents}
+        renderItem={renderEvent}
+        keyExtractor={(item) => item.id}
+        style={styles.flatListStyle}
+      />
+    </SafeAreaView>
   );
 }
 
@@ -637,6 +697,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#e0e0e0",
     marginRight: 8,
     flexDirection: "row",
+    alignItems: "center",
+  },
+  filterLabel: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  iconButton: {
+    paddingLeft: 8,
+    justifyContent: "center",
     alignItems: "center",
   },
   listContainer: {
