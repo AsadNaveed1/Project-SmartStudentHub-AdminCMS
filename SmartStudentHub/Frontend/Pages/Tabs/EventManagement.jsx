@@ -22,7 +22,8 @@ const sampleEvents = [
     title: "Career Talk by XYZ Corp",
     image: "https://example.com/event1.jpg",
     description: "Join us for an insightful career talk by XYZ Corp.",
-    date: "2023-12-01",
+    date: "15-11-2024", 
+    time: "11:00 AM - 12:00 PM",
     organization: "HKU",
     type: "University Event",
   },
@@ -31,7 +32,8 @@ const sampleEvents = [
     title: "Volunteer Opportunity with ABC NGO",
     image: "https://example.com/event2.jpg",
     description: "Volunteer with ABC NGO to make a difference.",
-    date: "2023-12-05",
+    date: "05-12-2024",
+    time: "02:00 PM - 04:00 PM",
     organization: "ABC NGO",
     type: "External Event",
     subtype: "Volunteer",
@@ -41,7 +43,8 @@ const sampleEvents = [
     title: "Tech Workshop by DEF Inc",
     image: "https://example.com/event3.jpg",
     description: "Learn the latest in tech at our workshop.",
-    date: "2023-12-10",
+    date: "20-11-2024", 
+    time: "01:00 PM - 02:00 PM",
     organization: "HKU",
     type: "University Event",
   },
@@ -50,7 +53,8 @@ const sampleEvents = [
     title: "Health and Wellness Fair",
     image: "https://example.com/event4.jpg",
     description: "Join us for a day of health and wellness activities.",
-    date: "2023-12-12",
+    date: "12-12-2024",
+    time: "03:00 PM - 05:00 PM",
     organization: "Health Org",
     type: "External Event",
     subtype: "Community Events",
@@ -60,7 +64,8 @@ const sampleEvents = [
     title: "Coding Bootcamp",
     image: "https://example.com/event5.jpg",
     description: "Intensive coding bootcamp for beginners.",
-    date: "2023-12-15",
+    date: "25-11-2024", 
+    time: "11:00 AM - 12:00 PM",
     organization: "HKU",
     type: "University Event",
   },
@@ -69,7 +74,8 @@ const sampleEvents = [
     title: "Art Exhibition",
     image: "https://example.com/event6.jpg",
     description: "Explore the latest art from local artists.",
-    date: "2023-12-18",
+    date: "18-12-2024",
+    time: "05:00 PM - 07:00 PM",
     organization: "Art Gallery",
     type: "External Event",
     subtype: "Community Events",
@@ -79,7 +85,8 @@ const sampleEvents = [
     title: "Music Concert",
     image: "https://example.com/event7.jpg",
     description: "Live music concert featuring local bands.",
-    date: "2023-12-20",
+    date: "20-01-2025",
+    time: "06:00 PM - 07:00 PM",
     organization: "Music Club",
     type: "External Event",
     subtype: "Community Events",
@@ -89,7 +96,8 @@ const sampleEvents = [
     title: "Startup Pitch Night",
     image: "https://example.com/event8.jpg",
     description: "Watch startups pitch their ideas to investors.",
-    date: "2023-12-22",
+    date: "10-01-2025", 
+    time: "12:00 PM - 01:00 PM",
     organization: "HKU",
     type: "University Event",
   },
@@ -98,7 +106,8 @@ const sampleEvents = [
     title: "Environmental Awareness Campaign",
     image: "https://example.com/event9.jpg",
     description: "Join us to raise awareness about environmental issues.",
-    date: "2023-12-25",
+    date: "25-12-2024",
+    time: "04:00 PM - 06:00 PM",
     organization: "Green Earth",
     type: "External Event",
     subtype: "Volunteer",
@@ -108,7 +117,8 @@ const sampleEvents = [
     title: "Business Networking Event",
     image: "https://example.com/event10.jpg",
     description: "Network with professionals in your industry.",
-    date: "2023-12-28",
+    date: "15-02-2025",
+    time: "01:00 PM - 03:00 PM",
     organization: "Business Network",
     type: "External Event",
     subtype: "Networking",
@@ -118,7 +128,8 @@ const sampleEvents = [
     title: "Science Fair",
     image: "https://example.com/event11.jpg",
     description: "Showcase your science projects and experiments.",
-    date: "2023-12-30",
+    date: "30-12-2024",
+    time: "11:00 AM - 12:00 PM",
     organization: "HKU",
     type: "University Event",
   },
@@ -127,7 +138,8 @@ const sampleEvents = [
     title: "Cooking Class",
     image: "https://example.com/event12.jpg",
     description: "Learn to cook delicious meals with our chef.",
-    date: "2024-01-02",
+    date: "20-01-2025", 
+    time: "02:00 PM - 04:00 PM",
     organization: "Culinary School",
     type: "External Event",
     subtype: "Volunteer",
@@ -141,8 +153,8 @@ const sampleEvents = [
     title: "AI Workshop: Machine Learning Basics",
     image: "https://example.com/ai_workshop.jpg",
     description: "Dive into the basics of machine learning with hands-on projects.",
-    date: "2024-01-10",
-    time: "10:00 AM - 4:00 PM",
+    date: "10-01-2024",
+    time: "11:00 AM - 01:00 PM",
     location: "Tech Hall",
     organization: "HKU",
     type: "University Event",
@@ -154,8 +166,8 @@ const sampleEvents = [
     title: "AI Hackathon",
     image: "https://example.com/ai_hackathon.jpg",
     description: "Collaborate to build innovative AI solutions in a 24-hour hackathon.",
-    date: "2024-01-15",
-    time: "9:00 AM - 9:00 PM",
+    date: "15-01-2024",
+    time: "12:00 PM - 02:00 PM",
     location: "Innovation Lab",
     organization: "HKU",
     type: "University Event",
@@ -169,8 +181,8 @@ const sampleEvents = [
     title: "Canvas Painting Workshop",
     image: "https://example.com/canvas_painting.jpg",
     description: "Learn the art of canvas painting from experienced artists.",
-    date: "2024-01-20",
-    time: "2:00 PM - 5:00 PM",
+    date: "20-01-2024",
+    time: "02:00 PM - 04:00 PM",
     location: "Arts Center",
     organization: "HKU",
     type: "University Event",
@@ -182,8 +194,8 @@ const sampleEvents = [
     title: "Sculpture Exhibition",
     image: "https://example.com/sculpture_exhibition.jpg",
     description: "Explore stunning sculptures created by our talented members.",
-    date: "2024-01-25",
-    time: "11:00 AM - 6:00 PM",
+    date: "10-02-2025", // Changed from 25-01-2024
+    time: "11:00 AM - 01:00 PM",
     location: "Main Gallery",
     organization: "Art Collective",
     type: "External Event",
@@ -196,8 +208,8 @@ const sampleEvents = [
     title: "Monthly Chess Tournament",
     image: "https://example.com/chess_tournament.jpg",
     description: "Compete against fellow chess enthusiasts in our monthly tournament.",
-    date: "2024-01-18",
-    time: "3:00 PM - 7:00 PM",
+    date: "18-01-2024",
+    time: "03:00 PM - 05:00 PM",
     location: "Game Room",
     organization: "HKU",
     type: "University Event",
@@ -209,8 +221,8 @@ const sampleEvents = [
     title: "Board Games Night",
     image: "https://example.com/board_games_night.jpg",
     description: "Join us for a fun evening of various board games and socializing.",
-    date: "2024-01-22",
-    time: "6:00 PM - 10:00 PM",
+    date: "22-01-2024",
+    time: "06:00 PM - 08:00 PM",
     location: "Community Hall",
     organization: "Board Game Enthusiasts",
     type: "External Event",
@@ -223,8 +235,8 @@ const sampleEvents = [
     title: "Programming Contest",
     image: "https://example.com/programming_contest.jpg",
     description: "Test your coding skills in our annual programming contest.",
-    date: "2024-01-28",
-    time: "10:00 AM - 4:00 PM",
+    date: "20-02-2025", // Changed from 28-01-2024
+    time: "11:00 AM - 01:00 PM",
     location: "Computer Lab",
     organization: "HKU",
     type: "University Event",
@@ -236,8 +248,8 @@ const sampleEvents = [
     title: "Tech Talk: Emerging Technologies",
     image: "https://example.com/tech_talk.jpg",
     description: "Join industry experts as they discuss the latest trends in technology.",
-    date: "2024-01-30",
-    time: "1:00 PM - 3:00 PM",
+    date: "30-01-2024",
+    time: "01:00 PM - 03:00 PM",
     location: "Auditorium",
     organization: "Tech Innovators Inc.",
     type: "External Event",
@@ -250,8 +262,8 @@ const sampleEvents = [
     title: "Debate Workshop",
     image: "https://example.com/debate_workshop.jpg",
     description: "Enhance your debating skills with our interactive workshop.",
-    date: "2024-02-05",
-    time: "9:00 AM - 12:00 PM",
+    date: "05-02-2024",
+    time: "11:00 AM - 12:00 PM",
     location: "Lecture Hall",
     organization: "HKU",
     type: "University Event",
@@ -263,8 +275,8 @@ const sampleEvents = [
     title: "Intercollegiate Debate Competition",
     image: "https://example.com/debate_competition.jpg",
     description: "Compete in debates against teams from other colleges.",
-    date: "2024-02-10",
-    time: "10:00 AM - 5:00 PM",
+    date: "15-02-2025", // Changed from 10-02-2024
+    time: "11:00 AM - 01:00 PM",
     location: "Conference Center",
     organization: "Debate Masters LLC",
     type: "External Event",
@@ -277,8 +289,8 @@ const sampleEvents = [
     title: "Open Mic Night",
     image: "https://example.com/open_mic.jpg",
     description: "Showcase your musical talents or enjoy performances by others.",
-    date: "2024-02-15",
-    time: "7:00 PM - 10:00 PM",
+    date: "15-02-2024",
+    time: "07:00 PM - 09:00 PM",
     location: "Music Hall",
     organization: "HKU",
     type: "University Event",
@@ -290,15 +302,14 @@ const sampleEvents = [
     title: "Jazz Concert",
     image: "https://example.com/jazz_concert.jpg",
     description: "Experience an evening of smooth jazz performances.",
-    date: "2024-02-20",
-    time: "8:00 PM - 11:00 PM",
+    date: "20-02-2024",
+    time: "08:00 PM - 09:00 PM",
     location: "Concert Arena",
     organization: "Smooth Jazz Entertainment",
     type: "External Event",
     subtype: "Community Events",
   },
 ];
-
 
 export default function EventManagement({ navigation }) {
   const theme = useTheme();
@@ -351,7 +362,7 @@ export default function EventManagement({ navigation }) {
 
   const applyFilters = (query, selectedFilter) => {
     let filtered = sampleEvents;
-  
+
     // Apply search filter
     if (query.trim() !== "") {
       const lowerCaseQuery = query.toLowerCase();
@@ -361,7 +372,7 @@ export default function EventManagement({ navigation }) {
           event.organization.toLowerCase().includes(lowerCaseQuery)
       );
     }
-  
+
     // Apply type and subtype filters
     if (selectedFilter !== "All") {
       // Check if the filter matches any society
@@ -396,7 +407,7 @@ export default function EventManagement({ navigation }) {
         filtered = filtered.filter((event) => event.type === "University Event");
       }
     }
-  
+
     setFilteredEvents(filtered);
   };
 
@@ -406,7 +417,7 @@ export default function EventManagement({ navigation }) {
       onPress={() => navigation.navigate("EventDetails", { event: item })}
     />
   );
-  
+
   return (
     <SafeAreaView
       style={[
@@ -636,7 +647,6 @@ export default function EventManagement({ navigation }) {
               titleStyle={{ color: theme.colors.onSurface }}
               style={{
                 backgroundColor: theme.colors.surface,
-                // Optional: Adjust padding or other styles here
               }}
             />
           ))}
