@@ -1,4 +1,4 @@
-// Frontend/Components/EventsCard.jsx
+
 
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
@@ -7,23 +7,37 @@ import { useTheme } from 'react-native-paper';
 export default function EventsCard({ event, onPress }) {
   const theme = useTheme();
 
-  // Handler for the Register button
+  
   const handleRegister = () => {
     Alert.alert('Register', `You have registered for "${event.title}"`);
   };
 
-  // Determine if subtype exists and its type
+  
   const hasSubtype = event.subtype && event.type;
-  const isSocietyEvent = hasSubtype && event.type === 'University Event' && event.subtype === 'Society Event';
+  const isSocietyEvent =
+    hasSubtype &&
+    event.type === 'University Event' &&
+    event.subtype === 'Society Event';
   const isExternalEvent = hasSubtype && event.type === 'External Event';
 
   return (
-    <View style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.onSurface }]}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: theme.colors.surface, borderColor: theme.colors.onSurface },
+      ]}
+    >
       {/* Pressable Area for Navigating to Details */}
-      <TouchableOpacity style={styles.contentContainer} onPress={onPress} activeOpacity={0.8}>
+      <TouchableOpacity
+        style={styles.contentContainer}
+        onPress={onPress}
+        activeOpacity={0.8}
+      >
         <Image source={{ uri: event.image }} style={styles.image} />
         <View style={styles.infoContainer}>
-          <Text style={[styles.title, { color: theme.colors.onSurface }]}>{event.title}</Text>
+          <Text style={[styles.title, { color: theme.colors.onSurface }]}>
+            {event.title}
+          </Text>
 
           {/* Pills for Organization and Subtype/Society */}
           <View style={styles.pillsContainer}>
@@ -48,18 +62,32 @@ export default function EventsCard({ event, onPress }) {
 
           {/* Date and Time */}
           <View style={styles.dateTimeContainer}>
-
             <Text style={[styles.date, { color: theme.colors.onSurfaceVariant }]}>
               {event.date}
             </Text>
-            
+
             {event.time && (
               <Text style={[styles.time, { color: theme.colors.onSurfaceVariant }]}>
                 {event.time}
               </Text>
             )}
-
           </View>
+
+          {/* Location */}
+          {event.location && (
+            <View style={styles.locationContainer}>
+              <Text style={[styles.locationLabel, { color: theme.colors.onSurfaceVariant }]}>
+                Location:
+              </Text>
+              <Text
+                style={[styles.location, { color: theme.colors.onSurface }]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {event.location}
+              </Text>
+            </View>
+          )}
         </View>
       </TouchableOpacity>
 
@@ -69,12 +97,18 @@ export default function EventsCard({ event, onPress }) {
       {/* Buttons */}
       <View style={styles.buttonsContainer}>
         {/* Details Button */}
-        <TouchableOpacity style={[styles.button, styles.detailsButton]} onPress={onPress}>
+        <TouchableOpacity
+          style={[styles.button, styles.detailsButton]}
+          onPress={onPress}
+        >
           <Text style={styles.buttonText}>Details</Text>
         </TouchableOpacity>
 
         {/* Register Button */}
-        <TouchableOpacity style={[styles.button, styles.registerButton]} onPress={handleRegister}>
+        <TouchableOpacity
+          style={[styles.button, styles.registerButton]}
+          onPress={handleRegister}
+        >
           <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
       </View>
@@ -116,7 +150,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    textAlign: 'left', // Ensures the title is left-aligned
+    textAlign: 'left', 
   },
   pillsContainer: {
     flexDirection: 'row',
@@ -131,18 +165,18 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   organizationPill: {
-    backgroundColor: '#d4edda', // Light Green
+    backgroundColor: '#d4edda', 
   },
   societyPill: {
-    backgroundColor: '#d1ecf1', // Light Blue
+    backgroundColor: '#d1ecf1', 
   },
   externalPill: {
-    backgroundColor: '#ffeeba', // Light Orange
+    backgroundColor: '#ffeeba', 
   },
   pillText: {
     fontSize: 12,
     color: '#155724',
-    textAlign: 'left', // Ensures pill text is left-aligned
+    textAlign: 'left', 
   },
   dateTimeContainer: {
     flexDirection: 'row',
@@ -151,29 +185,44 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 12,
     marginRight: 13,
-    textAlign: 'left', // Ensures date text is left-aligned
+    textAlign: 'left', 
   },
   time: {
     fontSize: 12,
-    textAlign: 'left', // Ensures time text is left-aligned
+    textAlign: 'left', 
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 13,
+    flexWrap: 'nowrap', 
+  },
+  locationLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginRight: 4,
+  },
+  location: {
+    fontSize: 12,
+    flexShrink: 1, 
   },
   horizontalLine: {
     borderTopWidth: 1,
     borderColor: '#ccc',
-    marginLeft: 0, // Ensure it starts from the very left
+    marginLeft: 0, 
     marginRight: 0,
   },
   buttonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-start', // Aligns buttons to the left
-    marginLeft: CONTENT_PADDING + IMAGE_WIDTH + IMAGE_MARGIN_RIGHT, // Align with title
-    paddingVertical: 12, // Add vertical padding as needed
+    justifyContent: 'flex-start', 
+    marginLeft: CONTENT_PADDING + IMAGE_WIDTH + IMAGE_MARGIN_RIGHT, 
+    paddingVertical: 12, 
   },
   button: {
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,
-    marginRight: 12, // Space between buttons
+    marginRight: 12, 
   },
   detailsButton: {
     backgroundColor: '#007bff',
@@ -185,6 +234,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
-    textAlign: 'left', // Ensures button text is left-aligned
+    textAlign: 'left', 
   },
 });

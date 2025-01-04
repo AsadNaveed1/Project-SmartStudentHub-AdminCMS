@@ -21,7 +21,7 @@ export default function SecondaryNavigation() {
         <Stack.Screen
           name="EventDetails"
           component={EventDetails}
-          options={{ title: 'Event Details' }}
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>
