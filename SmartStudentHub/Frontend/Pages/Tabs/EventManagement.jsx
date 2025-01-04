@@ -372,6 +372,9 @@ export default function EventManagement({ navigation }) {
 
   const externalEvents = ["Volunteer", "Community Events", "Networking"];
 
+  // Updated time filter options to include "This Month"
+  const timeFilterOptions = ["All", "This Week", "Next Week", "This Month", "Next Month"];
+
   const handleSearch = (query) => {
     setSearchQuery(query);
     applyFilters(query, categoryFilter, timeFilter);
@@ -404,7 +407,6 @@ export default function EventManagement({ navigation }) {
 
   const applyFilters = (query, selectedCategory, selectedTime) => {
     let filtered = sampleEvents;
-
 
     if (query.trim() !== "") {
       const lowerCaseQuery = query.toLowerCase();
@@ -461,6 +463,13 @@ export default function EventManagement({ navigation }) {
         filtered = filtered.filter((event) => {
           const eventDate = moment(event.date, "DD-MM-YYYY");
           return eventDate.isBetween(startOfNextWeek, endOfNextWeek, null, "[]");
+        });
+      } else if (selectedTime === "This Month") { // New "This Month" filter
+        const startOfMonth = moment().startOf("month");
+        const endOfMonth = moment().endOf("month");
+        filtered = filtered.filter((event) => {
+          const eventDate = moment(event.date, "DD-MM-YYYY");
+          return eventDate.isBetween(startOfMonth, endOfMonth, null, "[]");
         });
       } else if (selectedTime === "Next Month") {
         const startOfNextMonth = moment().add(1, "months").startOf("month");
@@ -532,7 +541,7 @@ export default function EventManagement({ navigation }) {
           ]}
           contentContainerStyle={{ marginBottom: 27 }}
         >
-          {/* All Filter Button with Dropdown */}
+          {/* Time Filter Button with Dropdown */}
           <Menu
             visible={allMenuVisible}
             onDismiss={() => setAllMenuVisible(false)}
@@ -540,9 +549,7 @@ export default function EventManagement({ navigation }) {
               <View
                 style={[
                   styles.filterButton,
-                  (["All", "This Week", "Next Week", "Next Month"].includes(
-                    timeFilter
-                  )) && { backgroundColor: theme.colors.primary },
+                  (timeFilterOptions.includes(timeFilter)) && { backgroundColor: theme.colors.primary },
                 ]}
               >
                 <TouchableOpacity
@@ -554,11 +561,9 @@ export default function EventManagement({ navigation }) {
                   <Text
                     style={{
                       color:
-                        ["All", "This Week", "Next Week", "Next Month"].includes(
-                          timeFilter
-                        )
+                        timeFilterOptions.includes(timeFilter)
                           ? "#fff"
-                          : theme.colors.Surface,
+                          : theme.colors.onSurface,
                     }}
                   >
                     {timeFilter}
@@ -572,11 +577,9 @@ export default function EventManagement({ navigation }) {
                     name="caret-down"
                     size={16}
                     color={
-                      ["All", "This Week", "Next Week", "Next Month"].includes(
-                        timeFilter
-                      )
+                      timeFilterOptions.includes(timeFilter)
                         ? "#fff"
-                        : theme.colors.Surface
+                        : theme.colors.onSurface
                     }
                   />
                 </TouchableOpacity>
@@ -589,7 +592,7 @@ export default function EventManagement({ navigation }) {
               borderRadius: 8,
             }}
           >
-            {["All", "This Week", "Next Week", "Next Month"].map(
+            {timeFilterOptions.map(
               (timeOption) => (
                 <Menu.Item
                   key={timeOption}
@@ -661,8 +664,8 @@ export default function EventManagement({ navigation }) {
                   styles.filterButton,
                   (societies.includes(categoryFilter) ||
                     categoryFilter === "Society Event") && {
-                    backgroundColor: theme.colors.primary,
-                  },
+                      backgroundColor: theme.colors.primary,
+                    },
                 ]}
               >
                 <TouchableOpacity
@@ -739,8 +742,8 @@ export default function EventManagement({ navigation }) {
                   styles.filterButton,
                   (externalEvents.includes(categoryFilter) ||
                     categoryFilter === "External Event") && {
-                    backgroundColor: theme.colors.primary,
-                  },
+                      backgroundColor: theme.colors.primary,
+                    },
                 ]}
               >
                 <TouchableOpacity
@@ -823,7 +826,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: "100%",
     padding: 16,
-    marginBottom: -43,
+    marginBottom: -45,
   },
   flatListStyle: {
     flex: 1,

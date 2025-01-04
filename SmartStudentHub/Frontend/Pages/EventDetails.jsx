@@ -1,6 +1,6 @@
 
 
-import React from "react";
+import React, { useContext } from "react";
 import {
   View,
   Text,
@@ -17,21 +17,26 @@ import * as Sharing from "expo-sharing";
 import * as Calendar from "expo-calendar";
 import MaterialIcon from "react-native-vector-icons/MaterialIcons"; 
 import { SafeAreaView } from "react-native-safe-area-context";
+import { RegisteredEventsContext } from '../Context/RegisteredEventsContext'; 
 
 export default function EventDetails({ route, navigation }) {
   const { event } = route.params;
   const theme = useTheme();
+  const { registerEvent, withdrawEvent, isRegistered } = useContext(RegisteredEventsContext); // Use context
 
-  
+  const registered = isRegistered(event.id);
+
   const handleRegister = () => {
-    
-    Alert.alert(
-      "Registration Successful",
-      `You have registered for "${event.title}"`
-    );
+    if (!registered) {
+      registerEvent(event);
+      Alert.alert('Registered', `You have registered for "${event.title}"`);
+    } else {
+      withdrawEvent(event.id);
+      Alert.alert('Withdrawn', `You have withdrawn from "${event.title}"`);
+    }
   };
 
-  
+
   const handleAddToCalendar = async () => {
     if (Platform.OS === "web") {
       Alert.alert(
@@ -115,7 +120,6 @@ export default function EventDetails({ route, navigation }) {
     }
   };
 
-  
   const handleBack = () => {
     navigation.goBack();
   };
@@ -163,7 +167,7 @@ export default function EventDetails({ route, navigation }) {
                   icon="account-circle"
                   size={16}
                   style={styles.infoIcon}
-                  color={theme.colors.onSurfaceVariant} 
+                  color={theme.colors.onSurfaceVariant}
                 />
                 <Text
                   style={[
@@ -181,7 +185,7 @@ export default function EventDetails({ route, navigation }) {
                   icon="calendar"
                   size={16}
                   style={styles.infoIcon}
-                  color={theme.colors.onSurfaceVariant} 
+                  color={theme.colors.onSurfaceVariant}
                 />
                 <Text
                   style={[
@@ -189,7 +193,7 @@ export default function EventDetails({ route, navigation }) {
                     { color: theme.colors.onSurfaceVariant },
                   ]}
                 >
-                  {moment(event.date, "DD-MM-YYYY").format("MMM Do, YYYY")}
+                  {moment(event.date, 'DD-MM-YYYY').format('MMM Do, YYYY')}
                 </Text>
               </View>
             </View>
@@ -202,7 +206,7 @@ export default function EventDetails({ route, navigation }) {
                   icon="tag"
                   size={16}
                   style={styles.infoIcon}
-                  color={theme.colors.onSurfaceVariant} 
+                  color={theme.colors.onSurfaceVariant}
                 />
                 <Text
                   style={[
@@ -211,7 +215,7 @@ export default function EventDetails({ route, navigation }) {
                   ]}
                 >
                   {event.type}
-                  {event.subtype ? ` - ${event.subtype}` : ""}
+                  {event.subtype ? ` - ${event.subtype}` : ''}
                 </Text>
               </View>
 
@@ -221,7 +225,7 @@ export default function EventDetails({ route, navigation }) {
                   icon="clock-outline"
                   size={16}
                   style={styles.infoIcon}
-                  color={theme.colors.onSurfaceVariant} 
+                  color={theme.colors.onSurfaceVariant}
                 />
                 <Text
                   style={[
@@ -241,7 +245,7 @@ export default function EventDetails({ route, navigation }) {
               icon="map-marker"
               size={16}
               style={styles.infoIcon}
-              color={theme.colors.onSurfaceVariant} 
+              color={theme.colors.onSurfaceVariant}
             />
             <Text
               style={[
@@ -284,23 +288,26 @@ export default function EventDetails({ route, navigation }) {
 
           {/* Action Buttons */}
           <View style={styles.buttonsContainer}>
-            {/* Register Button */}
+            {/* Register / Withdraw Button */}
             <Button
-            mode="contained"
-            onPress={handleRegister}
-            style={styles.registerButton}
-            contentStyle={styles.buttonContent}
-            labelStyle={styles.registerButtonLabel} 
-          >
-            Register
-          </Button>
+              mode="contained"
+              onPress={handleRegister}
+              style={[
+                styles.registerButton,
+                registered ? styles.withdrawButton : styles.registerButtonStyle,
+              ]}
+              contentStyle={styles.buttonContent}
+              labelStyle={styles.registerButtonLabel}
+            >
+              {registered ? 'Withdraw' : 'Register'}
+            </Button>
 
             {/* Add to Calendar Icon Button */}
             <IconButton
               icon="calendar-plus"
-              size={20} 
+              size={20}
               onPress={handleAddToCalendar}
-              iconColor="#5a5a5a" 
+              iconColor="#5a5a5a"
               style={styles.iconButton}
               padding={12}
               accessibilityLabel="Add to Calendar"
@@ -309,7 +316,7 @@ export default function EventDetails({ route, navigation }) {
             {/* Share Icon Button */}
             <IconButton
               icon="share-variant"
-              size={20} 
+              size={20}
               onPress={handleShare}
               iconColor="#5a5a5a"
               style={styles.iconButton}
@@ -412,4 +419,8 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: "center",
   },
+  withdrawButton: {
+    backgroundColor: '#ffb84d', // Bootstrap's danger color
+  },
+
 });

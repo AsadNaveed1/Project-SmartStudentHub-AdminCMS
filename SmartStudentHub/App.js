@@ -8,13 +8,16 @@ import SecondaryNavigation from './Frontend/Pages/SecondaryNavigation';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, ThemeContext } from './Frontend/Context/ThemeContext'; // Correct import
+import { RegisteredEventsProvider } from './Frontend/Context/RegisteredEventsContext'; // Import the provider
 
 export default function App() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}> 
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <ThemeProvider> 
-          <ThemeConsumer /> 
+        <ThemeProvider>
+          <RegisteredEventsProvider> 
+            <ThemeConsumer />
+          </RegisteredEventsProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
@@ -22,7 +25,7 @@ export default function App() {
 }
 
 const ThemeConsumer = () => {
-  const { theme } = React.useContext(ThemeContext); 
+  const { theme } = React.useContext(ThemeContext);
 
   if (!theme || !theme.colors) {
     console.error('Theme is undefined or missing colors.');
@@ -30,9 +33,9 @@ const ThemeConsumer = () => {
   }
 
   return (
-    <PaperProvider theme={theme}> 
-      <StatusBar style={theme.dark ? "light" : "dark"} /> 
-      <SecondaryNavigation /> 
+    <PaperProvider theme={theme}>
+      <StatusBar style={theme.dark ? 'light' : 'dark'} />
+      <SecondaryNavigation />
     </PaperProvider>
   );
 };
