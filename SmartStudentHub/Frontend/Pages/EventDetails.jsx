@@ -1,5 +1,3 @@
-
-
 import React, { useContext } from "react";
 import {
   View,
@@ -22,7 +20,7 @@ import { RegisteredEventsContext } from '../Context/RegisteredEventsContext';
 export default function EventDetails({ route, navigation }) {
   const { event } = route.params;
   const theme = useTheme();
-  const { registerEvent, withdrawEvent, isRegistered } = useContext(RegisteredEventsContext); // Use context
+  const { registerEvent, withdrawEvent, isRegistered } = useContext(RegisteredEventsContext); 
 
   const registered = isRegistered(event.id);
 

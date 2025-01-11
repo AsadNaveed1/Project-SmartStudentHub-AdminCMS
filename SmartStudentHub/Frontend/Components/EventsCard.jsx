@@ -1,13 +1,11 @@
-// Frontend/Components/EventsCard.jsx
-
 import React, { useContext } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { useTheme } from 'react-native-paper';
-import { RegisteredEventsContext } from '../Context/RegisteredEventsContext'; // Import context
+import { RegisteredEventsContext } from '../Context/RegisteredEventsContext'; 
 
 export default function EventsCard({ event, onPress }) {
   const theme = useTheme();
-  const { registerEvent, withdrawEvent, isRegistered } = useContext(RegisteredEventsContext); // Use context
+  const { registerEvent, withdrawEvent, isRegistered } = useContext(RegisteredEventsContext); 
 
   const handleRegister = () => {
     registerEvent(event);
@@ -248,31 +246,31 @@ const styles = StyleSheet.create({
     textAlign: 'left', 
   },
   withdrawButton: {
-    backgroundColor: '#ffb84d', // Bootstrap's danger color
+    backgroundColor: '#ffb84d', 
   },
 });
 
 
 
-  // // Define Calendar Theme based on current theme mode
-  // const calendarTheme = {
-  //   backgroundColor: theme.colors.background,
-  //   calendarBackground: theme.colors.surface,
-  //   textSectionTitleColor: theme.colors.onSurfaceVariant,
-  //   selectedDayBackgroundColor: theme.colors.primary,
-  //   selectedDayTextColor: theme.colors.onPrimary,
-  //   todayTextColor: theme.colors.primary,
-  //   dayTextColor: theme.colors.onSurface,
-  //   textDisabledColor: theme.colors.onSurfaceVariant,
-  //   dotColor: theme.colors.primary,
-  //   selectedDotColor: theme.colors.onPrimary,
-  //   arrowColor: theme.colors.primary,
-  //   monthTextColor: theme.colors.onSurface,
-  //   indicatorColor: theme.colors.primary,
-  //   textDayFontFamily: theme.fonts.medium.fontFamily,
-  //   textMonthFontFamily: theme.fonts.medium.fontFamily,
-  //   textDayHeaderFontFamily: theme.fonts.medium.fontFamily,
-  //   textDayFontWeight: theme.fonts.medium.fontWeight,
-  //   textMonthFontWeight: theme.fonts.medium.fontWeight,
-  //   textDayHeaderFontWeight: theme.fonts.medium.fontWeight,
-  // };
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  

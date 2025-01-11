@@ -1,17 +1,17 @@
-// Frontend/Pages/Tabs/MainNavigation.jsx
+
 
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTheme } from 'react-native-paper';
 
-// Importing the tab screens
+
 import EventManagement from './EventManagement';
 import Calendar from './Calendar';
 import Chatbot from './Chatbot';
 import MajorGroups from './MajorGroups';
 import Profile from './Profile';
 
-// Importing icons from react-native-vector-icons
+
 import { MaterialCommunityIcons, Entypo, FontAwesome6, Ionicons, FontAwesome5 } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
@@ -28,12 +28,12 @@ export default function MainNavigation() {
         tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
         tabBarStyle: {
           backgroundColor: theme.colors.surface,
-          borderTopWidth: 0, // Remove the top border
+          borderTopWidth: 0, 
           elevation: 5,
-          shadowColor: '#000', // Add shadow color
-          shadowOffset: { width: 0, height: 2 }, // Add shadow offset
-          shadowOpacity: 0.25, // Add shadow opacity
-          shadowRadius: 3.84, // Add shadow radius
+          shadowColor: '#000', 
+          shadowOffset: { width: 0, height: 2 }, 
+          shadowOpacity: 0.25, 
+          shadowRadius: 3.84, 
         },
         tabBarIcon: ({ color, size }) => {
           if (route.name === 'Home') {

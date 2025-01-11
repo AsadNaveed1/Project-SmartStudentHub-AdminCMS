@@ -1,11 +1,9 @@
-// Frontend/Pages/SecondaryNavigation.jsx
-
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import MainNavigation from './Tabs/MainNavigation';
 import EventDetails from './EventDetails';
-// Import other secondary screens as needed
+import OrganizationProfile from './OrganizationProfile'; 
 
 const Stack = createStackNavigator();
 
@@ -22,6 +20,11 @@ export default function SecondaryNavigation() {
           name="EventDetails"
           component={EventDetails}
           options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="OrganizationProfile"
+          component={OrganizationProfile}
+          options={{ headerShown: false}} 
         />
       </Stack.Navigator>
     </NavigationContainer>

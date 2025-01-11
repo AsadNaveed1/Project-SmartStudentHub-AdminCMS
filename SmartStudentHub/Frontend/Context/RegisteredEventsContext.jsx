@@ -1,16 +1,14 @@
-// Frontend/Context/RegisteredEventsContext.jsx
-
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Create the context
+
 export const RegisteredEventsContext = createContext();
 
-// Create the provider component
+
 export const RegisteredEventsProvider = ({ children }) => {
   const [registeredEvents, setRegisteredEvents] = useState([]);
 
-  // Load registered events from AsyncStorage on mount
+  
   useEffect(() => {
     const loadRegisteredEvents = async () => {
       try {
@@ -26,7 +24,7 @@ export const RegisteredEventsProvider = ({ children }) => {
     loadRegisteredEvents();
   }, []);
 
-  // Save registered events to AsyncStorage whenever it changes
+  
   useEffect(() => {
     const saveRegisteredEvents = async () => {
       try {
@@ -39,17 +37,17 @@ export const RegisteredEventsProvider = ({ children }) => {
     saveRegisteredEvents();
   }, [registeredEvents]);
 
-  // Function to register an event
+  
   const registerEvent = (event) => {
     setRegisteredEvents((prevEvents) => [...prevEvents, event]);
   };
 
-  // Function to withdraw an event
+  
   const withdrawEvent = (eventId) => {
     setRegisteredEvents((prevEvents) => prevEvents.filter((e) => e.id !== eventId));
   };
 
-  // Check if an event is registered
+  
   const isRegistered = (eventId) => {
     return registeredEvents.some((e) => e.id === eventId);
   };

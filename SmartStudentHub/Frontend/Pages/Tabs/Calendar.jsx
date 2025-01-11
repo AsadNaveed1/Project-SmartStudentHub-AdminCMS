@@ -1,5 +1,3 @@
-// Frontend/Pages/Tabs/Calendar.jsx
-
 import React, { useContext, useState, useEffect, useMemo } from 'react';
 import {
   View,
@@ -17,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import moment from 'moment';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-// Configure locale settings for the Calendar
+
 LocaleConfig.locales['en'] = {
   monthNames: [
     'January',
@@ -67,7 +65,7 @@ const CalendarTab = ({ navigation }) => {
   const [filteredEvents, setFilteredEvents] = useState([]);
 
   useEffect(() => {
-    // Sort registered events by date (upcoming first)
+    
     const sortedEvents = [...registeredEvents].sort((a, b) => {
       const dateA = moment(a.date, 'DD-MM-YYYY');
       const dateB = moment(b.date, 'DD-MM-YYYY');
@@ -91,7 +89,7 @@ const CalendarTab = ({ navigation }) => {
     }
   };
 
-  // Generate marked dates for the calendar
+  
   const markedDates = {};
 
   registeredEvents.forEach((event) => {
@@ -106,7 +104,7 @@ const CalendarTab = ({ navigation }) => {
     }
   });
 
-  // Memoize the calendar theme to ensure it updates on theme change
+  
   const calendarTheme = useMemo(
     () => ({
       backgroundColor: theme.colors.surface,
@@ -128,7 +126,7 @@ const CalendarTab = ({ navigation }) => {
       textDayFontWeight: theme.fonts.medium.fontWeight,
       textMonthFontWeight: theme.fonts.medium.fontWeight,
       textDayHeaderFontWeight: theme.fonts.medium.fontWeight,
-      // Additional customization can be added here
+      
     }),
     [theme]
   );
@@ -172,16 +170,16 @@ const CalendarTab = ({ navigation }) => {
           />
         </View>
 
-        {/* Conditional Rendering of Calendar */}
+
         {searchQuery.trim() === '' && (
           <Calendar
-            key={theme.dark ? 'dark' : 'light'} // Force re-render on theme change
+            key={theme.dark ? 'dark' : 'light'} 
             markedDates={markedDates}
             markingType={'multi-dot'}
             theme={calendarTheme}
-            enableSwipeMonths={true} // Enable swipe gestures for month navigation
+            enableSwipeMonths={true} 
             style={styles.calendar}
-            // Additional Calendar Props as Needed
+            
           />
         )}
 
@@ -217,7 +215,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: "100%",
     padding: 16,
-    marginBottom: -45,
+    marginBottom: -50,
   },
   scrollContent: {
     paddingBottom: 16,
@@ -242,10 +240,10 @@ const styles = StyleSheet.create({
   calendar: {
     borderRadius: 8,
     marginBottom: 16,
-    // Optional: Add elevation or shadow if desired
+    
   },
   eventsList: {
-    // No specific styles needed as we're using ScrollView
+    
   },
   emptyContainer: {
     alignItems: 'center',

@@ -1,14 +1,14 @@
-// App.js
 
-import 'react-native-gesture-handler'; // Must be at the very top
+
+import 'react-native-gesture-handler'; 
 import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider as PaperProvider } from 'react-native-paper';
 import SecondaryNavigation from './Frontend/Pages/SecondaryNavigation';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ThemeProvider, ThemeContext } from './Frontend/Context/ThemeContext'; // Correct import
-import { RegisteredEventsProvider } from './Frontend/Context/RegisteredEventsContext'; // Import the provider
+import { ThemeProvider, ThemeContext } from './Frontend/Context/ThemeContext'; 
+import { RegisteredEventsProvider } from './Frontend/Context/RegisteredEventsContext'; 
 
 export default function App() {
   return (
