@@ -11,9 +11,6 @@ const Profile = () => {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text style={[styles.text, { color: theme.colors.onBackground }]}>Profile Page</Text>
       
-      {/* Removed the toggle switch and reset button as they're no longer needed */}
-      
-      {/* You can add other profile-related components here */}
     </View>
   );
 };

@@ -355,7 +355,7 @@ export default function EventManagement({ navigation }) {
           <Text
             style={{
               color:
-                categoryFilter === "All" ? "#fff" : theme.colors.onSurface,
+                categoryFilter === "All" ? "#fff" : theme.colors.Surface,
             }}
           >
             All Categories
@@ -378,7 +378,7 @@ export default function EventManagement({ navigation }) {
               color:
                 categoryFilter === "University Event"
                   ? "#fff"
-                  : theme.colors.onSurface,
+                  : theme.colors.Surface,
             }}
           >
             University Event
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     marginBottom: -50,
   },
   sectionListContent: {
-    paddingBottom: 50, // To ensure content is not hidden behind any fixed footer
+    paddingBottom: 50, 
   },
   searchBarContainer: {
     flexDirection: "row",

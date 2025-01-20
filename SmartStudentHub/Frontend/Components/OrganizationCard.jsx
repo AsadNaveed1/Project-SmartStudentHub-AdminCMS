@@ -1,5 +1,3 @@
-// Frontend/Components/OrganizationCard.jsx
-
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useTheme } from 'react-native-paper';
@@ -9,7 +7,6 @@ const OrganizationCard = ({ organization, onPress }) => {
 
   return (
     <TouchableOpacity style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.onSurface }]} onPress={() => onPress(organization)}>
-      {/* You can replace the placeholder image with actual organization images if available */}
       <Image
         source={{ uri: organization.image || 'https://via.placeholder.com/100' }}
         style={styles.image}

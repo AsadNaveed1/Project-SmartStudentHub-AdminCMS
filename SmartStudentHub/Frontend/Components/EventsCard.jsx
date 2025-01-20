@@ -33,7 +33,6 @@ export default function EventsCard({ event, onPress }) {
         { backgroundColor: theme.colors.surface, borderColor: theme.colors.onSurface },
       ]}
     >
-      {/* Pressable Area for Navigating to Details */}
       <TouchableOpacity
         style={styles.contentContainer}
         onPress={onPress}
@@ -45,14 +44,11 @@ export default function EventsCard({ event, onPress }) {
             {event.title}
           </Text>
 
-          {/* Pills for Organization and Subtype/Society */}
           <View style={styles.pillsContainer}>
-            {/* Organization Pill */}
             <View style={[styles.pill, styles.organizationPill]}>
               <Text style={styles.pillText}>{event.organization}</Text>
             </View>
 
-            {/* Subtype or Society Pill */}
             {hasSubtype && (
               isSocietyEvent ? (
                 <View style={[styles.pill, styles.societyPill]}>
@@ -66,7 +62,6 @@ export default function EventsCard({ event, onPress }) {
             )}
           </View>
 
-          {/* Date and Time */}
           <View style={styles.dateTimeContainer}>
             <Text style={[styles.date, { color: theme.colors.onSurfaceVariant }]}>
               {event.date}
@@ -79,7 +74,6 @@ export default function EventsCard({ event, onPress }) {
             )}
           </View>
 
-          {/* Location */}
           {event.location && (
             <View style={styles.locationContainer}>
               <Text style={[styles.locationLabel, { color: theme.colors.onSurfaceVariant }]}>
@@ -97,12 +91,9 @@ export default function EventsCard({ event, onPress }) {
         </View>
       </TouchableOpacity>
 
-      {/* Horizontal Line */}
       <View style={styles.horizontalLine} />
 
-      {/* Buttons */}
       <View style={styles.buttonsContainer}>
-        {/* Details Button */}
         <TouchableOpacity
           style={[styles.button, styles.detailsButton]}
           onPress={onPress}
@@ -110,7 +101,6 @@ export default function EventsCard({ event, onPress }) {
           <Text style={styles.buttonText}>Details</Text>
         </TouchableOpacity>
 
-        {/* Register / Withdraw Button */}
         <TouchableOpacity
           style={[
             styles.button,

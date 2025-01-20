@@ -1,5 +1,4 @@
-
-
+// App.js
 import 'react-native-gesture-handler'; 
 import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -9,14 +8,17 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, ThemeContext } from './Frontend/Context/ThemeContext'; 
 import { RegisteredEventsProvider } from './Frontend/Context/RegisteredEventsContext'; 
+import { GroupsProvider } from './Frontend/Context/GroupsContext'; 
 
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <RegisteredEventsProvider> 
-            <ThemeConsumer />
+          <RegisteredEventsProvider>
+            <GroupsProvider> 
+              <ThemeConsumer />
+            </GroupsProvider>
           </RegisteredEventsProvider>
         </ThemeProvider>
       </SafeAreaProvider>

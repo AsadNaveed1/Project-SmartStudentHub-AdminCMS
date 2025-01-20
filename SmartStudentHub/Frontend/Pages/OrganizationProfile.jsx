@@ -71,12 +71,10 @@ const OrganizationProfile = ({ route, navigation }) => {
         style={[styles.container, { backgroundColor: theme.colors.background }]}
         contentContainerStyle={styles.contentContainer}
       >
-        {/* Back Button */}
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <MaterialIcon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
 
-        {/* Organization Image */}
         <Image
           source={{
             uri: organization.image || "https://via.placeholder.com/150",
@@ -84,12 +82,10 @@ const OrganizationProfile = ({ route, navigation }) => {
           style={styles.image}
         />
 
-        {/* Organization Name */}
         <Text style={[styles.name, { color: theme.colors.onBackground }]}>
           {organization.name}
         </Text>
 
-        {/* Organization Description */}
         <Text
           style={[
             styles.description,
@@ -99,10 +95,10 @@ const OrganizationProfile = ({ route, navigation }) => {
           {organization.description || "No description available."}
         </Text>
 
-        {/* Organization Details */}
+
         <View style={styles.detailsContainer}>
           <View style={styles.detailsRow}>
-            {/* First Column */}
+
             <View style={styles.detailsColumn}>
               {firstColumnDetails.map((detail, index) => (
                 <View key={index} style={styles.detailRow}>
@@ -121,7 +117,6 @@ const OrganizationProfile = ({ route, navigation }) => {
                 </View>
               ))}
             </View>
-            {/* Second Column */}
             <View style={styles.detailsColumn}>
               {secondColumnDetails.map((detail, index) => (
                 <View key={index} style={styles.detailRow}>
@@ -143,7 +138,6 @@ const OrganizationProfile = ({ route, navigation }) => {
           </View>
         </View>
 
-        {/* Events Posted by the Organization */}
         <View style={styles.eventsContainer}>
           <Text
             style={[styles.sectionTitle, { color: theme.colors.onSurface }]}

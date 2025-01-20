@@ -1,0 +1,367 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-HK" lang="zh-HK"><head><script language="javascript">
+
+function check_form() {
+var i;
+var l=document.exambase.the_key.value.length;
+
+	if (document.exambase.the_key.value=="" )
+		alert("You have not entered any keyword!!");
+	else
+	{
+   //document.exambase.the_key.value= document.exambase.the_key.value.replace(',', ' ');
+	   //document.exambase.the_key.value= document.exambase.the_key.value.replace('-', ' ');
+	   //document.exambase.the_key.value= document.exambase.the_key.value.replace("'", '');
+	   document.exambase.the_key.value= document.exambase.the_key.value.replace('*', '%');
+	   document.exambase.submit(); return true
+	}
+
+}
+
+
+function validYear(data){
+
+         if (data.length != 4)
+         {  alert ("Please enter 4 digits for 'YEAR'"); return false }
+         else
+         if ( !isNumber(data))
+         {  alert ("Please enter ONLY numerical value for 'YEAR'"); return false }
+         else
+         if ( data< 1961 )
+         {       alert("The 'YEAR' you entered is out of the range!\nPlease try another 'YEAR'"); return false }
+	 else
+         	return  true ;
+}
+
+function isNumber(data){
+         var numStr="0123456789";
+         var thisChar;
+         var counter = 0;
+         var counter_dot = 0;
+         for (var i=0; i< data.length; i++) {
+           thisChar = data.substring(i, i+1) ;
+           if (numStr.indexOf(thisChar) != -1)
+                counter ++;
+         }
+         return  (counter != data.length) ? false : true ;
+}
+
+</script>
+
+
+<script language="JavaScript">
+
+function MM_reloadPage(init) {  //reloads the window if Nav4 resized
+  if (init==true) with (navigator) {if ((appName=="Netscape")&&(parseInt(appVersion)==4)) {
+    document.MM_pgW=innerWidth; document.MM_pgH=innerHeight; onresize=MM_reloadPage; }}
+  else if (innerWidth!=document.MM_pgW || innerHeight!=document.MM_pgH) location.reload();
+}
+MM_reloadPage(true);
+
+function MM_preloadImages() { //v3.0
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+}
+
+function MM_swapImgRestore() { //v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+}
+
+function MM_findObj(n, d) { //v4.0
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && document.getElementById) x=document.getElementById(n); return x;
+}
+
+function MM_swapImage() { //v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+}
+
+</script>
+
+
+
+
+<title>Exambase</title>
+<meta charset="utf-8">
+<meta name="description" content="">
+<meta name="keywords" content="">
+<meta name="author" content="The University of Hong Kong Libraries">
+<meta name="robots" content="noindex,nofollow">
+<link rel="STYLESHEET" type="text/css" href="/themes/exam/css/layout.css">
+<style type="text/css">
+<!--
+.bg {
+        background-attachment: fixed;
+        background: url(/themes/exam/images/Exambase_bg.jpg);
+        background-repeat: no-repeat;
+        background-position: left top;
+}
+-->
+</style>
+
+<script language="JavaScript">
+<!-- Hide the JS
+function timeoutRedirect(){
+   if( navigator.appVersion.charAt( 0 ) < '3' )
+
+   location = "http://lib.hku.hk/database/";
+else
+   location.replace( "http://lib.hku.hk/database" );
+return false;
+}
+var timer = null;
+function startTimeout()
+{
+   if( timer != null )
+       clearTimeout(timer);
+   timer = setTimeout('timeoutRedirect()', 1500000);
+}
+startTimeout();
+// -->
+</script>
+<noscript>
+<meta http-equiv="Refresh" content="1500;URL=http://lib.hku.hk/database/" />
+</noscript>
+
+
+
+
+</head>
+<body bgcolor="#FFFFFF" text="#000000" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0"> 
+
+<map name="Map"> 
+  <area shape="circle" coords="50,12,11" href="http://www.lib.hku.hk/" alt="The University of Hong Kong Libraries">  
+  <area shape="circle" coords="16,12,12" href="mailto:specol@lib.hku.hk" alt="Contact Us">
+</map>
+
+
+
+
+
+
+
+
+
+
+<!-- Menu Bar -->
+
+<div id="Layer1" style="position:absolute; left:31px; top:151px; width:120px; height:103px; z-index:1">
+  <table width="120" border="0" cellspacing="0" cellpadding="0">
+
+
+  <tbody><tr><td height="24"><a href="/exhibits/show/exam/home" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('image1','','/themes/exam/images/menu_exambase01o.gif',1)"><img src="/themes/exam/images/menu_exambase01.gif" border="0" name="image1" alt="New Search"></a></td></tr>
+
+  <tr><td height="24"><a href="/exhibits/show/exam/courses" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('image2','','/themes/exam/images/menu_exambase02o.gif',1)"><img src="/themes/exam/images/menu_exambase02.gif" border="0" name="image2" alt="Browse by Course Code"></a></td></tr>
+
+  <tr><td height="24"><a href="/exhibits/show/exam/depts" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('image3','','/themes/exam/images/menu_exambase03o.gif',1)"><img src="/themes/exam/images/menu_exambase03u.gif" border="0" name="image3" alt="Browse by Department"></a></td></tr>
+
+  <tr><td height="24"><a href="/exhibits/show/exam/degrees" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('image4','','/themes/exam/images/menu_exambase04o.gif',1)"><img src="/themes/exam/images/menu_exambase04.gif" border="0" name="image4" alt="Browse by Degree"></a></td></tr>
+
+
+
+
+
+  </tbody></table>
+</div>
+
+<table height="100%" width="100%" border="0" cellspacing="0" cellpadding="0">
+<!-- Top Bar -->
+  <tbody><tr bgcolor="#000000"> 
+    <td align="right" height="25" class="topMenuBar"><img src="/themes/exam/images/home.gif" width="65" height="25" align="absmiddle" border="0" usemap="#Map" alt=""><a href="http://www.lib.hku.hk/" class="topMenuBar">HKUL</a> &gt; <a href="http://www.lib.hku.hk/database/" class="topMenuBar">Digital Initiatives</a> &gt; Exambase <img src="/themes/exam/images/transparency.gif" width="10" height="1" alt=""></td>
+  </tr>
+
+  <tr>
+    <td valign="top">
+      <table width="816" border="0" cellspacing="0" cellpadding="0">
+       <tbody><tr>
+         <td rowspan="6" width="176" valign="top"><img src="/themes/exam/images/Exambase_01.jpg" width="176" height="200" alt=""></td>
+         <td valign="top"><a href="https://exambase.lib.hku.hk" id="public-link"><img src="/themes/exam/images/Exambase_02.jpg" width="540" height="110" border="0" alt="Exambase"></a>
+</td>
+        </tr>
+        <tr>
+          <td height="25" class="bg"> </td>
+        </tr>
+        <tr>
+          <!-- Main Area -->
+          <td valign="top" height="250">          
+<div id="primary">
+
+	
+<div class="primary">
+<h2><font color="red"> <b>Departments : </b></font> </h2>
+    <ul>
+
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Anaesthesiology">Anaesthesiology</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Anatomy">Anatomy</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Architecture">Architecture</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Biochemistry">Biochemistry</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Biomedical+Engineering+programme">Biomedical Engineering programme</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Board+of+Studies+in+American+Studies">Board of Studies in American Studies</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Botany">Botany</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Building+Services+Engineering">Building Services Engineering</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Centre+for+Applied+English+Studies">Centre for Applied English Studies</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Centre+for+Genomic+Sciences">Centre for Genomic Sciences</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Centre+of+Buddhist+Studies">Centre of Buddhist Studies</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Centre+of+Computer+Studies+and+Applications">Centre of Computer Studies and Applications</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Centre+of+Urban+Planning+and+Environmental+Management">Centre of Urban Planning and Environmental Management</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Centre+of+Urban+Studies+and+Urban+Planning">Centre of Urban Studies and Urban Planning</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Chemistry">Chemistry</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Chinese">Chinese</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Civil+Engineering">Civil Engineering</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Civil+and+Structural+Engineering">Civil and Structural Engineering</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Cognitive+Science">Cognitive Science</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Community+Medicine">Community Medicine</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Community+Medicine+and+Behavioural+Sciences+Unit">Community Medicine and Behavioural Sciences Unit</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Comparative+Literature">Comparative Literature</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Computer+Engineering">Computer Engineering</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Computer+Science">Computer Science</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Computer+Science+and+Information+Systems">Computer Science and Information Systems</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Computer+Studies">Computer Studies</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Computers+in+Manufacturing">Computers in Manufacturing</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Curriculum+Studies">Curriculum Studies</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Department+of+Pharmacology+and+Pharmacy">Department of Pharmacology and Pharmacy</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Earth+Sciences">Earth Sciences</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Ecology+and+Biodiversity">Ecology and Biodiversity</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Economics">Economics</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Education">Education</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Electrical+Engineering">Electrical Engineering</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Electrical+and+Electronic+Engineering">Electrical and Electronic Engineering</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=English">English</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=English+Centre">English Centre</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=English+Studies+and+Comparative+Literature">English Studies and Comparative Literature</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=European+Studies">European Studies</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Faculty+of+Business+and+Economics">Faculty of Business and Economics</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Faculty+of+Business+and+Economics+%28HKU+Business+School%29">Faculty of Business and Economics (HKU Business School)</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Faculty+of+Dentistry">Faculty of Dentistry</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Faculty+of+Engineering">Faculty of Engineering</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Faculty+of+Science">Faculty of Science</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Faculty+of+Social+Sciences">Faculty of Social Sciences</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Fine+Arts">Fine Arts</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Food+industry">Food industry</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Geography">Geography</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Geography+and+Geology">Geography and Geology</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=HKU+Family+Institute">HKU Family Institute</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=History">History</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Hong+Kong+Institute+for+Humanities+and+Social+Sciences">Hong Kong Institute for Humanities and Social Sciences</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Immunology">Immunology</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Industrial+Engineering">Industrial Engineering</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Industrial+Engineering+and+Industrial+Management">Industrial Engineering and Industrial Management</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Industrial+and+Manufacturing+Systems+Engineering">Industrial and Manufacturing Systems Engineering</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Institute+of+Human+Performance">Institute of Human Performance</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Japanese">Japanese</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Japanese+Studies">Japanese Studies</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Journalism+and+Media+Studies+Centre">Journalism and Media Studies Centre</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Landscape+Architecture">Landscape Architecture</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Language+Centre">Language Centre</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Law">Law</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Li+Ka+Shing+Faculty+of+Medicine">Li Ka Shing Faculty of Medicine</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Linguistics">Linguistics</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Management+Studies">Management Studies</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Materials+science">Materials science</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Mathematics">Mathematics</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Mechanical+Engineering">Mechanical Engineering</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Mechanical+Engineering+-+Industrial+Automation">Mechanical Engineering - Industrial Automation</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Medical+Engineering">Medical Engineering</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Medical+Engineering+Programme">Medical Engineering Programme</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Medicine">Medicine</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Microbiology">Microbiology</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Music">Music</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Nursing+Studies">Nursing Studies</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Obstetrics+and+Gynaecology">Obstetrics and Gynaecology</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Paediatrics">Paediatrics</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Paediatrics+and+Adolescent+Medicine">Paediatrics and Adolescent Medicine</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Pathology">Pathology</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Patholoy">Patholoy</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Pharmacology">Pharmacology</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Philosophy">Philosophy</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Physics">Physics</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Physiology">Physiology</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Political+Science">Political Science</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Politics+and+Public+Administration">Politics and Public Administration</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Professional+Legal+Education">Professional Legal Education</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Psychiatry">Psychiatry</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Psychology">Psychology</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Radioisotope+Unit">Radioisotope Unit</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Real+Estate+and+Construction">Real Estate and Construction</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=SPACE">SPACE</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=School+of+Biological+Sciences">School of Biological Sciences</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=School+of+Biomedical+Sciences">School of Biomedical Sciences</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=School+of+Business">School of Business</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=School+of+Chinese+Medicine">School of Chinese Medicine</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=School+of+Economics">School of Economics</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=School+of+Economics+and+Finance">School of Economics and Finance</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=School+of+Modern+Languages+and+Cultures">School of Modern Languages and Cultures</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=School+of+Nursing">School of Nursing</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=School+of+Public+Health">School of Public Health</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Social+Work">Social Work</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Social+Work+and+Social+Administration">Social Work and Social Administration</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Sociology">Sociology</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Speech+and+Hearing+Sciences">Speech and Hearing Sciences</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Statistics">Statistics</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Statistics+and+Actuarial+Science">Statistics and Actuarial Science</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Surgery">Surgery</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Surveying">Surveying</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Urban+Planning+and+Design">Urban Planning and Design</a><br>
+<img src="/themes/exam/images/exambase_resultdort.gif"> <a class="inputTitle" href="/exhibits/show/exam/searchdept?id=Zoology">Zoology</a><br>
+    </ul>
+</div>
+	
+</div>	
+          </td>
+        </tr>
+
+
+
+        <tr>
+          <td>
+             <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tbody><tr> 
+                <td height="30">&nbsp;</td>
+              </tr>
+              <tr> 
+                <td bgcolor="#005826"><img src="/themes/exam/images/transparency.gif" width="1" height="2" alt=""></td>
+              </tr>
+            </tbody></table>
+            <table border="0" cellspacing="0" cellpadding="0">
+              <tbody><tr> 
+                <td height="50" width="25">
+<a href="/exhibits/show/exam/help"><img src="/themes/exam/images/help.gif" align="absmiddle" border="0" alt="Help"></a>
+                </td>
+                <td height="25" width="22">&nbsp;</td>
+                <td height="25" width="347">&nbsp;</td>
+                <td height="25" align="center" background="/themes/exam/images/line.gif" width="10"><img src="/themes/exam/images/transparency.gif" width="8" height="30" alt=""></td>
+                <td height="25" align="center" width="136"> </td>
+              </tr>
+            </tbody></table>
+
+
+
+            <table width="505" border="0" cellspacing="0" cellpadding="0" height="30">
+              <tbody><tr> 
+                <td valign="bottom" class="comment">For questions and comments about this database, please <a href="mailto:webadmin@lib.hku.hk"><span class="contact">contact us.</span></a></td>
+              </tr>
+            </tbody></table>
+          </td>
+        </tr>
+
+
+
+      </tbody></table>
+    </td>
+  </tr>
+
+<!-- Footer Bar -->
+  <tr> 
+    <td valign="top" height="30" width="224"><img src="/themes/exam/images/libraryname.gif" width="224" height="30" alt="HKU Libraries"></td>
+  </tr>
+  <tr align="right" bgcolor="#005826"> 
+    <td height="22" class="warning"><a class="warning" href="http://www.lib.hku.hk/general/warning.html"><b>Warning: </b>Licences prohibit excessive downloading</a><img src="/themes/exam/images/transparency.gif" width="10" height="1" alt=""></td>
+  </tr>
+</tbody></table>
+
+
+</body></html>

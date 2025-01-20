@@ -1,4 +1,4 @@
-// Frontend/Theme.js
+
 
 import { MD3DarkTheme as PaperDarkTheme, MD3LightTheme as PaperDefaultTheme } from 'react-native-paper';
 import { Platform } from 'react-native';
@@ -6,13 +6,13 @@ console.log('PaperDarkTheme:', PaperDarkTheme);
 console.log('PaperDarkTheme.colors:', PaperDarkTheme?.colors);
 
 
-// Extend react-native-paper's DefaultTheme for Light Theme
+
 export const lightTheme = {
   ...PaperDefaultTheme,
   dark: false,
   colors: {
     ...PaperDefaultTheme.colors,
-    primary: "#1877F2", // Facebook Blue
+    primary: "#1877F2", 
     onPrimary: "#FFFFFF",
     primaryContainer: "#E7F0FD",
     onPrimaryContainer: "#0A58CA",
@@ -74,13 +74,13 @@ export const lightTheme = {
   },
 };
 
-// Extend react-native-paper's DarkTheme for Dark Theme
+
 export const darkTheme = {
   ...PaperDarkTheme,
   dark: true,
   colors: {
     ...PaperDarkTheme.colors,
-    primary: "#1877F2", // Facebook Blue remains consistent
+    primary: "#1877F2", 
     onPrimary: "#FFFFFF",
     primaryContainer: "#145DBF",
     onPrimaryContainer: "#E7F0FD",

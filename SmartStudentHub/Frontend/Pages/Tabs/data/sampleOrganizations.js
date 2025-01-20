@@ -4,7 +4,7 @@ const sampleOrganizations = [
     {
       id: "1",
       name: "HKU",
-      image: "https://via.placeholder.com/150", // Replace with actual images
+      image: "https://via.placeholder.com/150", 
       description:
         "The University of Hong Kong (HKU) is a leading institution dedicated to academic excellence, research innovation, and community engagement.",
       location: "Hong Kong University Campus",

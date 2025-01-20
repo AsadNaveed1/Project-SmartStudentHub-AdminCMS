@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   withdrawButton: {
-    backgroundColor: '#ffb84d', // Bootstrap's danger color
+    backgroundColor: '#ffb84d', 
   },
 
 });

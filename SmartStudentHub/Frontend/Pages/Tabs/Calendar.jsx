@@ -144,7 +144,6 @@ const CalendarTab = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Search Bar */}
         <View
           style={[
             styles.searchBarContainer,
@@ -183,7 +182,6 @@ const CalendarTab = ({ navigation }) => {
           />
         )}
 
-        {/* Registered Events List */}
         <View style={styles.eventsList}>
           {filteredEvents.length > 0 ? (
             filteredEvents.map((item) => (

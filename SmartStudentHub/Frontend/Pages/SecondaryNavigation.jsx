@@ -1,9 +1,14 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+
+
 import MainNavigation from './Tabs/MainNavigation';
 import EventDetails from './EventDetails';
-import OrganizationProfile from './OrganizationProfile'; 
+import OrganizationProfile from './OrganizationProfile';
+
+
+import ChatPage from './ChatPage';
 
 const Stack = createStackNavigator();
 
@@ -24,7 +29,22 @@ export default function SecondaryNavigation() {
         <Stack.Screen
           name="OrganizationProfile"
           component={OrganizationProfile}
-          options={{ headerShown: false}} 
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChatPage"
+          component={ChatPage}
+          options={({ route }) => ({
+            title: route.params?.group?.courseName || 'Chat',
+            headerShown: true,
+            headerStyle: {
+              backgroundColor: '#1877F2', 
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
+          })}
         />
       </Stack.Navigator>
     </NavigationContainer>

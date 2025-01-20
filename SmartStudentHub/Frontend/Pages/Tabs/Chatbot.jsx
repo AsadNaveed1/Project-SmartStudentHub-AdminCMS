@@ -1,5 +1,3 @@
-// Frontend/Pages/Tabs/Chatbot.jsx
-
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from 'react-native-paper';
@@ -24,6 +22,5 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 18,
-    // fontFamily: 'Roboto-Medium',
   },
 });
