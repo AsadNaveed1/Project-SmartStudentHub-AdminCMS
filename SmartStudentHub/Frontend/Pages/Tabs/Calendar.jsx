@@ -10,7 +10,7 @@ import {
 import { useTheme } from 'react-native-paper';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import EventsCard from '../../Components/EventsCard';
-import { RegisteredEventsContext } from '../../Context/RegisteredEventsContext';
+import { RegisteredEventsContext } from '../../context/RegisteredEventsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import moment from 'moment';
 import Icon from 'react-native-vector-icons/FontAwesome';

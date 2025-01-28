@@ -1,5 +1,3 @@
-// Frontend/Pages/Tabs/EventManagement.jsx
-
 import React, { useState, useEffect } from "react";
 import {
   View,

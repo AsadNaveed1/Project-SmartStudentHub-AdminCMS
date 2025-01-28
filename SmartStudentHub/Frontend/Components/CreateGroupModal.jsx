@@ -5,7 +5,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Modal, Portal, TextInput, Button, useTheme } from 'react-native-paper';
 import { Picker } from '@react-native-picker/picker';
 import Autocomplete from 'react-native-autocomplete-input';
-import { GroupsContext } from '../Context/GroupsContext';
+import { GroupsContext } from '../context/GroupsContext';
 
 
 const departments = [

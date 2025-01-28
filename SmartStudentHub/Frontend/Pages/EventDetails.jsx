@@ -15,7 +15,7 @@ import * as Sharing from "expo-sharing";
 import * as Calendar from "expo-calendar";
 import MaterialIcon from "react-native-vector-icons/MaterialIcons"; 
 import { SafeAreaView } from "react-native-safe-area-context";
-import { RegisteredEventsContext } from '../Context/RegisteredEventsContext'; 
+import { RegisteredEventsContext } from '../context/RegisteredEventsContext'; 
 
 export default function EventDetails({ route, navigation }) {
   const { event } = route.params;
@@ -140,7 +140,7 @@ export default function EventDetails({ route, navigation }) {
         {/* Container for Image and Back Button */}
         <View style={styles.imageContainer}>
           {/* Event Image */}
-          <Image source={{ uri: event.image }} style={styles.image} />
+          <Image source={event.image} style={styles.image} />
 
           {/* Custom Back Button */}
           <TouchableOpacity style={styles.backButton} onPress={handleBack}>

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { useTheme } from 'react-native-paper';
-import { RegisteredEventsContext } from '../Context/RegisteredEventsContext'; 
+import { RegisteredEventsContext } from '../context/RegisteredEventsContext'; 
 
 export default function EventsCard({ event, onPress }) {
   const theme = useTheme();
@@ -38,7 +38,7 @@ export default function EventsCard({ event, onPress }) {
         onPress={onPress}
         activeOpacity={0.8}
       >
-        <Image source={{ uri: event.image }} style={styles.image} />
+        <Image source={event.image} style={styles.image} />
         <View style={styles.infoContainer}>
           <Text style={[styles.title, { color: theme.colors.onSurface }]}>
             {event.title}

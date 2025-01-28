@@ -1,7 +1,7 @@
 import React, { useContext, useCallback, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme, Menu } from 'react-native-paper';
-import { GroupsContext } from '../Context/GroupsContext';
+import { GroupsContext } from '../context/GroupsContext';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome'; 
 

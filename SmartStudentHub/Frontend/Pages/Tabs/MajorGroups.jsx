@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useTheme, Menu } from 'react-native-paper';
-import { GroupsContext } from '../../Context/GroupsContext';
+import { GroupsContext } from '../../context/GroupsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GroupCard from '../../Components/GroupCard';
 import CreateGroupModal from '../../Components/CreateGroupModal';
