@@ -1,28 +1,101 @@
+// seeder.js
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const User = require('./models/User');
-const connectDB = require('./db');
+const Organization = require('./models/Organization');
+const Event = require('./models/Event');
+const Group = require('./models/Group');
+const User = require('./models/User'); 
+
+const sampleOrganizations = require('./data/sampleOrganizations');
+const sampleEvents = require('./data/sampleEvents');
+const sampleGroups = require('./data/sampleGroups');
+
 dotenv.config();
-connectDB();
-const importData = async () => {
+
+const connectDB = async () => {
   try {
-    await User.deleteMany();
-    const testUser = new User({
-      fullName: 'Test User',
-      username: 'test_user1',
-      email: 'test1@email.com',
-      password: 'password12',
-      university: 'Example University', 
-      universityYear: '3rd Year',
-      degree: 'Bachelor of Science in Computer Science',
-      bio: 'This is a test user bio. Passionate about technology and community building.',
-    });
-    await testUser.save();
-    console.log('Test user imported successfully!');
-    process.exit();
+    await mongoose.connect(process.env.MONGO_URI); 
+    console.log('MongoDB Connected');
   } catch (error) {
-    console.error(`${error}`);
+    console.error('MongoDB connection failed:', error.message);
     process.exit(1);
   }
 };
-importData();
+
+const importData = async () => {
+  try {
+    await Organization.deleteMany();
+    await Event.deleteMany();
+    await Group.deleteMany();
+    await User.deleteMany(); // Optional
+
+    console.log('Users cleared.');
+    console.log('Events cleared.');
+    console.log('Groups cleared.');
+    console.log('Organizations cleared.');
+
+    const createdOrganizations = await Organization.insertMany(sampleOrganizations);
+    console.log('Organizations Imported');
+
+    // Map organization names to their ObjectIds
+    const orgMap = {};
+    createdOrganizations.forEach(org => {
+      orgMap[org.name] = org._id;
+    });
+
+    // Assign organization ObjectId to each event
+    const eventsWithOrg = sampleEvents.map(event => ({
+      ...event,
+      organization: orgMap[event.organization] || null,
+    }));
+
+    await Event.insertMany(eventsWithOrg);
+    console.log('Events Imported');
+
+    await Group.insertMany(sampleGroups);
+    console.log('Groups Imported');
+
+
+    const user = new User({
+      fullName: 'John Doe',
+      username: 'johndoe',
+      email: 'johndoe@example.com',
+      password: 'password12', 
+      university: 'HKU',
+      universityYear: '3rd Year',
+      degree: 'Computer Science',
+      bio: 'A passionate developer.',
+    });
+    await user.save();
+    console.log('Sample User Created');
+
+
+    process.exit();
+  } catch (error) {
+    console.error('Error during data import:', error.message);
+    process.exit(1);
+  }
+};
+
+const destroyData = async () => {
+  try {
+    await Organization.deleteMany();
+    await Event.deleteMany();
+    await Group.deleteMany();
+    await User.deleteMany(); // Optional
+
+    console.log('Data Destroyed');
+    process.exit();
+  } catch (error) {
+    console.error('Error with data destruction:', error.message);
+    process.exit(1);
+  }
+};
+
+connectDB();
+
+if (process.argv[2] === '-d') {
+  destroyData();
+} else {
+  importData();
+}

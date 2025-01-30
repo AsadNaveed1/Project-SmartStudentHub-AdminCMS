@@ -47,6 +47,18 @@ const UserSchema = new mongoose.Schema({
     maxlength: [500, 'Bio cannot exceed 500 characters'],
     default: 'This user prefers to keep an air of mystery around them.',
   },
+  joinedGroups: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Group',
+    },
+  ],
+  registeredEvents: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Event',
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,
