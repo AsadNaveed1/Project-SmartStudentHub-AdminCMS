@@ -1,64 +1,95 @@
+// src/frontend/context/GroupsContext.jsx
+
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import sampleGroups from '../Pages/Tabs/data/sampleGroups'; 
+import api from '../src/backend/api'; // Adjust the path as necessary
 
 export const GroupsContext = createContext();
 
 export const GroupsProvider = ({ children }) => {
   const [groups, setGroups] = useState([]);
   const [joinedGroups, setJoinedGroups] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  
-  useEffect(() => {
-    setGroups(sampleGroups);
-  }, []);
-
-  
-  useEffect(() => {
-    const loadJoinedGroups = async () => {
-      try {
-        const storedGroups = await AsyncStorage.getItem('@joined_groups');
-        if (storedGroups !== null) {
-          setJoinedGroups(JSON.parse(storedGroups));
-        }
-      } catch (error) {
-        console.error('Failed to load joined groups:', error);
-      }
-    };
-
-    loadJoinedGroups();
-  }, []);
-
-  
-  useEffect(() => {
-    const saveJoinedGroups = async () => {
-      try {
-        await AsyncStorage.setItem('@joined_groups', JSON.stringify(joinedGroups));
-      } catch (error) {
-        console.error('Failed to save joined groups:', error);
-      }
-    };
-
-    saveJoinedGroups();
-  }, [joinedGroups]);
-
-  const joinGroup = (groupId) => {
-    const groupToJoin = groups.find((group) => group.id === groupId);
-    if (groupToJoin && !isGroupJoined(groupId)) {
-      setJoinedGroups((prev) => [...prev, groupToJoin]);
+  // Fetch all groups from the backend
+  const fetchGroups = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get('/groups');
+      setGroups(response.data);
+    } catch (err) {
+      console.error('Failed to fetch groups:', err);
+      setError(err.response?.data?.message || err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const leaveGroup = (groupId) => {
-    setJoinedGroups((prev) => prev.filter((group) => group.id !== groupId));
+  // Fetch joined groups for the authenticated user
+  const fetchJoinedGroups = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get('/auth/me'); // Assuming you have an endpoint to get user details
+      const user = response.data;
+      setJoinedGroups(user.joinedGroups);
+    } catch (err) {
+      console.error('Failed to fetch joined groups:', err);
+      setError(err.response?.data?.message || err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const isGroupJoined = useCallback((groupId) => {
-    return joinedGroups.some((group) => group.id === groupId);
-  }, [joinedGroups]);
+  useEffect(() => {
+    fetchGroups();
+    fetchJoinedGroups();
+  }, []);
 
-  const addGroup = (newGroup) => {
-    setGroups((prev) => [...prev, newGroup]);
+  // Join a group
+  const joinGroup = async (groupId) => {
+    try {
+      await api.post(`/groups/${groupId}/join`);
+      // Update local state
+      const updatedGroup = groups.find((group) => group.groupId === groupId);
+      if (updatedGroup && !joinedGroups.find((g) => g.groupId === groupId)) {
+        setJoinedGroups((prev) => [...prev, updatedGroup]);
+      }
+    } catch (err) {
+      console.error('Failed to join group:', err);
+      setError(err.response?.data?.message || err.message);
+    }
+  };
+
+  // Leave a group
+  const leaveGroup = async (groupId) => {
+    try {
+      await api.post(`/groups/${groupId}/leave`);
+      // Update local state
+      setJoinedGroups((prev) => prev.filter((group) => group.groupId !== groupId));
+    } catch (err) {
+      console.error('Failed to leave group:', err);
+      setError(err.response?.data?.message || err.message);
+    }
+  };
+
+  // Check if a group is joined
+  const isGroupJoined = useCallback(
+    (groupId) => {
+      return joinedGroups.some((group) => group.groupId === groupId);
+    },
+    [joinedGroups]
+  );
+
+  // Add a new group (optional, if your app allows creating groups from frontend)
+  const addGroup = async (newGroupData) => {
+    try {
+      const response = await api.post('/groups', newGroupData);
+      setGroups((prev) => [...prev, response.data]);
+    } catch (err) {
+      console.error('Failed to add group:', err);
+      setError(err.response?.data?.message || err.message);
+    }
   };
 
   return (
@@ -66,10 +97,14 @@ export const GroupsProvider = ({ children }) => {
       value={{
         groups,
         joinedGroups,
+        isGroupJoined,
         joinGroup,
         leaveGroup,
-        isGroupJoined,
         addGroup,
+        isLoading,
+        error,
+        fetchGroups, // Expose if you need to refetch
+        fetchJoinedGroups, // Expose if you need to refetch
       }}
     >
       {children}

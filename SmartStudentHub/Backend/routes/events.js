@@ -20,7 +20,7 @@ router.post('/', authMiddleware, async (req, res) => {
     eventId,
     title,
     image,
-    Summary,
+    summary,
     description,
     date,
     time,
@@ -46,7 +46,7 @@ router.post('/', authMiddleware, async (req, res) => {
       eventId,
       title,
       image,
-      Summary,
+      summary,
       description,
       date,
       time,
@@ -67,7 +67,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
   const {
     title,
     image,
-    Summary,
+    summary,
     description,
     date,
     time,
@@ -80,7 +80,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
   const eventFields = {};
   if (title) eventFields.title = title;
   if (image) eventFields.image = image;
-  if (Summary) eventFields.Summary = Summary;
+  if (summary) eventFields.summary = summary;
   if (description) eventFields.description = description;
   if (date) eventFields.date = date;
   if (time) eventFields.time = time;
@@ -128,6 +128,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+// Register for an event
 router.post('/:id/register', authMiddleware, async (req, res) => {
   try {
     const event = await Event.findOne({ eventId: req.params.id });

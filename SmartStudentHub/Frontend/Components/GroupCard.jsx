@@ -1,43 +1,48 @@
+// src/frontend/Components/GroupCard.jsx
+
 import React, { useContext, useCallback, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useTheme, Menu } from 'react-native-paper';
 import { GroupsContext } from '../context/GroupsContext';
 import { useNavigation } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/FontAwesome'; 
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const GroupCard = ({ group }) => {
   const theme = useTheme();
   const { isGroupJoined, joinGroup, leaveGroup } = useContext(GroupsContext);
   const navigation = useNavigation();
 
-  const [visible, setVisible] = useState(false); 
+  const [visible, setVisible] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const joined = isGroupJoined(group.id);
+  const joined = isGroupJoined(group.groupId);
 
-  
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
-
 
   const handlePress = useCallback(() => {
     if (joined) {
       navigation.navigate('ChatPage', { group });
     }
-    
   }, [joined, navigation, group]);
 
-
-  const handleButtonPress = useCallback(() => {
-    if (joined) {
-      leaveGroup(group.id);
-      
-    } else {
-      joinGroup(group.id);
-      
+  const handleButtonPress = useCallback(async () => {
+    setActionLoading(true);
+    try {
+      if (joined) {
+        await leaveGroup(group.groupId);
+        Alert.alert('Success', 'You have left the group.');
+      } else {
+        await joinGroup(group.groupId);
+        Alert.alert('Success', 'You have joined the group.');
+      }
+    } catch (error) {
+      Alert.alert('Error', error || 'An error occurred.');
+    } finally {
+      setActionLoading(false);
+      closeMenu();
     }
-    
-    closeMenu();
-  }, [joined, leaveGroup, joinGroup, group.id]);
+  }, [joined, leaveGroup, joinGroup, group.groupId]);
 
   return (
     <View
@@ -49,7 +54,7 @@ const GroupCard = ({ group }) => {
       <TouchableOpacity
         style={styles.infoContainer}
         onPress={handlePress}
-        disabled={!joined} 
+        disabled={!joined}
       >
         <Text
           style={[
@@ -88,7 +93,7 @@ const GroupCard = ({ group }) => {
               accessibilityLabel="Open group options menu"
               accessible={true}
             >
-              <Icon name="ellipsis-v" size={22} color={theme.colors.onSurface} /> 
+              <Icon name="ellipsis-v" size={22} color={theme.colors.onSurface} />
             </TouchableOpacity>
           }
           contentStyle={{
@@ -99,10 +104,7 @@ const GroupCard = ({ group }) => {
           }}
         >
           <Menu.Item
-            onPress={() => {
-              handleButtonPress(); 
-            }}
-            
+            onPress={handleButtonPress}
             title="Leave Group"
             leadingIcon={({ size, color }) => (
               <Icon
@@ -114,20 +116,21 @@ const GroupCard = ({ group }) => {
             )}
             titleStyle={[{ color: theme.colors.onSurface }, styles.leaveGroupText]}
           />
-
         </Menu>
       ) : (
         <TouchableOpacity
           style={[styles.button, styles.joinButton, { borderColor: theme.colors.primary }]}
           onPress={handleButtonPress}
+          disabled={actionLoading}
         >
-          <Text style={[styles.buttonText, styles.joinButtonText]}>Join</Text>
+          <Text style={[styles.buttonText, styles.joinButtonText]}>
+            {actionLoading ? 'Processing...' : 'Join'}
+          </Text>
         </TouchableOpacity>
       )}
     </View>
   );
 };
-
 
 export default React.memo(GroupCard);
 
@@ -171,7 +174,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   leaveButton: {
-    backgroundColor: '#FFCDD2', 
+    backgroundColor: '#FFCDD2',
   },
   buttonText: {
     fontSize: 14,
@@ -179,10 +182,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   joinButtonText: {
-    color: '#1877F2', 
+    color: '#1877F2',
   },
   leaveButtonText: {
-    color: '#D32F2F', 
+    color: '#D32F2F',
   },
   menuIcon: {
     padding: 8,
@@ -190,10 +193,9 @@ const styles = StyleSheet.create({
   },
   menuItemIcon: {
     padding: -10,
-    
   },
-  leaveGroupText: {  
-    fontSize: 16, 
-    marginLeft: -5, 
+  leaveGroupText: {
+    fontSize: 16,
+    marginLeft: -5,
   },
 });

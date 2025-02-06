@@ -13,6 +13,9 @@ app.use(express.json());
 app.use(cors());
 
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/groups', require('./routes/groups')); // <-- Added Groups Routes
+app.use('/api/events', require('./routes/events'));
+app.use('/api/organizations', require('./routes/organizations'));
 
 app.get('/', (req, res) => {
   res.send('API is running...');
@@ -22,6 +25,7 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
+//port in env is 5002
 const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

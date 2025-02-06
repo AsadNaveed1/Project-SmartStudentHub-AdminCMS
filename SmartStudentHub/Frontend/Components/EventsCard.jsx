@@ -1,5 +1,7 @@
+// src/frontend/components/EventsCard.jsx
+
 import React, { useContext } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { RegisteredEventsContext } from '../context/RegisteredEventsContext'; 
 
@@ -8,16 +10,14 @@ export default function EventsCard({ event, onPress }) {
   const { registerEvent, withdrawEvent, isRegistered } = useContext(RegisteredEventsContext); 
 
   const handleRegister = () => {
-    registerEvent(event);
-    Alert.alert('Registered', `You have registered for "${event.title}"`);
+    registerEvent(event.eventId);
   };
 
   const handleWithdraw = () => {
-    withdrawEvent(event.id);
-    Alert.alert('Withdrawn', `You have withdrawn from "${event.title}"`);
+    withdrawEvent(event.eventId);
   };
 
-  const registered = isRegistered(event.id);
+  const registered = isRegistered(event.eventId);
 
   const hasSubtype = event.subtype && event.type;
   const isSocietyEvent =
@@ -38,25 +38,37 @@ export default function EventsCard({ event, onPress }) {
         onPress={onPress}
         activeOpacity={0.8}
       >
-        <Image source={event.image} style={styles.image} />
+        {event.image ? (
+          <Image source={{ uri: event.image }} style={styles.image} />
+        ) : (
+          <View style={[styles.image, styles.placeholderImage]}>
+            <Text style={styles.placeholderText}>No Image</Text>
+          </View>
+        )}
         <View style={styles.infoContainer}>
           <Text style={[styles.title, { color: theme.colors.onSurface }]}>
             {event.title}
           </Text>
 
           <View style={styles.pillsContainer}>
+            {/* Organization Pill */}
             <View style={[styles.pill, styles.organizationPill]}>
-              <Text style={styles.pillText}>{event.organization}</Text>
+              <Text style={styles.pillText}>
+                {event.organization && event.organization.name
+                  ? event.organization.name
+                  : 'N/A'}
+              </Text>
             </View>
 
+            {/* Conditional Pills */}
             {hasSubtype && (
               isSocietyEvent ? (
                 <View style={[styles.pill, styles.societyPill]}>
-                  <Text style={styles.pillText}>{event.name}</Text>
+                  <Text style={styles.pillText}>{event.name || 'N/A'}</Text>
                 </View>
               ) : isExternalEvent ? (
                 <View style={[styles.pill, styles.externalPill]}>
-                  <Text style={styles.pillText}>{event.subtype}</Text>
+                  <Text style={styles.pillText}>{event.subtype || 'N/A'}</Text>
                 </View>
               ) : null
             )}
@@ -94,6 +106,7 @@ export default function EventsCard({ event, onPress }) {
       <View style={styles.horizontalLine} />
 
       <View style={styles.buttonsContainer}>
+        {/* Details Button */}
         <TouchableOpacity
           style={[styles.button, styles.detailsButton]}
           onPress={onPress}
@@ -101,6 +114,7 @@ export default function EventsCard({ event, onPress }) {
           <Text style={styles.buttonText}>Details</Text>
         </TouchableOpacity>
 
+        {/* Register/Withdraw Button */}
         <TouchableOpacity
           style={[
             styles.button,
@@ -141,6 +155,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: IMAGE_MARGIN_RIGHT,
     backgroundColor: '#f0f0f0',
+  },
+  placeholderImage: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    color: '#888',
+    fontSize: 14,
   },
   infoContainer: {
     flex: 1,
@@ -239,28 +261,3 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffb84d', 
   },
 });
-
-
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  

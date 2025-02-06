@@ -10,6 +10,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, ThemeContext } from './Frontend/context/ThemeContext'; 
 import { RegisteredEventsProvider } from './Frontend/context/RegisteredEventsContext'; 
 import { GroupsProvider } from './Frontend/context/GroupsContext'; 
+import { OrganizationsProvider } from './Frontend/context/OrganizationsContext';
 import { AuthProvider } from './Frontend/context/AuthContext';
 
 export default function App() {
@@ -20,7 +21,9 @@ export default function App() {
           <AuthProvider> 
             <RegisteredEventsProvider>
               <GroupsProvider> 
+                <OrganizationsProvider>
                 <ThemeConsumer />
+              </OrganizationsProvider>
               </GroupsProvider>
             </RegisteredEventsProvider>
           </AuthProvider>

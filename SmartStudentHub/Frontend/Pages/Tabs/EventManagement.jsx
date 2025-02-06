@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+// src/frontend/screens/EventManagement.jsx
+
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -14,13 +16,19 @@ import OrganizationCard from "../../Components/OrganizationCard";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/FontAwesome";
 import moment from "moment";
-import sampleOrganisations from "./data/sampleOrganizations"; 
-import sampleEvents from "./data/sampleEvents"; 
+import { RegisteredEventsContext } from "../../context/RegisteredEventsContext";
+import { OrganizationsContext } from "../../context/OrganizationsContext";
+import { GroupsContext } from "../../context/GroupsContext";
 
 export default function EventManagement({ navigation }) {
   const theme = useTheme();
+  const { events } = useContext(RegisteredEventsContext);
+  const { organizations, isLoading: orgLoading } = useContext(OrganizationsContext);
+  const { groups } = useContext(GroupsContext);
+  
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredEvents, setFilteredEvents] = useState(sampleEvents);
+  const [filteredEvents, setFilteredEvents] = useState(events);
+  const [filteredOrganizations, setFilteredOrganizations] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [timeFilter, setTimeFilter] = useState("All");
 
@@ -41,29 +49,27 @@ export default function EventManagement({ navigation }) {
 
   const externalEvents = ["Volunteer", "Community Events", "Networking"];
 
-
   const timeFilterOptions = ["All", "This Week", "Next Week", "This Month", "Next Month"];
 
-
-  const uniqueOrganizations = sampleOrganisations;
-
-  const [filteredOrganizations, setFilteredOrganizations] = useState([]);
+  useEffect(() => {
+    applyFilters(searchQuery, categoryFilter, timeFilter);
+  }, [events, organizations, searchQuery, categoryFilter, timeFilter]);
 
   useEffect(() => {
     if (searchQuery.trim() !== "") {
       const lowerCaseQuery = searchQuery.toLowerCase();
-      const matchedOrgs = uniqueOrganizations.filter(org =>
+      const matchedOrgs = organizations.filter(org =>
         org.name.toLowerCase().includes(lowerCaseQuery)
       );
       setFilteredOrganizations(matchedOrgs);
     } else {
-      setFilteredOrganizations([]);
+      setFilteredOrganizations([]); // Set to empty array when no search query
     }
-  }, [searchQuery, uniqueOrganizations]);
+  }, [searchQuery, organizations]);
 
   const handleSearch = (query) => {
     setSearchQuery(query);
-    applyFilters(query, categoryFilter, timeFilter);
+    // No need to call applyFilters here since useEffect handles it
   };
 
   const handleCategoryFilter = (selectedFilter) => {
@@ -71,7 +77,7 @@ export default function EventManagement({ navigation }) {
       (societies.includes(selectedFilter) || externalEvents.includes(selectedFilter)) &&
       categoryFilter === selectedFilter
     ) {
-      // Reset to main category
+      // Reset to broader category
       if (societies.includes(selectedFilter)) {
         setCategoryFilter("Society Event");
         applyFilters(searchQuery, "Society Event", timeFilter);
@@ -91,17 +97,19 @@ export default function EventManagement({ navigation }) {
   };
 
   const applyFilters = (query, selectedCategory, selectedTime) => {
-    let filtered = sampleEvents;
+    let filtered = events;
 
+    // Search Filter
     if (query.trim() !== "") {
       const lowerCaseQuery = query.toLowerCase();
       filtered = filtered.filter(
         (event) =>
           event.title.toLowerCase().includes(lowerCaseQuery) ||
-          event.organization.toLowerCase().includes(lowerCaseQuery)
+          (event.organization && event.organization.name.toLowerCase().includes(lowerCaseQuery))
       );
     }
 
+    // Category Filter
     if (selectedCategory !== "All") {
       if (societies.includes(selectedCategory)) {
         filtered = filtered.filter(
@@ -122,13 +130,12 @@ export default function EventManagement({ navigation }) {
         );
       } else if (selectedCategory === "External Event") {
         filtered = filtered.filter((event) => event.type === "External Event");
-      }
-
-      else if (selectedCategory === "University Event") {
+      } else if (selectedCategory === "University Event") {
         filtered = filtered.filter((event) => event.type === "University Event");
       }
     }
 
+    // Time Filter
     if (selectedTime !== "All") {
       const now = moment();
       if (selectedTime === "This Week") {
@@ -237,7 +244,6 @@ export default function EventManagement({ navigation }) {
           styles.searchBarContainer,
           {
             backgroundColor: theme.colors.surface,
-            color: theme.colors.onSurface,
             borderColor: theme.colors.onSurface,
           },
         ]}
@@ -270,74 +276,75 @@ export default function EventManagement({ navigation }) {
         ]}
         contentContainerStyle={{ marginBottom: 15 }}
       >
-          {/* Time Filter Button with Dropdown */}
-          <Menu
-            visible={allMenuVisible}
-            onDismiss={() => setAllMenuVisible(false)}
-            anchor={
-              <View
-                style={[
-                  styles.filterButton,
-                  (timeFilterOptions.includes(timeFilter)) && { backgroundColor: theme.colors.primary },
-                ]}
+        {/* Time Filter Button with Dropdown */}
+        <Menu
+          visible={allMenuVisible}
+          onDismiss={() => setAllMenuVisible(false)}
+          anchor={
+            <View
+              style={[
+                styles.filterButton,
+                timeFilter !== "All" && { backgroundColor: theme.colors.primary },
+              ]}
+            >
+              <TouchableOpacity
+                style={styles.filterLabel}
+                onPress={() => {
+                  handleTimeFilter("All");
+                  setAllMenuVisible(false);
+                }}
               >
-                <TouchableOpacity
-                  style={styles.filterLabel}
-                  onPress={() => {
-                    handleTimeFilter("All");
-                  }}
-                >
-                  <Text
-                    style={{
-                      color:
-                        timeFilterOptions.includes(timeFilter)
-                          ? "#fff"
-                          : theme.colors.onSurface,
-                    }}
-                  >
-                    {timeFilter}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setAllMenuVisible(true)}
-                  style={styles.iconButton}
-                >
-                  <Icon
-                    name="caret-down"
-                    size={16}
-                    color={
-                      timeFilterOptions.includes(timeFilter)
-                        ? "#fff"
-                        : theme.colors.onSurface
-                    }
-                  />
-                </TouchableOpacity>
-              </View>
-            }
-            contentStyle={{
-              backgroundColor: theme.colors.surface,
-              borderColor: theme.colors.onSurfaceVariant,
-              borderWidth: 0.5,
-              borderRadius: 8,
-            }}
-          >
-            {timeFilterOptions.map(
-              (timeOption) => (
-                <Menu.Item
-                  key={timeOption}
-                  onPress={() => {
-                    handleTimeFilter(timeOption);
-                    setAllMenuVisible(false);
-                  }}
-                  title={timeOption}
-                  titleStyle={{ color: theme.colors.onSurface }}
+                <Text
                   style={{
-                    backgroundColor: theme.colors.surface,
+                    color:
+                      timeFilter !== "All"
+                        ? "#fff"
+                        : theme.colors.onSurface,
                   }}
+                >
+                  {timeFilter}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setAllMenuVisible(true)}
+                style={styles.iconButton}
+              >
+                <Icon
+                  name="caret-down"
+                  size={16}
+                  color={
+                    timeFilter !== "All"
+                      ? "#fff"
+                      : theme.colors.onSurface
+                  }
                 />
-              )
-            )}
-          </Menu>
+              </TouchableOpacity>
+            </View>
+          }
+          contentStyle={{
+            backgroundColor: theme.colors.surface,
+            borderColor: theme.colors.onSurfaceVariant,
+            borderWidth: 0.5,
+            borderRadius: 8,
+          }}
+        >
+          {timeFilterOptions.map(
+            (timeOption) => (
+              <Menu.Item
+                key={timeOption}
+                onPress={() => {
+                  handleTimeFilter(timeOption);
+                  setAllMenuVisible(false);
+                }}
+                title={timeOption}
+                titleStyle={{ color: theme.colors.onSurface }}
+                style={{
+                  backgroundColor: theme.colors.surface,
+                }}
+              />
+            )
+          )}
+        </Menu>
 
         {/* Category Filter Buttons */}
 
@@ -353,7 +360,9 @@ export default function EventManagement({ navigation }) {
           <Text
             style={{
               color:
-                categoryFilter === "All" ? "#fff" : theme.colors.Surface,
+                categoryFilter === "All"
+                  ? "#fff"
+                  : theme.colors.onSurface,
             }}
           >
             All Categories
@@ -376,171 +385,172 @@ export default function EventManagement({ navigation }) {
               color:
                 categoryFilter === "University Event"
                   ? "#fff"
-                  : theme.colors.Surface,
+                  : theme.colors.onSurface,
             }}
           >
             University Event
           </Text>
         </TouchableOpacity>
 
-          {/* Society Event with Dropdown */}
-          <Menu
-            visible={societyMenuVisible}
-            onDismiss={() => setSocietyMenuVisible(false)}
-            anchor={
-              <View
-                style={[
-                  styles.filterButton,
-                  (societies.includes(categoryFilter) ||
-                    categoryFilter === "Society Event") && {
-                      backgroundColor: theme.colors.primary,
-                    },
-                ]}
+        {/* Society Event with Dropdown */}
+        <Menu
+          visible={societyMenuVisible}
+          onDismiss={() => setSocietyMenuVisible(false)}
+          anchor={
+            <View
+              style={[
+                styles.filterButton,
+                (societies.includes(categoryFilter) ||
+                  categoryFilter === "Society Event") && {
+                    backgroundColor: theme.colors.primary,
+                  },
+              ]}
+            >
+              <TouchableOpacity
+                style={styles.filterLabel}
+                onPress={() => {
+                  // Toggle between specific society and general Society Event
+                  if (societies.includes(categoryFilter)) {
+                    handleCategoryFilter("Society Event");
+                  } else {
+                    handleCategoryFilter("Society Event");
+                  }
+                }}
               >
-                <TouchableOpacity
-                  style={styles.filterLabel}
-                  onPress={() => {
-                    if (societies.includes(categoryFilter)) {
-                      handleCategoryFilter("Society Event");
-                    } else {
-                      handleCategoryFilter("Society Event");
-                    }
-                  }}
-                >
-                  <Text
-                    style={{
-                      color:
-                        societies.includes(categoryFilter) ||
-                        categoryFilter === "Society Event"
-                          ? "#fff"
-                          : theme.colors.Surface,
-                    }}
-                  >
-                    {societies.includes(categoryFilter)
-                      ? categoryFilter
-                      : "Society Event"}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setSocietyMenuVisible(true)}
-                  style={styles.iconButton}
-                >
-                  <Icon
-                    name="caret-down"
-                    size={16}
-                    color={
+                <Text
+                  style={{
+                    color:
                       societies.includes(categoryFilter) ||
                       categoryFilter === "Society Event"
                         ? "#fff"
-                        : theme.colors.Surface
-                    }
-                  />
-                </TouchableOpacity>
-              </View>
-            }
-            contentStyle={{
-              backgroundColor: theme.colors.surface,
-              borderColor: theme.colors.onSurfaceVariant,
-              borderWidth: 0.5,
-              borderRadius: 8,
-            }}
-          >
-            {societies.map((society) => (
-              <Menu.Item
-                key={society}
-                onPress={() => {
-                  handleCategoryFilter(society);
-                  setSocietyMenuVisible(false);
-                }}
-                title={society}
-                titleStyle={{ color: theme.colors.onSurface }}
-                style={{
-                  backgroundColor: theme.colors.surface,
-                }}
-              />
-            ))}
-          </Menu>
-
-          {/* External Event with Dropdown */}
-          <Menu
-            visible={externalMenuVisible}
-            onDismiss={() => setExternalMenuVisible(false)}
-            anchor={
-              <View
-                style={[
-                  styles.filterButton,
-                  (externalEvents.includes(categoryFilter) ||
-                    categoryFilter === "External Event") && {
-                      backgroundColor: theme.colors.primary,
-                    },
-                ]}
-              >
-                <TouchableOpacity
-                  style={styles.filterLabel}
-                  onPress={() => {
-                    handleCategoryFilter("External Event");
+                        : theme.colors.onSurface,
                   }}
                 >
-                  <Text
-                    style={{
-                      color:
-                        externalEvents.includes(categoryFilter) ||
-                        categoryFilter === "External Event"
-                          ? "#fff"
-                          : theme.colors.Surface,
-                    }}
-                  >
-                    {externalEvents.includes(categoryFilter) ||
-                    categoryFilter === "External Event"
-                      ? categoryFilter
-                      : "External Event"}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setExternalMenuVisible(true)}
-                  style={styles.iconButton}
-                >
-                  <Icon
-                    name="caret-down"
-                    size={16}
-                    color={
+                  {societies.includes(categoryFilter)
+                    ? categoryFilter
+                    : "Society Event"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setSocietyMenuVisible(true)}
+                style={styles.iconButton}
+              >
+                <Icon
+                  name="caret-down"
+                  size={16}
+                  color={
+                    societies.includes(categoryFilter) ||
+                    categoryFilter === "Society Event"
+                      ? "#fff"
+                      : theme.colors.onSurface
+                  }
+                />
+              </TouchableOpacity>
+            </View>
+          }
+          contentStyle={{
+            backgroundColor: theme.colors.surface,
+            borderColor: theme.colors.onSurfaceVariant,
+            borderWidth: 0.5,
+            borderRadius: 8,
+          }}
+        >
+          {societies.map((society) => (
+            <Menu.Item
+              key={society}
+              onPress={() => {
+                handleCategoryFilter(society);
+                setSocietyMenuVisible(false);
+              }}
+              title={society}
+              titleStyle={{ color: theme.colors.onSurface }}
+              style={{
+                backgroundColor: theme.colors.surface,
+              }}
+            />
+          ))}
+        </Menu>
+
+        {/* External Event with Dropdown */}
+        <Menu
+          visible={externalMenuVisible}
+          onDismiss={() => setExternalMenuVisible(false)}
+          anchor={
+            <View
+              style={[
+                styles.filterButton,
+                (externalEvents.includes(categoryFilter) ||
+                  categoryFilter === "External Event") && {
+                    backgroundColor: theme.colors.primary,
+                  },
+              ]}
+            >
+              <TouchableOpacity
+                style={styles.filterLabel}
+                onPress={() => {
+                  handleCategoryFilter("External Event");
+                }}
+              >
+                <Text
+                  style={{
+                    color:
                       externalEvents.includes(categoryFilter) ||
                       categoryFilter === "External Event"
                         ? "#fff"
-                        : theme.colors.Surface
-                    }
-                  />
-                </TouchableOpacity>
-              </View>
-            }
-            contentStyle={{
-              backgroundColor: theme.colors.surface,
-              borderColor: theme.colors.onSurfaceVariant,
-              borderWidth: 0.5,
-              borderRadius: 8,
-            }}
-          >
-            {externalEvents.map((eventType) => (
-              <Menu.Item
-                key={eventType}
-                onPress={() => {
-                  handleCategoryFilter(eventType);
-                  setExternalMenuVisible(false);
-                }}
-                title={eventType}
-                titleStyle={{ color: theme.colors.onSurface }}
-                style={{
-                  backgroundColor: theme.colors.surface,
-                }}
-              />
-            ))}
-          </Menu>
+                        : theme.colors.onSurface,
+                  }}
+                >
+                  {externalEvents.includes(categoryFilter) ||
+                  categoryFilter === "External Event"
+                    ? categoryFilter
+                    : "External Event"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setExternalMenuVisible(true)}
+                style={styles.iconButton}
+              >
+                <Icon
+                  name="caret-down"
+                  size={16}
+                  color={
+                    externalEvents.includes(categoryFilter) ||
+                    categoryFilter === "External Event"
+                      ? "#fff"
+                      : theme.colors.onSurface
+                  }
+                />
+              </TouchableOpacity>
+            </View>
+          }
+          contentStyle={{
+            backgroundColor: theme.colors.surface,
+            borderColor: theme.colors.onSurfaceVariant,
+            borderWidth: 0.5,
+            borderRadius: 8,
+          }}
+        >
+          {externalEvents.map((eventType) => (
+            <Menu.Item
+              key={eventType}
+              onPress={() => {
+                handleCategoryFilter(eventType);
+                setExternalMenuVisible(false);
+              }}
+              title={eventType}
+              titleStyle={{ color: theme.colors.onSurface }}
+              style={{
+                backgroundColor: theme.colors.surface,
+              }}
+            />
+          ))}
+        </Menu>
       </ScrollView>
 
       {/* SectionList for Organizations and Events */}
       <SectionList
         sections={sections}
-        keyExtractor={(item) => (item.id ? item.id.toString() : item.name)}
+        keyExtractor={(item) => (item.eventId ? item.eventId.toString() : item.organizationId)}
         renderItem={renderItem}
         renderSectionHeader={renderSectionHeader}
         stickySectionHeadersEnabled={false}
@@ -601,16 +611,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  sectionHeader: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginVertical: 8,
-    paddingHorizontal: 12,
+  filterLabel: {
+    flex: 1,
   },
   iconButton: {
     paddingLeft: 8,
     justifyContent: "center",
     alignItems: "center",
+  },
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginVertical: 8,
+    paddingHorizontal: 12,
   },
   emptyContainer: {
     flex: 1,

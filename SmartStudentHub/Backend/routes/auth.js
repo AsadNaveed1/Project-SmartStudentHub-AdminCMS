@@ -157,4 +157,25 @@ router.post("/signup", async (req, res) => {
     res.status(500).send("Server error");
   }
 });
+
+// Consolidated /me route
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+      .select("-password")
+      .populate("joinedGroups", "groupId courseName description")
+      .populate("registeredEvents", "eventId title description date time location");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error("GET /me Error:", error.message);
+    res.status(500).send("Server error");
+  }
+});
+
+
 module.exports = router;

@@ -1,3 +1,5 @@
+// src/frontend/screens/EventDetails.jsx
+
 import React, { useContext } from "react";
 import {
   View,
@@ -22,18 +24,18 @@ export default function EventDetails({ route, navigation }) {
   const theme = useTheme();
   const { registerEvent, withdrawEvent, isRegistered } = useContext(RegisteredEventsContext); 
 
-  const registered = isRegistered(event.id);
+  // Use event.eventId consistently
+  const registered = isRegistered(event.eventId); 
 
   const handleRegister = () => {
     if (!registered) {
-      registerEvent(event);
+      registerEvent(event.eventId); // Pass eventId instead of entire event
       Alert.alert('Registered', `You have registered for "${event.title}"`);
     } else {
-      withdrawEvent(event.id);
+      withdrawEvent(event.eventId); // Use eventId consistently
       Alert.alert('Withdrawn', `You have withdrawn from "${event.title}"`);
     }
   };
-
 
   const handleAddToCalendar = async () => {
     if (Platform.OS === "web") {
@@ -60,6 +62,7 @@ export default function EventDetails({ route, navigation }) {
       const defaultCalendar =
         calendars.find((cal) => cal.source.isLocalAccount) || calendars[0];
 
+      // Parse event time
       const [startTimeStr, endTimeStr] = event.time.split(" - ");
       const startTime = moment(
         `${event.date} ${startTimeStr}`,
@@ -88,7 +91,6 @@ export default function EventDetails({ route, navigation }) {
       );
     }
   };
-
   
   const handleShare = async () => {
     try {
@@ -140,7 +142,13 @@ export default function EventDetails({ route, navigation }) {
         {/* Container for Image and Back Button */}
         <View style={styles.imageContainer}>
           {/* Event Image */}
-          <Image source={event.image} style={styles.image} />
+          {event.image ? (
+            <Image source={{ uri: event.image }} style={styles.image} />
+          ) : (
+            <View style={[styles.image, styles.placeholderImage]}>
+              <Text style={styles.placeholderText}>No Image</Text>
+            </View>
+          )}
 
           {/* Custom Back Button */}
           <TouchableOpacity style={styles.backButton} onPress={handleBack}>
@@ -173,7 +181,7 @@ export default function EventDetails({ route, navigation }) {
                     { color: theme.colors.onSurfaceVariant },
                   ]}
                 >
-                  {event.organization}
+                  {event.organization && event.organization.name ? event.organization.name : 'N/A'}
                 </Text>
               </View>
 
@@ -340,6 +348,15 @@ const styles = StyleSheet.create({
     height: 250,
     backgroundColor: "#ccc",
   },
+  placeholderImage: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+  },
+  placeholderText: {
+    color: '#888',
+    fontSize: 16,
+  },
   backButton: {
     position: "absolute",
     top: 40, 
@@ -420,5 +437,7 @@ const styles = StyleSheet.create({
   withdrawButton: {
     backgroundColor: '#ffb84d', 
   },
-
+  registerButtonStyle: {
+    backgroundColor: '#28a745',
+  },
 });

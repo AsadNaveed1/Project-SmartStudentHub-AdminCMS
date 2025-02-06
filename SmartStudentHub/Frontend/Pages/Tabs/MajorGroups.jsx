@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { useTheme, Menu } from 'react-native-paper';
 import { GroupsContext } from '../../context/GroupsContext';
@@ -17,7 +18,15 @@ import { SectionList } from 'react-native';
 
 export default function MajorGroups() {
   const theme = useTheme();
-  const { groups, joinedGroups, isGroupJoined, joinGroup, leaveGroup } = useContext(GroupsContext);
+  const {
+    groups,
+    joinedGroups,
+    isGroupJoined,
+    joinGroup,
+    leaveGroup,
+    isLoading,
+    error,
+  } = useContext(GroupsContext);
 
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -46,24 +55,25 @@ export default function MajorGroups() {
     'China: Culture, State and Society',
   ];
 
-  const others = [
-    'General Study Group',
-    'Sports & Recreation',
-    'Cultural Exchange',
-  ];
+  const others = ['General Study Group', 'Sports & Recreation', 'Cultural Exchange'];
 
   /**
    * Compute Available Groups (not joined)
    */
   const availableGroups = useMemo(() => {
-    return groups.filter(group => !isGroupJoined(group.id));
+    return groups.filter((group) => !isGroupJoined(group.groupId));
   }, [groups, isGroupJoined]);
 
   /**
    * Determine if any search or filter is active
    */
   const isSearching = useMemo(() => {
-    return searchQuery.trim() !== '' || departmentFilter !== 'All' || commonCoreFilter !== 'All' || otherFilter !== 'All';
+    return (
+      searchQuery.trim() !== '' ||
+      departmentFilter !== 'All' ||
+      commonCoreFilter !== 'All' ||
+      otherFilter !== 'All'
+    );
   }, [searchQuery, departmentFilter, commonCoreFilter, otherFilter]);
 
   /**
@@ -72,7 +82,7 @@ export default function MajorGroups() {
   const filteredAvailableGroups = useMemo(() => {
     let filtered = availableGroups;
 
-    if (searchQuery.trim() !== "") {
+    if (searchQuery.trim() !== '') {
       const lowerCaseQuery = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (group) =>
@@ -81,17 +91,18 @@ export default function MajorGroups() {
       );
     }
 
-    if (departmentFilter !== "All") {
-      filtered = filtered.filter(group => group.department === departmentFilter);
+    if (departmentFilter !== 'All') {
+      filtered = filtered.filter((group) => group.department === departmentFilter);
     }
 
-    if (commonCoreFilter !== "All") {
-      filtered = filtered.filter(group => group.commonCore === commonCoreFilter);
+    if (commonCoreFilter !== 'All') {
+      filtered = filtered.filter((group) => group.commonCore === commonCoreFilter);
     }
 
-    if (otherFilter !== "All") {
-      
-      filtered = filtered.filter(group => group.department === null && group.commonCore === null);
+    if (otherFilter !== 'All') {
+      filtered = filtered.filter(
+        (group) => !group.department && !group.commonCore
+      );
     }
 
     return filtered;
@@ -103,7 +114,7 @@ export default function MajorGroups() {
   const filteredJoinedGroups = useMemo(() => {
     let filtered = joinedGroups;
 
-    if (searchQuery.trim() !== "") {
+    if (searchQuery.trim() !== '') {
       const lowerCaseQuery = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (group) =>
@@ -112,17 +123,18 @@ export default function MajorGroups() {
       );
     }
 
-    if (departmentFilter !== "All") {
-      filtered = filtered.filter(group => group.department === departmentFilter);
+    if (departmentFilter !== 'All') {
+      filtered = filtered.filter((group) => group.department === departmentFilter);
     }
 
-    if (commonCoreFilter !== "All") {
-      filtered = filtered.filter(group => group.commonCore === commonCoreFilter);
+    if (commonCoreFilter !== 'All') {
+      filtered = filtered.filter((group) => group.commonCore === commonCoreFilter);
     }
 
-    if (otherFilter !== "All") {
-      
-      filtered = filtered.filter(group => group.department === null && group.commonCore === null);
+    if (otherFilter !== 'All') {
+      filtered = filtered.filter(
+        (group) => !group.department && !group.commonCore
+      );
     }
 
     return filtered;
@@ -159,51 +171,36 @@ export default function MajorGroups() {
           },
         ];
       } else {
-        
         return [];
       }
     }
   }, [isSearching, filteredJoinedGroups, filteredAvailableGroups, joinedGroups]);
 
-
   const handleSearch = (query) => {
     setSearchQuery(query);
-    
   };
-
 
   const handleDepartmentFilter = (selectedFilter) => {
     setDepartmentFilter(selectedFilter);
-    
   };
-
 
   const handleCommonCoreFilter = (selectedFilter) => {
     setCommonCoreFilter(selectedFilter);
-    
   };
-
 
   const handleOtherFilter = (selectedFilter) => {
     setOtherFilter(selectedFilter);
-    
   };
-
 
   const openCreateGroupModal = () => {
     setIsModalVisible(true);
   };
 
-
   const closeCreateGroupModal = () => {
     setIsModalVisible(false);
   };
 
-
-  const renderGroup = ({ item }) => (
-    <GroupCard group={item} />
-  );
-
+  const renderGroup = ({ item }) => <GroupCard group={item} />;
 
   const renderSectionHeader = ({ section: { title } }) => (
     <Text style={[styles.sectionHeader, { color: theme.colors.onSurface }]}>
@@ -211,8 +208,23 @@ export default function MajorGroups() {
     </Text>
   );
 
-
   const renderContent = () => {
+    if (isLoading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      );
+    }
+
+    if (error) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={{ color: 'red', fontSize: 16 }}>{error}</Text>
+        </View>
+      );
+    }
+
     if (sections.length === 0) {
       if (!isSearching && joinedGroups.length === 0) {
         return (
@@ -236,7 +248,7 @@ export default function MajorGroups() {
     return (
       <SectionList
         sections={sections}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.groupId.toString()}
         renderItem={renderGroup}
         renderSectionHeader={renderSectionHeader}
         stickySectionHeadersEnabled={false}
@@ -257,11 +269,13 @@ export default function MajorGroups() {
       ]}
     >
       <View style={styles.searchCreateContainer}>
-
         <View
           style={[
             styles.searchBarContainer,
-            { backgroundColor: theme.colors.surface, borderColor: theme.colors.onSurfaceVariant },
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.onSurfaceVariant,
+            },
           ]}
         >
           <TextInput
@@ -275,7 +289,7 @@ export default function MajorGroups() {
         </View>
 
         <TouchableOpacity style={styles.createButton} onPress={openCreateGroupModal}>
-          <Icon name="plus-circle" size={35} color={theme.colors.primary} /> 
+          <Icon name="plus-circle" size={35} color={theme.colors.primary} />
         </TouchableOpacity>
       </View>
 
@@ -291,6 +305,7 @@ export default function MajorGroups() {
         ]}
         contentContainerStyle={{ marginBottom: 8 }}
       >
+        {/* Department Filter */}
         <Menu
           visible={departmentMenuVisible}
           onDismiss={() => setDepartmentMenuVisible(false)}
@@ -304,8 +319,7 @@ export default function MajorGroups() {
             >
               <Text
                 style={{
-                  color: departmentFilter !== 'All' ? '#fff' : theme.colors.Surface,
-                  // fontSize: 16, 
+                  color: departmentFilter !== 'All' ? '#fff' : theme.colors.onSurface,
                   marginRight: 6,
                 }}
               >
@@ -313,8 +327,8 @@ export default function MajorGroups() {
               </Text>
               <Icon
                 name="caret-down"
-                size={16} 
-                color={departmentFilter !== 'All' ? '#fff' : theme.colors.Surface}
+                size={16}
+                color={departmentFilter !== 'All' ? '#fff' : theme.colors.onSurface}
               />
             </TouchableOpacity>
           }
@@ -338,6 +352,7 @@ export default function MajorGroups() {
           ))}
         </Menu>
 
+        {/* Common Core Filter */}
         <Menu
           visible={commonCoreMenuVisible}
           onDismiss={() => setCommonCoreMenuVisible(false)}
@@ -351,8 +366,7 @@ export default function MajorGroups() {
             >
               <Text
                 style={{
-                  color: commonCoreFilter !== 'All' ? '#fff' : theme.colors.Surface,
-                  // fontSize: 16, 
+                  color: commonCoreFilter !== 'All' ? '#fff' : theme.colors.onSurface,
                   marginRight: 6,
                 }}
               >
@@ -360,8 +374,8 @@ export default function MajorGroups() {
               </Text>
               <Icon
                 name="caret-down"
-                size={16} 
-                color={commonCoreFilter !== 'All' ? '#fff' : theme.colors.Surface}
+                size={16}
+                color={commonCoreFilter !== 'All' ? '#fff' : theme.colors.onSurface}
               />
             </TouchableOpacity>
           }
@@ -385,6 +399,7 @@ export default function MajorGroups() {
           ))}
         </Menu>
 
+        {/* Other Filter */}
         <Menu
           visible={otherMenuVisible}
           onDismiss={() => setOtherMenuVisible(false)}
@@ -398,8 +413,7 @@ export default function MajorGroups() {
             >
               <Text
                 style={{
-                  color: otherFilter !== 'All' ? '#fff' : theme.colors.Surface,
-                  // fontSize: 16,
+                  color: otherFilter !== 'All' ? '#fff' : theme.colors.onSurface,
                   marginRight: 6,
                 }}
               >
@@ -407,8 +421,8 @@ export default function MajorGroups() {
               </Text>
               <Icon
                 name="caret-down"
-                size={16} 
-                color={otherFilter !== 'All' ? '#fff' : theme.colors.Surface}
+                size={16}
+                color={otherFilter !== 'All' ? '#fff' : theme.colors.onSurface}
               />
             </TouchableOpacity>
           }
@@ -443,7 +457,7 @@ export default function MajorGroups() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    height: "100%",
+    height: '100%',
     padding: 16,
     marginBottom: -50,
   },
@@ -453,27 +467,27 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   searchBarContainer: {
-    flex: 1, 
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 0.5,
     borderColor: '#ccc',
     borderRadius: 16,
     padding: 12,
-    marginRight: 12, 
+    marginRight: 12,
   },
   searchBar: {
     flex: 1,
-    fontSize: 16, 
+    fontSize: 16,
   },
   filterContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     paddingHorizontal: 5,
     flexGrow: 0,
     marginBottom: 10,
   },
   filterButton: {
-    height: 40, 
+    height: 40,
     paddingHorizontal: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -483,11 +497,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   sectionListContent: {
-    paddingBottom: 100, 
+    paddingBottom: 100,
   },
   sectionHeader: {
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: '600',
     marginTop: 16,
     marginBottom: 8,
     paddingHorizontal: 12,
@@ -501,5 +515,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
-
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
