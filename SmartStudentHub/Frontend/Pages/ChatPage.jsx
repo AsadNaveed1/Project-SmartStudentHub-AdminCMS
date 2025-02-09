@@ -1,4 +1,4 @@
-
+// ChatPage.jsx
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
@@ -16,55 +16,99 @@ import {
 import { useTheme, Dialog, Portal, Button } from "react-native-paper";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { SafeAreaView } from "react-native-safe-area-context";
+import io from 'socket.io-client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from '../src/backend/api';
 
 export default function ChatPage({ route }) {
   const theme = useTheme();
   const { group } = route.params; 
 
-  const [messages, setMessages] = useState([
-    
-    { id: "1", text: "Welcome to the group!", sender: "Admin" },
-    { id: "2", text: "Glad to be here!", sender: "User1" },
-    
-  ]);
-
+  const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
-
   const flatListRef = useRef(null);
+  const socketRef = useRef(null);
+
+  useEffect(() => {
+    const initializeSocket = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const socket = io('http://YOUR_BACKEND_URL:5002', {
+          auth: {
+            token,
+          },
+        });
+
+        socketRef.current = socket;
+
+        socket.on('connect', () => {
+          console.log('Connected to Socket.IO server');
+          socket.emit('joinGroup', group._id.toString());
+        });
+
+        socket.on('newMessage', (message) => {
+          setMessages((prevMessages) => [...prevMessages, message]);
+          scrollToBottom();
+        });
+
+        socket.on('disconnect', () => {
+          console.log('Disconnected from Socket.IO server');
+        });
+
+        // Fetch existing messages
+        const res = await axios.get(`/messages/${group._id}`);
+        setMessages(res.data);
+        scrollToBottom();
+
+      } catch (error) {
+        console.error('Socket.IO connection error:', error.message);
+      }
+    };
+
+    initializeSocket();
+
+    // Clean up on unmount
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, [group._id]);
 
   const handleSend = useCallback(() => {
     if (inputText.trim() === "") return;
 
-    const newMessage = {
-      id: (messages.length + 1).toString(),
-      text: inputText.trim(),
-      sender: "You",
+    const messageData = {
+      groupId: group._id.toString(),
+      message: inputText.trim(),
     };
 
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
+    // Emit message via Socket.IO
+    socketRef.current.emit('sendMessage', messageData);
+
     setInputText("");
-  }, [inputText, messages.length]);
+  }, [inputText, group._id]);
 
   const renderItem = ({ item }) => (
     <View
       style={[
         styles.messageContainer,
-        item.sender === "You" ? styles.yourMessage : styles.otherMessage,
+        item.sender.username === "You" ? styles.yourMessage : styles.otherMessage,
       ]}
     >
-      {item.sender !== "You" && (
+      {item.sender.username !== "You" && (
         <View style={styles.avatarPlaceholder}>
           <Text style={styles.avatarText}>
-            {item.sender.charAt(0).toUpperCase()}
+            {item.sender.fullName.charAt(0).toUpperCase()}
           </Text>
         </View>
       )}
       <View style={styles.messageBubble}>
-        <Text style={[styles.messageText, { color: theme.colors.Surface }]}>
+        <Text style={[styles.messageText, { color: theme.colors.surface }]}>
           {item.text}
         </Text>
       </View>
-      {item.sender === "You" && (
+      {item.sender.username === "You" && (
         <View style={styles.avatarPlaceholder}>
           <Text style={styles.avatarText}>Y</Text>
         </View>
@@ -72,12 +116,11 @@ export default function ChatPage({ route }) {
     </View>
   );
 
-  
-  useEffect(() => {
+  const scrollToBottom = () => {
     if (flatListRef.current && messages.length > 0) {
-      flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+      flatListRef.current.scrollToEnd({ animated: true });
     }
-  }, [messages]);
+  };
 
   return (
     <SafeAreaView
@@ -93,17 +136,15 @@ export default function ChatPage({ route }) {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 45 : 90}
       >
-
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.inner}>
-
             <FlatList
               ref={flatListRef}
               data={messages}
-              keyExtractor={(item) => item.id}
+              keyExtractor={(item) => item._id}
               renderItem={renderItem}
               contentContainerStyle={styles.messagesList}
               showsVerticalScrollIndicator={false}
-            
             />
 
             <View
@@ -115,7 +156,7 @@ export default function ChatPage({ route }) {
               <TextInput
                 style={[styles.input, { color: theme.colors.color }]}
                 placeholder="Type a message"
-                placeholderTextColor={"#000000"}
+                placeholderTextColor={theme.colors.placeholder || "#000000"}
                 value={inputText}
                 onChangeText={setInputText}
                 multiline
@@ -125,7 +166,7 @@ export default function ChatPage({ route }) {
               </TouchableOpacity>
             </View>
           </View>
-
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -134,7 +175,6 @@ export default function ChatPage({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: -55,
   },
   keyboardAvoiding: {
     flex: 1,
@@ -142,10 +182,6 @@ const styles = StyleSheet.create({
   inner: {
     flex: 1,
     justifyContent: "space-between",
-  },
-  groupName: {
-    fontSize: 20,
-    fontWeight: "bold",
   },
   messagesList: {
     padding: 16,

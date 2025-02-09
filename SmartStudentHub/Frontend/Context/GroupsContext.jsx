@@ -1,12 +1,12 @@
-// src/frontend/context/GroupsContext.jsx
-
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../src/backend/api'; // Adjust the path as necessary
+import api from '../src/backend/api';
+import { AuthContext } from './AuthContext'; // Import AuthContext
 
 export const GroupsContext = createContext();
 
 export const GroupsProvider = ({ children }) => {
+  const { authState } = useContext(AuthContext); // Consume AuthContext
   const [groups, setGroups] = useState([]);
   const [joinedGroups, setJoinedGroups] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,7 +30,7 @@ export const GroupsProvider = ({ children }) => {
   const fetchJoinedGroups = async () => {
     setIsLoading(true);
     try {
-      const response = await api.get('/auth/me'); // Assuming you have an endpoint to get user details
+      const response = await api.get('/auth/me');
       const user = response.data;
       setJoinedGroups(user.joinedGroups);
     } catch (err) {
@@ -42,9 +42,11 @@ export const GroupsProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchGroups();
-    fetchJoinedGroups();
-  }, []);
+    if (!authState.isLoading && authState.token) {
+      fetchGroups();
+      fetchJoinedGroups();
+    }
+  }, [authState.isLoading, authState.token]);
 
   // Join a group
   const joinGroup = async (groupId) => {
