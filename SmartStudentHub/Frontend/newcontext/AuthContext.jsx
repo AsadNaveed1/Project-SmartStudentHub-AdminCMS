@@ -1,14 +1,30 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import api from '../src/backend/api';
 export const AuthContext = createContext();
+
 export const AuthProvider = ({ children }) => {
   const [authState, setAuthState] = useState({
     token: null,
     user: null,
     isLoading: true,
   });
+  const logout = async () => {
+    try {
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('user');
+      setAuthState({
+        token: null,
+        user: null,
+        isLoading: false,
+      });
+      Alert.alert('Session Expired', 'Your session has expired. Please log in again.');
+    } catch (error) {
+      console.error('Logout error:', error);
+      Alert.alert('Logout Failed', 'An error occurred during logout.');
+    }
+  };
   useEffect(() => {
     const loadAuthState = async () => {
       try {
@@ -38,9 +54,30 @@ export const AuthProvider = ({ children }) => {
     };
     loadAuthState();
   }, []);
+  useEffect(() => {
+    const responseInterceptor = api.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        if (error.response) {
+          const { status, data } = error.response;
+          if (status === 401) {
+            if (data.message === 'Token expired, please login again') {
+              await logout();
+            } else {
+              Alert.alert('Authentication Error', data.message || 'An error occurred.');
+            }
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+    return () => {
+      api.interceptors.response.eject(responseInterceptor);
+    };
+  }, []);
   const login = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:5002/api/auth/login', {
+      const response = await api.post('/auth/login', {
         email,
         password,
       });
@@ -59,7 +96,7 @@ export const AuthProvider = ({ children }) => {
   };
   const signup = async (userData) => {
     try {
-      const response = await axios.post('http://localhost:5002/api/auth/signup', userData);
+      const response = await api.post('/auth/signup', userData);
       const { token, user } = response.data;
       await AsyncStorage.setItem('token', token);
       await AsyncStorage.setItem('user', JSON.stringify(user));
@@ -72,20 +109,6 @@ export const AuthProvider = ({ children }) => {
       console.error('Signup error:', error.response?.data?.message || error.message);
       Alert.alert('Signup Failed', error.response?.data?.message || 'An error occurred during signup.');
       throw error;
-    }
-  };
-  const logout = async () => {
-    try {
-      await AsyncStorage.removeItem('token');
-      await AsyncStorage.removeItem('user');
-      setAuthState({
-        token: null,
-        user: null,
-        isLoading: false,
-      });
-    } catch (error) {
-      console.error('Logout error:', error);
-      Alert.alert('Logout Failed', 'An error occurred during logout.');
     }
   };
   const updateUser = async (data) => {

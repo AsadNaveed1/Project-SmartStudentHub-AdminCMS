@@ -128,7 +128,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
-// Register for an event
+
 router.post('/:id/register', authMiddleware, async (req, res) => {
   try {
     const event = await Event.findOne({ eventId: req.params.id });

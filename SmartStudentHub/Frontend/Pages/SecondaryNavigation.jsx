@@ -1,24 +1,17 @@
-// frontend/Pages/SecondaryNavigation.jsx
-
 import React, { useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-
 import MainNavigation from './Tabs/MainNavigation';
 import EventDetails from './EventDetails';
 import OrganizationProfile from './OrganizationProfile';
 import ChatPage from './ChatPage';
 import LoginScreen from './LoginScreen'; 
 import SignupScreen from './SignupScreen';
-
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../newcontext/AuthContext';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
-
 const Stack = createStackNavigator();
-
 export default function SecondaryNavigation() {
   const { authState } = useContext(AuthContext);
-
   if (authState.isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -26,12 +19,10 @@ export default function SecondaryNavigation() {
       </View>
     );
   }
-
   return (
     <NavigationContainer>
       <Stack.Navigator>
         {authState.token == null ? (
-          // No token found, user isn't signed in
           <>
             <Stack.Screen
               name="Login"
@@ -45,7 +36,6 @@ export default function SecondaryNavigation() {
             />
           </>
         ) : (
-          // User is signed in
           <>
             <Stack.Screen
               name="Main"
@@ -83,7 +73,6 @@ export default function SecondaryNavigation() {
     </NavigationContainer>
   );
 }
-
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,

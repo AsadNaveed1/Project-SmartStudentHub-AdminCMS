@@ -14,9 +14,9 @@ import {
   Snackbar,
 } from 'react-native-paper';
 import { SafeAreaView } from "react-native-safe-area-context";
-import { RegisteredEventsContext } from '../../context/RegisteredEventsContext';
-import { GroupsContext } from '../../context/GroupsContext';
-import { AuthContext } from '../../context/AuthContext';
+import { RegisteredEventsContext } from '../../newcontext/RegisteredEventsContext';
+import { GroupsContext } from '../../newcontext/GroupsContext';
+import { AuthContext } from '../../newcontext/AuthContext';
 import axios from 'axios';
 const Profile = () => {
   const theme = useTheme();

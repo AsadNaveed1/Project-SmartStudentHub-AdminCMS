@@ -1,30 +1,22 @@
-// frontend/Pages/Auth/LoginScreen.jsx
-
 import React, { useState, useContext } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, Text as RNText } from 'react-native';
 import { TextInput, Button, Text, useTheme, TouchableRipple } from 'react-native-paper';
-import { AuthContext } from '../context/AuthContext';
-import { useNavigation } from '@react-navigation/native'; // Import useNavigation
-
+import { AuthContext } from '../newcontext/AuthContext';
+import { useNavigation } from '@react-navigation/native';
 const LoginScreen = () => {
   const theme = useTheme();
   const { login } = useContext(AuthContext);
-  const navigation = useNavigation(); // Initialize navigation
-
+  const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
   const [secureTextEntry, setSecureTextEntry] = useState(true);
-
   const handleLogin = () => {
-    // Basic validation
     if (!email || !password) {
       alert('Please enter both email and password');
       return;
     }
     login(email, password);
   };
-
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView 
@@ -34,7 +26,6 @@ const LoginScreen = () => {
         <View style={styles.innerContainer}>
           <Text style={styles.title}>Welcome Back!</Text>
           <Text style={styles.subtitle}>Please login to continue</Text>
-
           <TextInput
             label="Email"
             value={email}
@@ -45,7 +36,6 @@ const LoginScreen = () => {
             autoCapitalize="none"
             autoCompleteType="email"
           />
-
           <TextInput
             label="Password"
             value={password}
@@ -60,7 +50,6 @@ const LoginScreen = () => {
               />
             }
           />
-
           <Button 
             mode="contained" 
             onPress={handleLogin} 
@@ -68,8 +57,7 @@ const LoginScreen = () => {
           >
             Login
           </Button>
-
-          {/* Sign Up Text/Button */}
+          {}
           <View style={styles.signupContainer}>
             <RNText>Don't have an account?</RNText>
             <TouchableRipple onPress={() => navigation.navigate('Signup')}>
@@ -81,9 +69,7 @@ const LoginScreen = () => {
     </TouchableWithoutFeedback>
   );
 };
-
 export default LoginScreen;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

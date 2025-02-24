@@ -1,5 +1,3 @@
-// src/frontend/screens/EventManagement.jsx
-
 import React, { useState, useEffect, useContext } from "react";
 import {
   View,
@@ -16,28 +14,22 @@ import OrganizationCard from "../../Components/OrganizationCard";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/FontAwesome";
 import moment from "moment";
-import { RegisteredEventsContext } from "../../context/RegisteredEventsContext";
-import { OrganizationsContext } from "../../context/OrganizationsContext";
-import { GroupsContext } from "../../context/GroupsContext";
-
+import { RegisteredEventsContext } from "../../newcontext/RegisteredEventsContext";
+import { OrganizationsContext } from "../../newcontext/OrganizationsContext";
+import { GroupsContext } from "../../newcontext/GroupsContext";
 export default function EventManagement({ navigation }) {
   const theme = useTheme();
   const { events } = useContext(RegisteredEventsContext);
   const { organizations, isLoading: orgLoading } = useContext(OrganizationsContext);
   const { groups } = useContext(GroupsContext);
-  
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredEvents, setFilteredEvents] = useState(events);
   const [filteredOrganizations, setFilteredOrganizations] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [timeFilter, setTimeFilter] = useState("All");
-
-  // State for Menus
   const [allMenuVisible, setAllMenuVisible] = useState(false);
   const [societyMenuVisible, setSocietyMenuVisible] = useState(false);
   const [externalMenuVisible, setExternalMenuVisible] = useState(false);
-
-  // Define the societies and external event types
   const societies = [
     "Artificial Intelligence Society",
     "Arts Association",
@@ -46,15 +38,11 @@ export default function EventManagement({ navigation }) {
     "English Debate Society",
     "Music Society",
   ];
-
   const externalEvents = ["Volunteer", "Community Events", "Networking"];
-
   const timeFilterOptions = ["All", "This Week", "Next Week", "This Month", "Next Month"];
-
   useEffect(() => {
     applyFilters(searchQuery, categoryFilter, timeFilter);
   }, [events, organizations, searchQuery, categoryFilter, timeFilter]);
-
   useEffect(() => {
     if (searchQuery.trim() !== "") {
       const lowerCaseQuery = searchQuery.toLowerCase();
@@ -63,21 +51,17 @@ export default function EventManagement({ navigation }) {
       );
       setFilteredOrganizations(matchedOrgs);
     } else {
-      setFilteredOrganizations([]); // Set to empty array when no search query
+      setFilteredOrganizations([]);
     }
   }, [searchQuery, organizations]);
-
   const handleSearch = (query) => {
     setSearchQuery(query);
-    // No need to call applyFilters here since useEffect handles it
   };
-
   const handleCategoryFilter = (selectedFilter) => {
     if (
       (societies.includes(selectedFilter) || externalEvents.includes(selectedFilter)) &&
       categoryFilter === selectedFilter
     ) {
-      // Reset to broader category
       if (societies.includes(selectedFilter)) {
         setCategoryFilter("Society Event");
         applyFilters(searchQuery, "Society Event", timeFilter);
@@ -90,16 +74,12 @@ export default function EventManagement({ navigation }) {
       applyFilters(searchQuery, selectedFilter, timeFilter);
     }
   };
-
   const handleTimeFilter = (selectedTime) => {
     setTimeFilter(selectedTime);
     applyFilters(searchQuery, categoryFilter, selectedTime);
   };
-
   const applyFilters = (query, selectedCategory, selectedTime) => {
     let filtered = events;
-
-    // Search Filter
     if (query.trim() !== "") {
       const lowerCaseQuery = query.toLowerCase();
       filtered = filtered.filter(
@@ -108,8 +88,6 @@ export default function EventManagement({ navigation }) {
           (event.organization && event.organization.name.toLowerCase().includes(lowerCaseQuery))
       );
     }
-
-    // Category Filter
     if (selectedCategory !== "All") {
       if (societies.includes(selectedCategory)) {
         filtered = filtered.filter(
@@ -134,8 +112,6 @@ export default function EventManagement({ navigation }) {
         filtered = filtered.filter((event) => event.type === "University Event");
       }
     }
-
-    // Time Filter
     if (selectedTime !== "All") {
       const now = moment();
       if (selectedTime === "This Week") {
@@ -168,17 +144,14 @@ export default function EventManagement({ navigation }) {
         });
       }
     }
-
     setFilteredEvents(filtered);
   };
-
   const renderEvent = ({ item }) => (
     <EventsCard
       event={item}
       onPress={() => navigation.navigate("EventDetails", { event: item })}
     />
   );
-
   const renderOrganization = ({ item }) => (
     <OrganizationCard
       organization={item}
@@ -187,11 +160,8 @@ export default function EventManagement({ navigation }) {
       }
     />
   );
-
-  // Function to generate sections for SectionList
   const getSections = () => {
     const sections = [];
-
     if (filteredOrganizations.length > 0) {
       sections.push({
         title: "Organizations",
@@ -199,7 +169,6 @@ export default function EventManagement({ navigation }) {
         type: "organization",
       });
     }
-
     if (filteredEvents.length > 0) {
       sections.push({
         title: "Events",
@@ -207,18 +176,14 @@ export default function EventManagement({ navigation }) {
         type: "event",
       });
     }
-
     return sections;
   };
-
   const sections = getSections();
-
   const renderSectionHeader = ({ section }) => (
     <Text style={[styles.sectionHeader, { color: theme.colors.onSurface }]}>
       {section.title}
     </Text>
   );
-
   const renderItem = ({ item, section }) => {
     if (section.type === "organization") {
       return renderOrganization({ item });
@@ -227,7 +192,6 @@ export default function EventManagement({ navigation }) {
     }
     return null;
   };
-
   return (
     <SafeAreaView
       style={[
@@ -238,7 +202,7 @@ export default function EventManagement({ navigation }) {
         },
       ]}
     >
-      {/* Search Bar */}
+      {}
       <View
         style={[
           styles.searchBarContainer,
@@ -262,8 +226,7 @@ export default function EventManagement({ navigation }) {
           style={styles.searchIcon}
         />
       </View>
-
-      {/* Filter Buttons */}
+      {}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -276,7 +239,7 @@ export default function EventManagement({ navigation }) {
         ]}
         contentContainerStyle={{ marginBottom: 15 }}
       >
-        {/* Time Filter Button with Dropdown */}
+        {}
         <Menu
           visible={allMenuVisible}
           onDismiss={() => setAllMenuVisible(false)}
@@ -345,10 +308,8 @@ export default function EventManagement({ navigation }) {
             )
           )}
         </Menu>
-
-        {/* Category Filter Buttons */}
-
-        {/* All Category Filter Button */}
+        {}
+        {}
         <TouchableOpacity
           key="AllCategory"
           style={[
@@ -368,8 +329,7 @@ export default function EventManagement({ navigation }) {
             All Categories
           </Text>
         </TouchableOpacity>
-
-        {/* University Event Filter Button */}
+        {}
         <TouchableOpacity
           key="University Event"
           style={[
@@ -391,8 +351,7 @@ export default function EventManagement({ navigation }) {
             University Event
           </Text>
         </TouchableOpacity>
-
-        {/* Society Event with Dropdown */}
+        {}
         <Menu
           visible={societyMenuVisible}
           onDismiss={() => setSocietyMenuVisible(false)}
@@ -409,7 +368,6 @@ export default function EventManagement({ navigation }) {
               <TouchableOpacity
                 style={styles.filterLabel}
                 onPress={() => {
-                  // Toggle between specific society and general Society Event
                   if (societies.includes(categoryFilter)) {
                     handleCategoryFilter("Society Event");
                   } else {
@@ -470,8 +428,7 @@ export default function EventManagement({ navigation }) {
             />
           ))}
         </Menu>
-
-        {/* External Event with Dropdown */}
+        {}
         <Menu
           visible={externalMenuVisible}
           onDismiss={() => setExternalMenuVisible(false)}
@@ -546,8 +503,7 @@ export default function EventManagement({ navigation }) {
           ))}
         </Menu>
       </ScrollView>
-
-      {/* SectionList for Organizations and Events */}
+      {}
       <SectionList
         sections={sections}
         keyExtractor={(item) => (item.eventId ? item.eventId.toString() : item.organizationId)}
@@ -566,7 +522,6 @@ export default function EventManagement({ navigation }) {
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

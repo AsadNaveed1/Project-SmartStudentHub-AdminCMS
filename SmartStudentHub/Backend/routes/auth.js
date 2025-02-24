@@ -158,7 +158,7 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// Consolidated /me route
+
 router.get("/me", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id)

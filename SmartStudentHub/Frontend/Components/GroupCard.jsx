@@ -1,31 +1,23 @@
-// src/frontend/Components/GroupCard.jsx
-
 import React, { useContext, useCallback, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useTheme, Menu } from 'react-native-paper';
-import { GroupsContext } from '../context/GroupsContext';
+import { GroupsContext } from '../newcontext/GroupsContext';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
 const GroupCard = ({ group }) => {
   const theme = useTheme();
   const { isGroupJoined, joinGroup, leaveGroup } = useContext(GroupsContext);
   const navigation = useNavigation();
-
   const [visible, setVisible] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
-
   const joined = isGroupJoined(group.groupId);
-
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
-
   const handlePress = useCallback(() => {
     if (joined) {
       navigation.navigate('ChatPage', { group });
     }
   }, [joined, navigation, group]);
-
   const handleButtonPress = useCallback(async () => {
     setActionLoading(true);
     try {
@@ -43,7 +35,6 @@ const GroupCard = ({ group }) => {
       closeMenu();
     }
   }, [joined, leaveGroup, joinGroup, group.groupId]);
-
   return (
     <View
       style={[
@@ -81,7 +72,6 @@ const GroupCard = ({ group }) => {
           Department: {group.department || 'N/A'}
         </Text>
       </TouchableOpacity>
-
       {joined ? (
         <Menu
           visible={visible}
@@ -131,9 +121,7 @@ const GroupCard = ({ group }) => {
     </View>
   );
 };
-
 export default React.memo(GroupCard);
-
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',

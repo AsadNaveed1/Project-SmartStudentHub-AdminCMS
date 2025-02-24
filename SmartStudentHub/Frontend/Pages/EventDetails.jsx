@@ -1,5 +1,3 @@
-// src/frontend/screens/EventDetails.jsx
-
 import React, { useContext } from "react";
 import {
   View,
@@ -17,26 +15,21 @@ import * as Sharing from "expo-sharing";
 import * as Calendar from "expo-calendar";
 import MaterialIcon from "react-native-vector-icons/MaterialIcons"; 
 import { SafeAreaView } from "react-native-safe-area-context";
-import { RegisteredEventsContext } from '../context/RegisteredEventsContext'; 
-
+import { RegisteredEventsContext } from '../newcontext/RegisteredEventsContext'; 
 export default function EventDetails({ route, navigation }) {
   const { event } = route.params;
   const theme = useTheme();
-  const { registerEvent, withdrawEvent, isRegistered } = useContext(RegisteredEventsContext); 
-
-  // Use event.eventId consistently
+  const { registerEvent, withdrawEvent, isRegistered } = useContext(RegisteredEventsContext);
   const registered = isRegistered(event.eventId); 
-
   const handleRegister = () => {
     if (!registered) {
-      registerEvent(event.eventId); // Pass eventId instead of entire event
+      registerEvent(event.eventId);
       Alert.alert('Registered', `You have registered for "${event.title}"`);
     } else {
-      withdrawEvent(event.eventId); // Use eventId consistently
+      withdrawEvent(event.eventId);
       Alert.alert('Withdrawn', `You have withdrawn from "${event.title}"`);
     }
   };
-
   const handleAddToCalendar = async () => {
     if (Platform.OS === "web") {
       Alert.alert(
@@ -45,7 +38,6 @@ export default function EventDetails({ route, navigation }) {
       );
       return;
     }
-
     try {
       const { status } = await Calendar.requestCalendarPermissionsAsync();
       if (status !== "granted") {
@@ -55,14 +47,11 @@ export default function EventDetails({ route, navigation }) {
         );
         return;
       }
-
       const calendars = await Calendar.getCalendarsAsync(
         Calendar.EntityTypes.EVENT
       );
       const defaultCalendar =
         calendars.find((cal) => cal.source.isLocalAccount) || calendars[0];
-
-      // Parse event time
       const [startTimeStr, endTimeStr] = event.time.split(" - ");
       const startTime = moment(
         `${event.date} ${startTimeStr}`,
@@ -72,7 +61,6 @@ export default function EventDetails({ route, navigation }) {
         `${event.date} ${endTimeStr}`,
         "DD-MM-YYYY hh:mm A"
       ).toDate();
-
       await Calendar.createEventAsync(defaultCalendar.id, {
         title: event.title,
         startDate: startTime,
@@ -81,7 +69,6 @@ export default function EventDetails({ route, navigation }) {
         notes: event.description,
         timeZone: "GMT",
       });
-
       Alert.alert("Success", "Event added to your calendar.");
     } catch (error) {
       console.error(error);
@@ -91,14 +78,12 @@ export default function EventDetails({ route, navigation }) {
       );
     }
   };
-  
   const handleShare = async () => {
     try {
       if (Platform.OS === "web") {
         Alert.alert("Unsupported Platform", "Sharing is not supported on web.");
         return;
       }
-
       if (!(await Sharing.isAvailableAsync())) {
         Alert.alert(
           "Sharing Not Available",
@@ -106,7 +91,6 @@ export default function EventDetails({ route, navigation }) {
         );
         return;
       }
-
       const message = `Check out this event: ${event.title}\n\n${event.description}\n\nDate: ${event.date} at ${event.time}\nLocation: ${event.location}`;
       await Sharing.shareAsync(null, {
         dialogTitle: `Share ${event.title}`,
@@ -119,11 +103,9 @@ export default function EventDetails({ route, navigation }) {
       );
     }
   };
-
   const handleBack = () => {
     navigation.goBack();
   };
-
   return (
     <SafeAreaView
       style={[
@@ -139,9 +121,9 @@ export default function EventDetails({ route, navigation }) {
         style={[styles.container, { backgroundColor: theme.colors.background }]}
         contentContainerStyle={{ paddingBottom: 20 }}
       >
-        {/* Container for Image and Back Button */}
+  
         <View style={styles.imageContainer}>
-          {/* Event Image */}
+      
           {event.image ? (
             <Image source={{ uri: event.image }} style={styles.image} />
           ) : (
@@ -149,25 +131,22 @@ export default function EventDetails({ route, navigation }) {
               <Text style={styles.placeholderText}>No Image</Text>
             </View>
           )}
-
-          {/* Custom Back Button */}
+    
           <TouchableOpacity style={styles.backButton} onPress={handleBack}>
             <MaterialIcon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
-
-        {/* Event Information */}
+       
         <View style={styles.content}>
-          {/* Title */}
+        
           <Text style={[styles.title, { color: theme.colors.onBackground }]}>
             {event.title}
           </Text>
-
-          {/* Two-Column Information Layout */}
+     
           <View style={styles.infoColumns}>
-            {/* Left Column */}
+           
             <View style={styles.column}>
-              {/* Organizer */}
+             
               <View style={styles.infoRow}>
                 <IconButton
                   icon="account-circle"
@@ -184,8 +163,7 @@ export default function EventDetails({ route, navigation }) {
                   {event.organization && event.organization.name ? event.organization.name : 'N/A'}
                 </Text>
               </View>
-
-              {/* Date */}
+              
               <View style={styles.infoRow}>
                 <IconButton
                   icon="calendar"
@@ -203,10 +181,9 @@ export default function EventDetails({ route, navigation }) {
                 </Text>
               </View>
             </View>
-
-            {/* Right Column */}
+      
             <View style={styles.column}>
-              {/* Event Type */}
+          
               <View style={styles.infoRow}>
                 <IconButton
                   icon="tag"
@@ -224,8 +201,7 @@ export default function EventDetails({ route, navigation }) {
                   {event.subtype ? ` - ${event.subtype}` : ''}
                 </Text>
               </View>
-
-              {/* Time */}
+            
               <View style={styles.infoRow}>
                 <IconButton
                   icon="clock-outline"
@@ -244,8 +220,7 @@ export default function EventDetails({ route, navigation }) {
               </View>
             </View>
           </View>
-
-          {/* Location */}
+        
           <View style={styles.locationRow}>
             <IconButton
               icon="map-marker"
@@ -262,8 +237,7 @@ export default function EventDetails({ route, navigation }) {
               {event.location}
             </Text>
           </View>
-
-          {/* Description */}
+        
           <Text
             style={[styles.sectionTitle, { color: theme.colors.onBackground }]}
           >
@@ -272,8 +246,7 @@ export default function EventDetails({ route, navigation }) {
           <Text style={[styles.description, { color: theme.colors.onSurface }]}>
             {event.description}
           </Text>
-
-          {/* Additional Details (if any) */}
+       
           {event.otherDetails && (
             <>
               <Text
@@ -291,10 +264,9 @@ export default function EventDetails({ route, navigation }) {
               </Text>
             </>
           )}
-
-          {/* Action Buttons */}
+        
           <View style={styles.buttonsContainer}>
-            {/* Register / Withdraw Button */}
+       
             <Button
               mode="contained"
               onPress={handleRegister}
@@ -307,8 +279,7 @@ export default function EventDetails({ route, navigation }) {
             >
               {registered ? 'Withdraw' : 'Register'}
             </Button>
-
-            {/* Add to Calendar Icon Button */}
+          
             <IconButton
               icon="calendar-plus"
               size={20}
@@ -318,8 +289,7 @@ export default function EventDetails({ route, navigation }) {
               padding={12}
               accessibilityLabel="Add to Calendar"
             />
-
-            {/* Share Icon Button */}
+         
             <IconButton
               icon="share-variant"
               size={20}
@@ -335,7 +305,6 @@ export default function EventDetails({ route, navigation }) {
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

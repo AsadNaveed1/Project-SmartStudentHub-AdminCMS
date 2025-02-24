@@ -1,31 +1,23 @@
-// src/frontend/components/EventsCard.jsx
-
 import React, { useContext } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useTheme } from 'react-native-paper';
-import { RegisteredEventsContext } from '../context/RegisteredEventsContext'; 
-
+import { RegisteredEventsContext } from '../newcontext/RegisteredEventsContext'; 
 export default function EventsCard({ event, onPress }) {
   const theme = useTheme();
   const { registerEvent, withdrawEvent, isRegistered } = useContext(RegisteredEventsContext); 
-
   const handleRegister = () => {
     registerEvent(event.eventId);
   };
-
   const handleWithdraw = () => {
     withdrawEvent(event.eventId);
   };
-
   const registered = isRegistered(event.eventId);
-
   const hasSubtype = event.subtype && event.type;
   const isSocietyEvent =
     hasSubtype &&
     event.type === 'University Event' &&
     event.subtype === 'Society Event';
   const isExternalEvent = hasSubtype && event.type === 'External Event';
-
   return (
     <View
       style={[
@@ -49,9 +41,8 @@ export default function EventsCard({ event, onPress }) {
           <Text style={[styles.title, { color: theme.colors.onSurface }]}>
             {event.title}
           </Text>
-
           <View style={styles.pillsContainer}>
-            {/* Organization Pill */}
+         
             <View style={[styles.pill, styles.organizationPill]}>
               <Text style={styles.pillText}>
                 {event.organization && event.organization.name
@@ -59,8 +50,7 @@ export default function EventsCard({ event, onPress }) {
                   : 'N/A'}
               </Text>
             </View>
-
-            {/* Conditional Pills */}
+     
             {hasSubtype && (
               isSocietyEvent ? (
                 <View style={[styles.pill, styles.societyPill]}>
@@ -73,19 +63,16 @@ export default function EventsCard({ event, onPress }) {
               ) : null
             )}
           </View>
-
           <View style={styles.dateTimeContainer}>
             <Text style={[styles.date, { color: theme.colors.onSurfaceVariant }]}>
               {event.date}
             </Text>
-
             {event.time && (
               <Text style={[styles.time, { color: theme.colors.onSurfaceVariant }]}>
                 {event.time}
               </Text>
             )}
           </View>
-
           {event.location && (
             <View style={styles.locationContainer}>
               <Text style={[styles.locationLabel, { color: theme.colors.onSurfaceVariant }]}>
@@ -102,19 +89,16 @@ export default function EventsCard({ event, onPress }) {
           )}
         </View>
       </TouchableOpacity>
-
       <View style={styles.horizontalLine} />
-
       <View style={styles.buttonsContainer}>
-        {/* Details Button */}
+      
         <TouchableOpacity
           style={[styles.button, styles.detailsButton]}
           onPress={onPress}
         >
           <Text style={styles.buttonText}>Details</Text>
         </TouchableOpacity>
-
-        {/* Register/Withdraw Button */}
+     
         <TouchableOpacity
           style={[
             styles.button,
@@ -128,11 +112,9 @@ export default function EventsCard({ event, onPress }) {
     </View>
   );
 }
-
 const IMAGE_WIDTH = 110;
 const IMAGE_MARGIN_RIGHT = 12;
 const CONTENT_PADDING = 12;
-
 const styles = StyleSheet.create({
   card: {
     borderRadius: 12,

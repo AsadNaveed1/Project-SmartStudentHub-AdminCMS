@@ -9,13 +9,12 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useTheme, Menu } from 'react-native-paper';
-import { GroupsContext } from '../../context/GroupsContext';
+import { GroupsContext } from '../../newcontext/GroupsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GroupCard from '../../Components/GroupCard';
 import CreateGroupModal from '../../Components/CreateGroupModal';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { SectionList } from 'react-native';
-
 export default function MajorGroups() {
   const theme = useTheme();
   const {
@@ -27,19 +26,14 @@ export default function MajorGroups() {
     isLoading,
     error,
   } = useContext(GroupsContext);
-
   const [searchQuery, setSearchQuery] = useState('');
-
   const [departmentFilter, setDepartmentFilter] = useState('All');
   const [commonCoreFilter, setCommonCoreFilter] = useState('All');
   const [otherFilter, setOtherFilter] = useState('All');
-
   const [departmentMenuVisible, setDepartmentMenuVisible] = useState(false);
   const [commonCoreMenuVisible, setCommonCoreMenuVisible] = useState(false);
   const [otherMenuVisible, setOtherMenuVisible] = useState(false);
-
   const [isModalVisible, setIsModalVisible] = useState(false);
-
   const departments = [
     'Architecture',
     'Biomedical Engineering',
@@ -47,26 +41,16 @@ export default function MajorGroups() {
     'Economics',
     'School of Business',
   ];
-
   const commonCores = [
     'Science, Technology and Big Data',
     'Arts and Humanities',
     'Global Issues',
     'China: Culture, State and Society',
   ];
-
   const others = ['General Study Group', 'Sports & Recreation', 'Cultural Exchange'];
-
-  /**
-   * Compute Available Groups (not joined)
-   */
   const availableGroups = useMemo(() => {
     return groups.filter((group) => !isGroupJoined(group.groupId));
   }, [groups, isGroupJoined]);
-
-  /**
-   * Determine if any search or filter is active
-   */
   const isSearching = useMemo(() => {
     return (
       searchQuery.trim() !== '' ||
@@ -75,13 +59,8 @@ export default function MajorGroups() {
       otherFilter !== 'All'
     );
   }, [searchQuery, departmentFilter, commonCoreFilter, otherFilter]);
-
-  /**
-   * Compute Filtered Available Groups based on search and filters
-   */
   const filteredAvailableGroups = useMemo(() => {
     let filtered = availableGroups;
-
     if (searchQuery.trim() !== '') {
       const lowerCaseQuery = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -90,30 +69,21 @@ export default function MajorGroups() {
           group.courseCode.toLowerCase().includes(lowerCaseQuery)
       );
     }
-
     if (departmentFilter !== 'All') {
       filtered = filtered.filter((group) => group.department === departmentFilter);
     }
-
     if (commonCoreFilter !== 'All') {
       filtered = filtered.filter((group) => group.commonCore === commonCoreFilter);
     }
-
     if (otherFilter !== 'All') {
       filtered = filtered.filter(
         (group) => !group.department && !group.commonCore
       );
     }
-
     return filtered;
   }, [availableGroups, searchQuery, departmentFilter, commonCoreFilter, otherFilter]);
-
-  /**
-   * Compute Filtered Joined Groups based on search and filters
-   */
   const filteredJoinedGroups = useMemo(() => {
     let filtered = joinedGroups;
-
     if (searchQuery.trim() !== '') {
       const lowerCaseQuery = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -122,45 +92,34 @@ export default function MajorGroups() {
           group.courseCode.toLowerCase().includes(lowerCaseQuery)
       );
     }
-
     if (departmentFilter !== 'All') {
       filtered = filtered.filter((group) => group.department === departmentFilter);
     }
-
     if (commonCoreFilter !== 'All') {
       filtered = filtered.filter((group) => group.commonCore === commonCoreFilter);
     }
-
     if (otherFilter !== 'All') {
       filtered = filtered.filter(
         (group) => !group.department && !group.commonCore
       );
     }
-
     return filtered;
   }, [joinedGroups, searchQuery, departmentFilter, commonCoreFilter, otherFilter]);
-
-  /**
-   * Organize sections based on search/filter state
-   */
   const sections = useMemo(() => {
     if (isSearching) {
       const sectionData = [];
-
       if (filteredJoinedGroups.length > 0) {
         sectionData.push({
           title: 'Joined Groups',
           data: filteredJoinedGroups,
         });
       }
-
       if (filteredAvailableGroups.length > 0) {
         sectionData.push({
           title: 'Available Groups',
           data: filteredAvailableGroups,
         });
       }
-
       return sectionData;
     } else {
       if (joinedGroups.length > 0) {
@@ -175,39 +134,30 @@ export default function MajorGroups() {
       }
     }
   }, [isSearching, filteredJoinedGroups, filteredAvailableGroups, joinedGroups]);
-
   const handleSearch = (query) => {
     setSearchQuery(query);
   };
-
   const handleDepartmentFilter = (selectedFilter) => {
     setDepartmentFilter(selectedFilter);
   };
-
   const handleCommonCoreFilter = (selectedFilter) => {
     setCommonCoreFilter(selectedFilter);
   };
-
   const handleOtherFilter = (selectedFilter) => {
     setOtherFilter(selectedFilter);
   };
-
   const openCreateGroupModal = () => {
     setIsModalVisible(true);
   };
-
   const closeCreateGroupModal = () => {
     setIsModalVisible(false);
   };
-
   const renderGroup = ({ item }) => <GroupCard group={item} />;
-
   const renderSectionHeader = ({ section: { title } }) => (
     <Text style={[styles.sectionHeader, { color: theme.colors.onSurface }]}>
       {title}
     </Text>
   );
-
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -216,7 +166,6 @@ export default function MajorGroups() {
         </View>
       );
     }
-
     if (error) {
       return (
         <View style={styles.emptyContainer}>
@@ -224,7 +173,6 @@ export default function MajorGroups() {
         </View>
       );
     }
-
     if (sections.length === 0) {
       if (!isSearching && joinedGroups.length === 0) {
         return (
@@ -244,7 +192,6 @@ export default function MajorGroups() {
         );
       }
     }
-
     return (
       <SectionList
         sections={sections}
@@ -257,7 +204,6 @@ export default function MajorGroups() {
       />
     );
   };
-
   return (
     <SafeAreaView
       style={[
@@ -287,12 +233,10 @@ export default function MajorGroups() {
           />
           <Icon name="search" size={20} color={theme.colors.onSurfaceVariant} />
         </View>
-
         <TouchableOpacity style={styles.createButton} onPress={openCreateGroupModal}>
           <Icon name="plus-circle" size={35} color={theme.colors.primary} />
         </TouchableOpacity>
       </View>
-
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -305,7 +249,7 @@ export default function MajorGroups() {
         ]}
         contentContainerStyle={{ marginBottom: 8 }}
       >
-        {/* Department Filter */}
+        {}
         <Menu
           visible={departmentMenuVisible}
           onDismiss={() => setDepartmentMenuVisible(false)}
@@ -351,8 +295,7 @@ export default function MajorGroups() {
             />
           ))}
         </Menu>
-
-        {/* Common Core Filter */}
+        {}
         <Menu
           visible={commonCoreMenuVisible}
           onDismiss={() => setCommonCoreMenuVisible(false)}
@@ -398,8 +341,7 @@ export default function MajorGroups() {
             />
           ))}
         </Menu>
-
-        {/* Other Filter */}
+        {}
         <Menu
           visible={otherMenuVisible}
           onDismiss={() => setOtherMenuVisible(false)}
@@ -446,14 +388,11 @@ export default function MajorGroups() {
           ))}
         </Menu>
       </ScrollView>
-
       {renderContent()}
-
       <CreateGroupModal visible={isModalVisible} onDismiss={closeCreateGroupModal} />
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

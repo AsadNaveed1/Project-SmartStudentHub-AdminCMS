@@ -1,5 +1,3 @@
-// ChatPage.jsx
-
 import React, { useState, useCallback, useRef, useEffect, useContext } from "react";
 import {
   View,
@@ -19,41 +17,33 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import io from "socket.io-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "../src/backend/api";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../newcontext/AuthContext";
 
 export default function ChatPage({ route }) {
   const theme = useTheme();
   const { group } = route.params;
-
   const { authState } = useContext(AuthContext);
   const currentUser = authState.user;
-
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [newMessageCount, setNewMessageCount] = useState(0);
-
   const flatListRef = useRef(null);
   const socketRef = useRef(null);
-
   useEffect(() => {
     console.log("Current User ID:", currentUser.id);
-
     const initializeSocket = async () => {
       try {
         const token = await AsyncStorage.getItem("token");
         const socket = io("http://localhost:5002", {
           auth: { token },
         });
-
         socketRef.current = socket;
-
         socket.on("connect", () => {
           console.log("Connected to Socket.IO server");
           socket.emit("joinGroup", group._id.toString());
         });
-
         socket.on("newMessage", (message) => {
           setMessages((prevMessages) => [...prevMessages, message]);
           if (isAtBottom) {
@@ -62,12 +52,9 @@ export default function ChatPage({ route }) {
             setNewMessageCount((count) => count + 1);
           }
         });
-
         socket.on("disconnect", () => {
           console.log("Disconnected from Socket.IO server");
         });
-
-        // Fetch existing messages
         const res = await axios.get(`/messages/${group._id}`);
         setMessages(res.data);
         setIsLoading(false);
@@ -77,31 +64,22 @@ export default function ChatPage({ route }) {
         setIsLoading(false);
       }
     };
-
     initializeSocket();
-
-    // Clean up on unmount
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
     };
   }, [group._id, currentUser.id]);
-
   const handleSend = useCallback(() => {
     if (inputText.trim() === "") return;
-
     const messageData = {
       groupId: group._id.toString(),
       message: inputText.trim(),
     };
-
-    // Emit message via Socket.IO
     socketRef.current.emit("sendMessage", messageData);
-
     setInputText("");
   }, [inputText, group._id]);
-
   const renderItem = ({ item }) => {
     const isUser = item.sender._id === currentUser.id;
     const messageBubbleStyle = isUser
@@ -113,7 +91,6 @@ export default function ChatPage({ route }) {
     const avatarInitial = item.sender.fullName
       ? item.sender.fullName.charAt(0).toUpperCase()
       : "U";
-
     return (
       <View style={[styles.messageContainer, containerStyle]}>
         {!isUser && (
@@ -131,7 +108,7 @@ export default function ChatPage({ route }) {
             <Text
               style={[
                 styles.messageText,
-                { color: isUser ? "#000" : "#000" }, // Black text for both
+                { color: isUser ? "#000" : "#000" },
               ]}
             >
               {item.text}
@@ -148,13 +125,11 @@ export default function ChatPage({ route }) {
       </View>
     );
   };
-
   const scrollToBottom = () => {
     if (flatListRef.current && messages.length > 0) {
       flatListRef.current.scrollToEnd({ animated: true });
     }
   };
-
   const handleScroll = (event) => {
     const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
     const paddingToBottom = 20;
@@ -165,15 +140,13 @@ export default function ChatPage({ route }) {
       setNewMessageCount(0);
     }
   };
-
   const handlePressNewMessage = () => {
     scrollToBottom();
     setNewMessageCount(0);
   };
-
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.colors.surface }]} // Updated background color
+      style={[styles.container, { backgroundColor: theme.colors.surface }]}
     >
       <KeyboardAvoidingView
         style={styles.keyboardAvoiding}
@@ -200,7 +173,6 @@ export default function ChatPage({ route }) {
               style={styles.flatList}
             />
           )}
-
           {newMessageCount > 0 && (
             <TouchableOpacity
               style={styles.newMessageButton}
@@ -211,7 +183,6 @@ export default function ChatPage({ route }) {
               </Text>
             </TouchableOpacity>
           )}
-
           <View
             style={[
               styles.inputContainer,
@@ -235,7 +206,6 @@ export default function ChatPage({ route }) {
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -312,7 +282,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 0,
   },
   otherMessageBubble: {
-    backgroundColor: "#fff", // Changed to white
+    backgroundColor: "#fff",
     borderTopLeftRadius: 0,
   },
   messageText: {

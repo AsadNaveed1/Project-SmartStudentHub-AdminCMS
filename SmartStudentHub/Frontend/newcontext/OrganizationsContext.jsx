@@ -1,21 +1,15 @@
-// src/frontend/context/OrganizationsContext.jsx
-
 import React, { createContext, useState, useEffect } from "react";
-import api from "../src/backend/api"; // Adjust the path if necessary
+import api from "../src/backend/api";
 import { Alert } from "react-native";
-
 export const OrganizationsContext = createContext();
-
 export const OrganizationsProvider = ({ children }) => {
   const [organizations, setOrganizations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Fetch all organizations from the backend
   const fetchOrganizations = async () => {
     setIsLoading(true);
     try {
-      const response = await api.get("/organizations"); // GET /api/organizations
+      const response = await api.get("/organizations");
       setOrganizations(response.data);
       setError(null);
     } catch (err) {
@@ -29,11 +23,9 @@ export const OrganizationsProvider = ({ children }) => {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     fetchOrganizations();
   }, []);
-
   return (
     <OrganizationsContext.Provider
       value={{

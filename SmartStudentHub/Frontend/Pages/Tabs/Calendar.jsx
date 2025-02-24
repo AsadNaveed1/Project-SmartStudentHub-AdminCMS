@@ -1,5 +1,3 @@
-// src/frontend/screens/Calendar.jsx
-
 import React, { useContext, useState, useEffect, useMemo } from 'react';
 import {
   View,
@@ -13,12 +11,10 @@ import {
 import { useTheme } from 'react-native-paper';
 import { Calendar as RNCalendar, LocaleConfig } from 'react-native-calendars';
 import EventsCard from '../../Components/EventsCard';
-import { RegisteredEventsContext } from '../../context/RegisteredEventsContext';
+import { RegisteredEventsContext } from '../../newcontext/RegisteredEventsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import moment from 'moment';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
-// Configure localization settings for the calendar
 LocaleConfig.locales['en'] = {
   monthNames: [
     'January',
@@ -60,14 +56,11 @@ LocaleConfig.locales['en'] = {
   dayNamesShort: ['Sun.', 'Mon.', 'Tue.', 'Wed.', 'Thu.', 'Fri.', 'Sat.'],
 };
 LocaleConfig.defaultLocale = 'en';
-
 const CalendarTab = ({ navigation }) => {
   const theme = useTheme();
   const { registeredEvents } = useContext(RegisteredEventsContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredEvents, setFilteredEvents] = useState([]);
-
-  // Sort events by date whenever registeredEvents change
   useEffect(() => {
     const sortedEvents = [...registeredEvents].sort((a, b) => {
       const dateA = moment(a.date, 'DD-MM-YYYY');
@@ -76,8 +69,6 @@ const CalendarTab = ({ navigation }) => {
     });
     setFilteredEvents(sortedEvents);
   }, [registeredEvents]);
-
-  // Handle search functionality
   const handleSearch = (query) => {
     setSearchQuery(query);
     if (query.trim() === '') {
@@ -93,11 +84,9 @@ const CalendarTab = ({ navigation }) => {
       setFilteredEvents(filtered);
     }
   };
-
-  // Mark dates with events on the calendar
   const markedDates = {};
   registeredEvents.forEach((event) => {
-    if (!event.date) return; // Ensure the event has a date
+    if (!event.date) return;
     const date = moment(event.date, 'DD-MM-YYYY').format('YYYY-MM-DD');
     if (markedDates[date]) {
       markedDates[date].dots.push({ key: event.eventId, color: theme.colors.primary });
@@ -108,8 +97,6 @@ const CalendarTab = ({ navigation }) => {
       };
     }
   });
-
-  // Define calendar theme based on the app's theme
   const calendarTheme = useMemo(
     () => ({
       backgroundColor: theme.colors.surface,
@@ -134,7 +121,6 @@ const CalendarTab = ({ navigation }) => {
     }),
     [theme]
   );
-
   return (
     <SafeAreaView
       style={[
@@ -148,7 +134,7 @@ const CalendarTab = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Search Bar */}
+  
         <View
           style={[
             styles.searchBarContainer,
@@ -174,32 +160,29 @@ const CalendarTab = ({ navigation }) => {
           />
         </View>
 
-        {/* Show Calendar only when no search query */}
         {searchQuery.trim() === '' && (
           <RNCalendar
-            key={theme.dark ? 'dark' : 'light'} // Force re-render on theme change
+            key={theme.dark ? 'dark' : 'light'}
             markedDates={markedDates}
             markingType={'multi-dot'}
             theme={calendarTheme}
-            enableSwipeMonths={true} // Enable swiping between months
+            enableSwipeMonths={true}
             style={styles.calendar}
           />
         )}
-
-        {/* Events List */}
+   
         <View style={styles.eventsList}>
           {filteredEvents.length > 0 ? (
-            // Use FlatList for better performance with large lists
             <FlatList
               data={filteredEvents}
               renderItem={({ item }) => (
                 <EventsCard
-                  key={item.eventId} // Ensure each EventsCard has a unique key
+                  key={item.eventId}
                   event={item}
                   onPress={() => navigation.navigate('EventDetails', { event: item })}
                 />
               )}
-              keyExtractor={(item) => item.eventId.toString()} // Ensure eventId is unique and a string
+              keyExtractor={(item) => item.eventId.toString()}
               horizontal={false} 
               showsVerticalScrollIndicator={false}
               scrollEnabled={false} 
@@ -219,9 +202,7 @@ const CalendarTab = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
 export default CalendarTab;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -254,7 +235,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   eventsList: {
-    // Add any desired styling for the events list
   },
   emptyContainer: {
     alignItems: 'center',

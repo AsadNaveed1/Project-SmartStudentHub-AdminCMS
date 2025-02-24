@@ -1,5 +1,3 @@
-// frontend/Pages/Auth/SignupScreen.jsx
-
 import React, { useState, useContext } from "react";
 import {
   View,
@@ -20,15 +18,13 @@ import {
   TouchableRipple,
   Menu,
 } from "react-native-paper";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../newcontext/AuthContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-
 const SignupScreen = () => {
   const theme = useTheme();
-  const { signup } = useContext(AuthContext); // Ensure 'signup' handles user registration
+  const { signup } = useContext(AuthContext);
   const navigation = useNavigation();
-
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -37,27 +33,18 @@ const SignupScreen = () => {
   const [universityYear, setUniversityYear] = useState("");
   const [degree, setDegree] = useState("");
   const [bio, setBio] = useState("");
-
-  // Dropdown state for University
   const [visibleUniversity, setVisibleUniversity] = useState(false);
   const openUniversityMenu = () => setVisibleUniversity(true);
   const closeUniversityMenu = () => setVisibleUniversity(false);
-
-  // Dropdown state for University Year
   const [visibleYear, setVisibleYear] = useState(false);
   const openYearMenu = () => setVisibleYear(true);
   const closeYearMenu = () => setVisibleYear(false);
-
-  // Toggle password visibility
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const toggleSecureTextEntry = () => {
     setSecureTextEntry(!secureTextEntry);
   };
-
-  const BIO_MAX_LENGTH = 150; // Define the maximum character limit for Bio
-
+  const BIO_MAX_LENGTH = 150;
   const handleSignup = async () => {
-    // Basic validation
     if (
       !fullName ||
       !username ||
@@ -70,8 +57,6 @@ const SignupScreen = () => {
       alert("Please fill in all required fields.");
       return;
     }
-
-    // Prepare user data
     const userData = {
       fullName,
       username,
@@ -82,18 +67,13 @@ const SignupScreen = () => {
       degree,
       bio,
     };
-
-    // Call the signup function from AuthContext
     try {
       await signup(userData);
-      // Navigate to the main app if signup is successful
       navigation.navigate("Main");
     } catch (error) {
-      // Error handling is already managed in AuthContext
       console.error("Signup failed:", error);
     }
   };
-
   return (
     <SafeAreaView
       style={[
@@ -116,8 +96,7 @@ const SignupScreen = () => {
             <View style={styles.innerContainer}>
               <Text style={styles.title}>Create an Account</Text>
               <Text style={styles.subtitle}>Join us today</Text>
-
-              {/* Full Name */}
+             
               <View style={styles.fieldContainer}>
                 <View style={styles.fieldTitleContainer}>
                   <Text style={styles.fieldTitle}>Full Name</Text>
@@ -131,12 +110,11 @@ const SignupScreen = () => {
                   style={styles.input}
                   autoCapitalize="words"
                   returnKeyType="next"
-                  maxLength={50} // Set a reasonable max length
+                  maxLength={50}
                   textAlignVertical="center"
                 />
               </View>
-
-              {/* Username */}
+             
               <View style={styles.fieldContainer}>
                 <View style={styles.fieldTitleContainer}>
                   <Text style={styles.fieldTitle}>Username</Text>
@@ -150,12 +128,11 @@ const SignupScreen = () => {
                   style={styles.input}
                   autoCapitalize="none"
                   returnKeyType="next"
-                  maxLength={30} // Set a reasonable max length
+                  maxLength={30}
                   textAlignVertical="center"
                 />
               </View>
-
-              {/* Email */}
+         
               <View style={styles.fieldContainer}>
                 <View style={styles.fieldTitleContainer}>
                   <Text style={styles.fieldTitle}>Email</Text>
@@ -171,12 +148,11 @@ const SignupScreen = () => {
                   autoCapitalize="none"
                   autoCompleteType="email"
                   returnKeyType="next"
-                  maxLength={50} // Set a reasonable max length
+                  maxLength={50}
                   textAlignVertical="center"
                 />
               </View>
-
-              {/* Password */}
+        
               <View style={styles.fieldContainer}>
                 <View style={styles.fieldTitleContainer}>
                   <Text style={styles.fieldTitle}>Password</Text>
@@ -196,12 +172,11 @@ const SignupScreen = () => {
                     />
                   }
                   returnKeyType="next"
-                  maxLength={30} // Set a reasonable max length
+                  maxLength={30}
                   textAlignVertical="center"
                 />
               </View>
-
-              {/* University Dropdown */}
+         
               <View style={styles.fieldContainer}>
                 <View style={styles.fieldTitleContainer}>
                   <Text style={styles.fieldTitle}>University</Text>
@@ -254,8 +229,7 @@ const SignupScreen = () => {
                   />
                 </Menu>
               </View>
-
-              {/* University Year Dropdown */}
+             
               <View style={styles.fieldContainer}>
                 <View style={styles.fieldTitleContainer}>
                   <Text style={styles.fieldTitle}>University Year</Text>
@@ -320,8 +294,7 @@ const SignupScreen = () => {
                   />
                 </Menu>
               </View>
-
-              {/* Degree */}
+         
               <View style={styles.fieldContainer}>
                 <View style={styles.fieldTitleContainer}>
                   <Text style={styles.fieldTitle}>Degree</Text>
@@ -335,21 +308,19 @@ const SignupScreen = () => {
                   style={styles.input}
                   autoCapitalize="words"
                   returnKeyType="next"
-                  maxLength={50} // Set a reasonable max length
+                  maxLength={50}
                   textAlignVertical="center"
                 />
               </View>
-
-              {/* Bio (Optional) */}
+              
               <View style={styles.fieldContainer}>
                 <View style={styles.fieldTitleContainer}>
                   <Text style={styles.fieldTitle}>Bio</Text>
-                  {/* Character Count */}
+              
                   <Text style={styles.charCount}>
                     {bio.length}/{BIO_MAX_LENGTH}
                   </Text>
                 </View>
-
                 <TextInput
                   placeholder="Tell us about yourself (optional)"
                   value={bio}
@@ -357,10 +328,9 @@ const SignupScreen = () => {
                   mode="outlined"
                   multiline
                   numberOfLines={3}
-                  maxLength={BIO_MAX_LENGTH} // Set maximum characters
+                  maxLength={BIO_MAX_LENGTH}
                 />
               </View>
-
               <Button
                 mode="contained"
                 onPress={handleSignup}
@@ -368,8 +338,7 @@ const SignupScreen = () => {
               >
                 Sign Up
               </Button>
-
-              {/* Login Text/Button */}
+            
               <View style={styles.loginContainer}>
                 <Text>Already have an account?</Text>
                 <TouchableRipple onPress={() => navigation.navigate("Login")}>
@@ -383,9 +352,7 @@ const SignupScreen = () => {
     </SafeAreaView>
   );
 };
-
 export default SignupScreen;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -429,7 +396,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "#fff",
-    height: 60, // Fixed height to ensure vertical alignment
+    height: 60,
   },
   charCount: {
     alignSelf: "flex-end",
