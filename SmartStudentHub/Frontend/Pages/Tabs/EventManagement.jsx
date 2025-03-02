@@ -17,11 +17,19 @@ import moment from "moment";
 import { RegisteredEventsContext } from "../../newcontext/RegisteredEventsContext";
 import { OrganizationsContext } from "../../newcontext/OrganizationsContext";
 import { GroupsContext } from "../../newcontext/GroupsContext";
+import { RecommendationsContext } from "../../newcontext/RecommendationsContext";
 export default function EventManagement({ navigation }) {
   const theme = useTheme();
   const { events } = useContext(RegisteredEventsContext);
   const { organizations, isLoading: orgLoading } = useContext(OrganizationsContext);
   const { groups } = useContext(GroupsContext);
+  const { 
+    contentBased, 
+    mlBased, 
+    isLoading: recLoading, 
+    error, 
+    fetchRecommendations 
+  } = useContext(RecommendationsContext); 
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredEvents, setFilteredEvents] = useState(events);
   const [filteredOrganizations, setFilteredOrganizations] = useState([]);
@@ -30,6 +38,7 @@ export default function EventManagement({ navigation }) {
   const [allMenuVisible, setAllMenuVisible] = useState(false);
   const [societyMenuVisible, setSocietyMenuVisible] = useState(false);
   const [externalMenuVisible, setExternalMenuVisible] = useState(false);
+  const [showRecommendations, setShowRecommendations] = useState(false);
   const societies = [
     "Artificial Intelligence Society",
     "Arts Association",
@@ -41,8 +50,11 @@ export default function EventManagement({ navigation }) {
   const externalEvents = ["Volunteer", "Community Events", "Networking"];
   const timeFilterOptions = ["All", "This Week", "Next Week", "This Month", "Next Month"];
   useEffect(() => {
+    if (showRecommendations) {
+      return;
+    }
     applyFilters(searchQuery, categoryFilter, timeFilter);
-  }, [events, organizations, searchQuery, categoryFilter, timeFilter]);
+  }, [events, organizations, searchQuery, categoryFilter, timeFilter, showRecommendations]);
   useEffect(() => {
     if (searchQuery.trim() !== "") {
       const lowerCaseQuery = searchQuery.toLowerCase();
@@ -56,6 +68,7 @@ export default function EventManagement({ navigation }) {
   }, [searchQuery, organizations]);
   const handleSearch = (query) => {
     setSearchQuery(query);
+    setShowRecommendations(false);
   };
   const handleCategoryFilter = (selectedFilter) => {
     if (
@@ -73,10 +86,12 @@ export default function EventManagement({ navigation }) {
       setCategoryFilter(selectedFilter);
       applyFilters(searchQuery, selectedFilter, timeFilter);
     }
+    setShowRecommendations(false);
   };
   const handleTimeFilter = (selectedTime) => {
     setTimeFilter(selectedTime);
     applyFilters(searchQuery, categoryFilter, selectedTime);
+    setShowRecommendations(false);
   };
   const applyFilters = (query, selectedCategory, selectedTime) => {
     let filtered = events;
@@ -146,10 +161,17 @@ export default function EventManagement({ navigation }) {
     }
     setFilteredEvents(filtered);
   };
+  const handleShowRecommendations = () => {
+    fetchRecommendations();
+    setCategoryFilter("All");
+    setTimeFilter("All");
+    setShowRecommendations(true);
+  };
   const renderEvent = ({ item }) => (
     <EventsCard
       event={item}
       onPress={() => navigation.navigate("EventDetails", { event: item })}
+      isRecommended={item.isRecommended}
     />
   );
   const renderOrganization = ({ item }) => (
@@ -162,19 +184,36 @@ export default function EventManagement({ navigation }) {
   );
   const getSections = () => {
     const sections = [];
-    if (filteredOrganizations.length > 0) {
-      sections.push({
-        title: "Organizations",
-        data: filteredOrganizations,
-        type: "organization",
-      });
-    }
-    if (filteredEvents.length > 0) {
-      sections.push({
-        title: "Events",
-        data: filteredEvents,
-        type: "event",
-      });
+    if (showRecommendations) {
+      if (contentBased.length > 0) {
+        sections.push({
+          title: "Recommendations",
+          data: contentBased,
+          type: "event",
+        });
+      }
+      if (mlBased.length > 0) {
+        sections.push({
+          title: "Others also joined these events",
+          data: mlBased,
+          type: "event",
+        });
+      }
+    } else {
+      if (filteredOrganizations.length > 0) {
+        sections.push({
+          title: "Organizations",
+          data: filteredOrganizations,
+          type: "organization",
+        });
+      }
+      if (filteredEvents.length > 0) {
+        sections.push({
+          title: "Events",
+          data: filteredEvents,
+          type: "event",
+        });
+      }
     }
     return sections;
   };
@@ -202,7 +241,6 @@ export default function EventManagement({ navigation }) {
         },
       ]}
     >
-      {}
       <View
         style={[
           styles.searchBarContainer,
@@ -226,7 +264,6 @@ export default function EventManagement({ navigation }) {
           style={styles.searchIcon}
         />
       </View>
-      {}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -239,7 +276,6 @@ export default function EventManagement({ navigation }) {
         ]}
         contentContainerStyle={{ marginBottom: 15 }}
       >
-        {}
         <Menu
           visible={allMenuVisible}
           onDismiss={() => setAllMenuVisible(false)}
@@ -262,7 +298,7 @@ export default function EventManagement({ navigation }) {
                     color:
                       timeFilter !== "All"
                         ? "#fff"
-                        : theme.colors.onSurface,
+                        : theme.colors.Surface,
                   }}
                 >
                   {timeFilter}
@@ -278,7 +314,7 @@ export default function EventManagement({ navigation }) {
                   color={
                     timeFilter !== "All"
                       ? "#fff"
-                      : theme.colors.onSurface
+                      : theme.colors.Surface
                   }
                 />
               </TouchableOpacity>
@@ -308,8 +344,6 @@ export default function EventManagement({ navigation }) {
             )
           )}
         </Menu>
-        {}
-        {}
         <TouchableOpacity
           key="AllCategory"
           style={[
@@ -323,13 +357,12 @@ export default function EventManagement({ navigation }) {
               color:
                 categoryFilter === "All"
                   ? "#fff"
-                  : theme.colors.onSurface,
+                  : theme.colors.Surface,
             }}
           >
             All Categories
           </Text>
         </TouchableOpacity>
-        {}
         <TouchableOpacity
           key="University Event"
           style={[
@@ -345,13 +378,12 @@ export default function EventManagement({ navigation }) {
               color:
                 categoryFilter === "University Event"
                   ? "#fff"
-                  : theme.colors.onSurface,
+                  : theme.colors.Surface,
             }}
           >
             University Event
           </Text>
         </TouchableOpacity>
-        {}
         <Menu
           visible={societyMenuVisible}
           onDismiss={() => setSocietyMenuVisible(false)}
@@ -381,7 +413,7 @@ export default function EventManagement({ navigation }) {
                       societies.includes(categoryFilter) ||
                       categoryFilter === "Society Event"
                         ? "#fff"
-                        : theme.colors.onSurface,
+                        : theme.colors.Surface,
                   }}
                 >
                   {societies.includes(categoryFilter)
@@ -400,7 +432,7 @@ export default function EventManagement({ navigation }) {
                     societies.includes(categoryFilter) ||
                     categoryFilter === "Society Event"
                       ? "#fff"
-                      : theme.colors.onSurface
+                      : theme.colors.Surface
                   }
                 />
               </TouchableOpacity>
@@ -428,7 +460,6 @@ export default function EventManagement({ navigation }) {
             />
           ))}
         </Menu>
-        {}
         <Menu
           visible={externalMenuVisible}
           onDismiss={() => setExternalMenuVisible(false)}
@@ -454,7 +485,7 @@ export default function EventManagement({ navigation }) {
                       externalEvents.includes(categoryFilter) ||
                       categoryFilter === "External Event"
                         ? "#fff"
-                        : theme.colors.onSurface,
+                        : theme.colors.Surface,
                   }}
                 >
                   {externalEvents.includes(categoryFilter) ||
@@ -474,7 +505,7 @@ export default function EventManagement({ navigation }) {
                     externalEvents.includes(categoryFilter) ||
                     categoryFilter === "External Event"
                       ? "#fff"
-                      : theme.colors.onSurface
+                      : theme.colors.Surface
                   }
                 />
               </TouchableOpacity>
@@ -502,8 +533,27 @@ export default function EventManagement({ navigation }) {
             />
           ))}
         </Menu>
+ 
+        <TouchableOpacity
+          key="Recommendations"
+          style={[
+            styles.filterButton,
+            showRecommendations && { backgroundColor: theme.colors.primary },
+          ]}
+          onPress={handleShowRecommendations}
+        >
+          <Text
+            style={{
+              color:
+                showRecommendations
+                  ? "#fff"
+                  : theme.colors.Surface,
+            }}
+          >
+            Recommendations
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
-      {}
       <SectionList
         sections={sections}
         keyExtractor={(item) => (item.eventId ? item.eventId.toString() : item.organizationId)}

@@ -10,6 +10,8 @@ import { RegisteredEventsProvider } from './Frontend/newcontext/RegisteredEvents
 import { GroupsProvider } from './Frontend/newcontext/GroupsContext'; 
 import { OrganizationsProvider } from './Frontend/newcontext/OrganizationsContext';
 import { AuthProvider } from './Frontend/newcontext/AuthContext';
+import { RecommendationsProvider } from './Frontend/newcontext/RecommendationsContext'; 
+
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -19,8 +21,10 @@ export default function App() {
             <RegisteredEventsProvider>
               <GroupsProvider> 
                 <OrganizationsProvider>
-                <ThemeConsumer />
-              </OrganizationsProvider>
+                  <RecommendationsProvider> 
+                    <ThemeConsumer />
+                  </RecommendationsProvider>
+                </OrganizationsProvider>
               </GroupsProvider>
             </RegisteredEventsProvider>
           </AuthProvider>
@@ -29,6 +33,7 @@ export default function App() {
     </GestureHandlerRootView>
   );
 }
+
 const ThemeConsumer = () => {
   const { theme } = React.useContext(ThemeContext);
   if (!theme || !theme.colors) {
