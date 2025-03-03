@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import {
   View,
   Text,
@@ -16,19 +16,27 @@ import * as Calendar from "expo-calendar";
 import MaterialIcon from "react-native-vector-icons/MaterialIcons"; 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { RegisteredEventsContext } from '../newcontext/RegisteredEventsContext'; 
+import RegisterEventModal from '../Components/RegisterEventModal';
 export default function EventDetails({ route, navigation }) {
   const { event } = route.params;
   const theme = useTheme();
   const { registerEvent, withdrawEvent, isRegistered } = useContext(RegisteredEventsContext);
   const registered = isRegistered(event.eventId); 
+  const [modalVisible, setModalVisible] = useState(false);
   const handleRegister = () => {
-    if (!registered) {
-      registerEvent(event.eventId);
-      Alert.alert('Registered', `You have registered for "${event.title}"`);
-    } else {
-      withdrawEvent(event.eventId);
-      Alert.alert('Withdrawn', `You have withdrawn from "${event.title}"`);
-    }
+    setModalVisible(true);
+  };
+  const handleModalClose = () => {
+    setModalVisible(false);
+  };
+  const handleModalSubmit = async (registrationData) => {
+    registerEvent(event.eventId);
+    Alert.alert('Registered', `You have registered for "${event.title}"`);
+    setModalVisible(false);
+  };
+  const handleWithdraw = () => {
+    withdrawEvent(event.eventId);
+    Alert.alert('Withdrawn', `You have withdrawn from "${event.title}"`);
   };
   const handleAddToCalendar = async () => {
     if (Platform.OS === "web") {
@@ -121,9 +129,7 @@ export default function EventDetails({ route, navigation }) {
         style={[styles.container, { backgroundColor: theme.colors.background }]}
         contentContainerStyle={{ paddingBottom: 20 }}
       >
-  
         <View style={styles.imageContainer}>
-      
           {event.image ? (
             <Image source={{ uri: event.image }} style={styles.image} />
           ) : (
@@ -131,22 +137,16 @@ export default function EventDetails({ route, navigation }) {
               <Text style={styles.placeholderText}>No Image</Text>
             </View>
           )}
-    
           <TouchableOpacity style={styles.backButton} onPress={handleBack}>
             <MaterialIcon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
-       
         <View style={styles.content}>
-        
           <Text style={[styles.title, { color: theme.colors.onBackground }]}>
             {event.title}
           </Text>
-     
           <View style={styles.infoColumns}>
-           
             <View style={styles.column}>
-             
               <View style={styles.infoRow}>
                 <IconButton
                   icon="account-circle"
@@ -163,7 +163,6 @@ export default function EventDetails({ route, navigation }) {
                   {event.organization && event.organization.name ? event.organization.name : 'N/A'}
                 </Text>
               </View>
-              
               <View style={styles.infoRow}>
                 <IconButton
                   icon="calendar"
@@ -181,9 +180,7 @@ export default function EventDetails({ route, navigation }) {
                 </Text>
               </View>
             </View>
-      
             <View style={styles.column}>
-          
               <View style={styles.infoRow}>
                 <IconButton
                   icon="tag"
@@ -201,7 +198,6 @@ export default function EventDetails({ route, navigation }) {
                   {event.subtype ? ` - ${event.subtype}` : ''}
                 </Text>
               </View>
-            
               <View style={styles.infoRow}>
                 <IconButton
                   icon="clock-outline"
@@ -220,7 +216,6 @@ export default function EventDetails({ route, navigation }) {
               </View>
             </View>
           </View>
-        
           <View style={styles.locationRow}>
             <IconButton
               icon="map-marker"
@@ -237,7 +232,6 @@ export default function EventDetails({ route, navigation }) {
               {event.location}
             </Text>
           </View>
-        
           <Text
             style={[styles.sectionTitle, { color: theme.colors.onBackground }]}
           >
@@ -246,7 +240,6 @@ export default function EventDetails({ route, navigation }) {
           <Text style={[styles.description, { color: theme.colors.onSurface }]}>
             {event.description}
           </Text>
-       
           {event.otherDetails && (
             <>
               <Text
@@ -264,12 +257,10 @@ export default function EventDetails({ route, navigation }) {
               </Text>
             </>
           )}
-        
           <View style={styles.buttonsContainer}>
-       
             <Button
               mode="contained"
-              onPress={handleRegister}
+              onPress={registered ? handleWithdraw : handleRegister}
               style={[
                 styles.registerButton,
                 registered ? styles.withdrawButton : styles.registerButtonStyle,
@@ -279,7 +270,6 @@ export default function EventDetails({ route, navigation }) {
             >
               {registered ? 'Withdraw' : 'Register'}
             </Button>
-          
             <IconButton
               icon="calendar-plus"
               size={20}
@@ -289,7 +279,6 @@ export default function EventDetails({ route, navigation }) {
               padding={12}
               accessibilityLabel="Add to Calendar"
             />
-         
             <IconButton
               icon="share-variant"
               size={20}
@@ -302,6 +291,13 @@ export default function EventDetails({ route, navigation }) {
           </View>
         </View>
       </ScrollView>
+      {}
+      <RegisterEventModal
+        visible={modalVisible}
+        onClose={handleModalClose}
+        onSubmit={handleModalSubmit}
+        event={event}
+      />
     </SafeAreaView>
   );
 }

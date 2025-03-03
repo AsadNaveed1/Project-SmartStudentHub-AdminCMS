@@ -1,23 +1,42 @@
-import React, { useContext } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { RegisteredEventsContext } from '../newcontext/RegisteredEventsContext'; 
+import hkuLogo from '../assets/hku_logo.jpg'; 
+import externalEventLogo from '../assets/external_event_logo.png';
+import RegisterEventModal from './RegisterEventModal';
 export default function EventsCard({ event, onPress }) {
   const theme = useTheme();
   const { registerEvent, withdrawEvent, isRegistered } = useContext(RegisteredEventsContext); 
+  const [modalVisible, setModalVisible] = useState(false);
   const handleRegister = () => {
-    registerEvent(event.eventId);
+    setModalVisible(true);
   };
   const handleWithdraw = () => {
     withdrawEvent(event.eventId);
+    Alert.alert('Withdrawn', `You have withdrawn from "${event.title}"`);
   };
   const registered = isRegistered(event.eventId);
+  const getDefaultImage = () => {
+    if (event.organization && event.organization.name === 'HKU') {
+      return hkuLogo;
+    }
+    return externalEventLogo;
+  };
   const hasSubtype = event.subtype && event.type;
   const isSocietyEvent =
     hasSubtype &&
     event.type === 'University Event' &&
     event.subtype === 'Society Event';
   const isExternalEvent = hasSubtype && event.type === 'External Event';
+  const handleModalClose = () => {
+    setModalVisible(false);
+  };
+  const handleModalSubmit = async (registrationData) => {
+    await registerEvent(event.eventId, registrationData);
+    Alert.alert('Registered', `You have registered for "${event.title}"`);
+    setModalVisible(false);
+  };
   return (
     <View
       style={[
@@ -30,19 +49,16 @@ export default function EventsCard({ event, onPress }) {
         onPress={onPress}
         activeOpacity={0.8}
       >
-        {event.image ? (
-          <Image source={{ uri: event.image }} style={styles.image} />
-        ) : (
-          <View style={[styles.image, styles.placeholderImage]}>
-            <Text style={styles.placeholderText}>No Image</Text>
-          </View>
-        )}
+        <Image
+          source={getDefaultImage()}
+          style={styles.image}
+          resizeMode="cover"
+        />
         <View style={styles.infoContainer}>
           <Text style={[styles.title, { color: theme.colors.onSurface }]}>
             {event.title}
           </Text>
           <View style={styles.pillsContainer}>
-         
             <View style={[styles.pill, styles.organizationPill]}>
               <Text style={styles.pillText}>
                 {event.organization && event.organization.name
@@ -50,7 +66,6 @@ export default function EventsCard({ event, onPress }) {
                   : 'N/A'}
               </Text>
             </View>
-     
             {hasSubtype && (
               isSocietyEvent ? (
                 <View style={[styles.pill, styles.societyPill]}>
@@ -91,14 +106,12 @@ export default function EventsCard({ event, onPress }) {
       </TouchableOpacity>
       <View style={styles.horizontalLine} />
       <View style={styles.buttonsContainer}>
-      
         <TouchableOpacity
           style={[styles.button, styles.detailsButton]}
           onPress={onPress}
         >
           <Text style={styles.buttonText}>Details</Text>
         </TouchableOpacity>
-     
         <TouchableOpacity
           style={[
             styles.button,
@@ -109,6 +122,13 @@ export default function EventsCard({ event, onPress }) {
           <Text style={styles.buttonText}>{registered ? 'Withdraw' : 'Register'}</Text>
         </TouchableOpacity>
       </View>
+      {}
+      <RegisterEventModal
+        visible={modalVisible}
+        onClose={handleModalClose}
+        onSubmit={handleModalSubmit}
+        event={event}
+      />
     </View>
   );
 }
@@ -125,7 +145,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    borderWidth: 0.5,
+    borderWidth: 0.8,
   },
   contentContainer: {
     flexDirection: 'row',
@@ -137,14 +157,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: IMAGE_MARGIN_RIGHT,
     backgroundColor: '#f0f0f0',
-  },
-  placeholderImage: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholderText: {
-    color: '#888',
-    fontSize: 14,
   },
   infoContainer: {
     flex: 1,
@@ -217,15 +229,17 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-start', 
-    marginLeft: CONTENT_PADDING + IMAGE_WIDTH + IMAGE_MARGIN_RIGHT, 
+    justifyContent: 'space-between',
     paddingVertical: 12, 
+    paddingHorizontal: 16,
   },
   button: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 20,
-    marginRight: 12, 
+    flex: 1,
+    alignItems: 'center',
+    marginHorizontal: 5,
   },
   detailsButton: {
     backgroundColor: '#007bff',
@@ -233,13 +247,12 @@ const styles = StyleSheet.create({
   registerButton: {
     backgroundColor: '#28a745',
   },
+  withdrawButton: {
+    backgroundColor: '#6c757d',
+  },
   buttonText: {
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
-    textAlign: 'left', 
-  },
-  withdrawButton: {
-    backgroundColor: '#ffb84d', 
   },
 });
