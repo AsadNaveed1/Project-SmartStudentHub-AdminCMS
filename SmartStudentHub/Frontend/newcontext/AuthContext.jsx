@@ -3,7 +3,6 @@ import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../src/backend/api';
 export const AuthContext = createContext();
-
 export const AuthProvider = ({ children }) => {
   const [authState, setAuthState] = useState({
     token: null,
@@ -114,13 +113,20 @@ export const AuthProvider = ({ children }) => {
   const updateUser = async (data) => {
     try {
       const { token, user } = data;
-      await AsyncStorage.setItem('token', token);
-      await AsyncStorage.setItem('user', JSON.stringify(user));
-      setAuthState({
-        token,
-        user,
-        isLoading: false,
-      });
+      if (token) {
+        await AsyncStorage.setItem('token', token);
+        setAuthState((prevState) => ({
+          ...prevState,
+          token,
+        }));
+      }
+      if (user) {
+        await AsyncStorage.setItem('user', JSON.stringify(user));
+        setAuthState((prevState) => ({
+          ...prevState,
+          user,
+        }));
+      }
     } catch (error) {
       console.error('Update user error:', error);
       Alert.alert('Update Failed', 'An error occurred while updating your profile.');

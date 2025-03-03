@@ -42,6 +42,9 @@ router.post("/login", async (req, res) => {
             university: user.university,
             universityYear: user.universityYear,
             degree: user.degree,
+            degreeClassification: user.degreeClassification,
+            faculty: user.faculty,
+            department: user.department,
             bio: user.bio,
           },
         });
@@ -53,8 +56,7 @@ router.post("/login", async (req, res) => {
   }
 });
 router.put("/profile", authMiddleware, async (req, res) => {
-  const { fullName, username, university, universityYear, degree, bio } =
-    req.body;
+  const { fullName, username, university, universityYear, degree, degreeClassification, faculty, department, bio } = req.body;
   try {
     let user = await User.findById(req.user.id);
     if (!user) {
@@ -65,6 +67,9 @@ router.put("/profile", authMiddleware, async (req, res) => {
     user.university = university || user.university;
     user.universityYear = universityYear || user.universityYear;
     user.degree = degree || user.degree;
+    user.degreeClassification = degreeClassification || user.degreeClassification;
+    user.faculty = faculty || user.faculty;
+    user.department = department || user.department;
     user.bio = bio || user.bio;
     await user.save();
     res.json({
@@ -75,6 +80,9 @@ router.put("/profile", authMiddleware, async (req, res) => {
       university: user.university,
       universityYear: user.universityYear,
       degree: user.degree,
+      degreeClassification: user.degreeClassification,
+      faculty: user.faculty,
+      department: user.department,
       bio: user.bio,
     });
   } catch (error) {
@@ -91,6 +99,9 @@ router.post("/signup", async (req, res) => {
     university,
     universityYear,
     degree,
+    degreeClassification,
+    faculty,
+    department,
     bio,
   } = req.body;
   if (
@@ -100,11 +111,28 @@ router.post("/signup", async (req, res) => {
     !password ||
     !university ||
     !universityYear ||
-    !degree
+    !degree ||
+    !degreeClassification ||
+    !faculty ||
+    !department
   ) {
     return res
       .status(400)
       .json({ message: "Please fill in all required fields." });
+  }
+  const validDegreeClassifications = ['undergraduate', 'postgraduate', 'staff'];
+  if (!validDegreeClassifications.includes(degreeClassification.toLowerCase())) {
+    return res.status(400).json({ message: "Invalid degree classification." });
+  }
+  const validFaculties = [
+    'Faculty of Architecture',
+    'Faculty of Business and Economics',
+    'Faculty of Engineering',
+    'Faculty of Medicine',
+    'Faculty of Science',
+  ];
+  if (!validFaculties.includes(faculty)) {
+    return res.status(400).json({ message: "Invalid faculty selection." });
   }
   try {
     let user = await User.findOne({ email });
@@ -123,6 +151,9 @@ router.post("/signup", async (req, res) => {
       university,
       universityYear,
       degree,
+      degreeClassification: degreeClassification.toLowerCase(),
+      faculty,
+      department,
       bio,
     });
     await user.save();
@@ -147,6 +178,9 @@ router.post("/signup", async (req, res) => {
             university: user.university,
             universityYear: user.universityYear,
             degree: user.degree,
+            degreeClassification: user.degreeClassification,
+            faculty: user.faculty,
+            department: user.department,
             bio: user.bio,
           },
         });
@@ -157,25 +191,19 @@ router.post("/signup", async (req, res) => {
     res.status(500).send("Server error");
   }
 });
-
-
 router.get("/me", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id)
       .select("-password")
       .populate("joinedGroups", "groupId courseName description")
       .populate("registeredEvents", "eventId title description date time location");
-
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
-
     res.json(user);
   } catch (error) {
     console.error("GET /me Error:", error.message);
     res.status(500).send("Server error");
   }
 });
-
-
 module.exports = router;

@@ -42,6 +42,26 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add your degree'],
   },
+  degreeClassification: {
+    type: String,
+    required: [true, 'Please add your degree classification'],
+    enum: ['undergraduate', 'postgraduate', 'staff'],
+  },
+  faculty: {
+    type: String,
+    required: [true, 'Please add your faculty'],
+    enum: [
+      'Faculty of Architecture',
+      'Faculty of Business and Economics',
+      'Faculty of Engineering',
+      'Faculty of Medicine',
+      'Faculty of Science',
+    ],
+  },
+  department: {
+    type: String,
+    required: [true, 'Please add your department'],
+  },
   bio: {
     type: String,
     maxlength: [500, 'Bio cannot exceed 500 characters'],

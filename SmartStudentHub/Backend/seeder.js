@@ -8,6 +8,50 @@ const sampleOrganizations = require('./data/sampleOrganizations');
 const sampleEvents = require('./data/sampleEvents');
 const sampleGroups = require('./data/sampleGroups');
 dotenv.config();
+const faculties = {
+  "Faculty of Architecture": [
+    "Department of Architecture",
+    "Department of Real Estate and Construction",
+  ],
+  "Faculty of Business and Economics": [
+    "Department of Business Administration",
+    "Department of Economics",
+  ],
+  "Faculty of Engineering": [
+    "Department of Civil Engineering",
+    "Department of Computer Science and Information Systems",
+    "Department of Electrical and Electronic Engineering",
+    "Department of Industrial and Manufacturing Systems Engineering",
+    "Department of Mechanical Engineering",
+  ],
+  "Faculty of Medicine": [
+    "Department of Anaesthesiology",
+    "Department of Anatomy",
+    "Department of Biochemistry",
+    "Department of Clinical Oncology",
+    "Department of Community Medicine",
+    "Department of Diagnostic Radiology",
+    "Department of Medicine",
+    "Department of Microbiology",
+    "Department of Nursing Studies",
+    "Department of Obstetrics and Gynaecology",
+    "Department of Orthopaedic Surgery",
+    "Department of Paediatrics",
+    "Department of Pathology",
+    "Department of Pharmacology",
+    "Department of Physiology",
+    "Department of Psychiatry",
+    "Department of Surgery",
+  ],
+  "Faculty of Science": [
+    "Department of Chemistry",
+    "Department of Earth Sciences",
+    "Department of Ecology and Biodiversity",
+    "Department of Mathematics",
+    "Department of Physics",
+    "Department of Statistics and Actuarial Science",
+  ],
+};
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI); 
@@ -49,6 +93,9 @@ const importData = async () => {
       university: 'HKU',
       universityYear: '3rd Year',
       degree: 'Computer Science',
+      degreeClassification: 'undergraduate',
+      faculty: 'Faculty of Engineering',
+      department: 'Department of Computer Science and Information Systems',
       bio: 'A passionate developer.',
     });
     await user.save();
