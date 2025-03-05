@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
         user: null,
         isLoading: false,
       });
-      Alert.alert('Session Expired', 'Your session has expired. Please log in again.');
+      Alert.alert('You have been logged out.');
     } catch (error) {
       console.error('Logout error:', error);
       Alert.alert('Logout Failed', 'An error occurred during logout.');
