@@ -579,6 +579,8 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: -50,
   },
+
+
   sectionListContent: {
     paddingBottom: 50, 
   },

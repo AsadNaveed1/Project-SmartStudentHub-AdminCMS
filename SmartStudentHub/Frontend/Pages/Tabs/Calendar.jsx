@@ -6,7 +6,7 @@ import {
   TextInput,
   FlatList,
   ScrollView,
-  TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { Calendar as RNCalendar, LocaleConfig } from 'react-native-calendars';
@@ -58,17 +58,21 @@ LocaleConfig.locales['en'] = {
 LocaleConfig.defaultLocale = 'en';
 const CalendarTab = ({ navigation }) => {
   const theme = useTheme();
-  const { registeredEvents } = useContext(RegisteredEventsContext);
+  const { registeredEvents, isLoading } = useContext(RegisteredEventsContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredEvents, setFilteredEvents] = useState([]);
   useEffect(() => {
+    if (isLoading) {
+      setFilteredEvents([]);
+      return;
+    }
     const sortedEvents = [...registeredEvents].sort((a, b) => {
       const dateA = moment(a.date, 'DD-MM-YYYY');
       const dateB = moment(b.date, 'DD-MM-YYYY');
       return dateA - dateB;
     });
     setFilteredEvents(sortedEvents);
-  }, [registeredEvents]);
+  }, [registeredEvents, isLoading]);
   const handleSearch = (query) => {
     setSearchQuery(query);
     if (query.trim() === '') {
@@ -77,26 +81,28 @@ const CalendarTab = ({ navigation }) => {
       const lowerCaseQuery = query.toLowerCase();
       const filtered = registeredEvents.filter(
         (event) =>
-          event.title.toLowerCase().includes(lowerCaseQuery) ||
-          (event.organization &&
-            event.organization.name.toLowerCase().includes(lowerCaseQuery))
+          (event.title && event.title.toLowerCase().includes(lowerCaseQuery)) ||
+          (event.organization && event.organization.name.toLowerCase().includes(lowerCaseQuery))
       );
       setFilteredEvents(filtered);
     }
   };
-  const markedDates = {};
-  registeredEvents.forEach((event) => {
-    if (!event.date) return;
-    const date = moment(event.date, 'DD-MM-YYYY').format('YYYY-MM-DD');
-    if (markedDates[date]) {
-      markedDates[date].dots.push({ key: event.eventId, color: theme.colors.primary });
-    } else {
-      markedDates[date] = {
-        dots: [{ key: event.eventId, color: theme.colors.primary }],
-        marked: true,
-      };
-    }
-  });
+  const markedDates = useMemo(() => {
+    const marks = {};
+    registeredEvents.forEach((event) => {
+      if (!event.date) return;
+      const date = moment(event.date, 'DD-MM-YYYY').format('YYYY-MM-DD');
+      if (marks[date]) {
+        marks[date].dots.push({ key: event.eventId, color: theme.colors.primary });
+      } else {
+        marks[date] = {
+          dots: [{ key: event.eventId, color: theme.colors.primary }],
+          marked: true,
+        };
+      }
+    });
+    return marks;
+  }, [registeredEvents, theme.colors.primary]);
   const calendarTheme = useMemo(
     () => ({
       backgroundColor: theme.colors.surface,
@@ -134,7 +140,7 @@ const CalendarTab = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-  
+        {}
         <View
           style={[
             styles.searchBarContainer,
@@ -159,8 +165,17 @@ const CalendarTab = ({ navigation }) => {
             style={styles.searchIcon}
           />
         </View>
-
-        {searchQuery.trim() === '' && (
+        {}
+        {isLoading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+            <Text style={{ color: theme.colors.onSurfaceVariant, marginTop: 10 }}>
+              Loading events...
+            </Text>
+          </View>
+        )}
+        {}
+        {!isLoading && searchQuery.trim() === '' && (
           <RNCalendar
             key={theme.dark ? 'dark' : 'light'}
             markedDates={markedDates}
@@ -168,36 +183,41 @@ const CalendarTab = ({ navigation }) => {
             theme={calendarTheme}
             enableSwipeMonths={true}
             style={styles.calendar}
+            onDayPress={(day) => {
+              navigation.navigate('DayEvents', { selectedDate: day.dateString });
+            }}
           />
         )}
-   
-        <View style={styles.eventsList}>
-          {filteredEvents.length > 0 ? (
-            <FlatList
-              data={filteredEvents}
-              renderItem={({ item }) => (
-                <EventsCard
-                  key={item.eventId}
-                  event={item}
-                  onPress={() => navigation.navigate('EventDetails', { event: item })}
-                />
-              )}
-              keyExtractor={(item) => item.eventId.toString()}
-              horizontal={false} 
-              showsVerticalScrollIndicator={false}
-              scrollEnabled={false} 
-              contentContainerStyle={{ paddingBottom: 20 }}
-            />
-          ) : (
-            <View style={styles.emptyContainer}>
-              <Text style={{ color: theme.colors.onSurfaceVariant }}>
-                {searchQuery.trim() !== ''
-                  ? 'No registered events match your search.'
-                  : 'You have not registered for any events yet.'}
-              </Text>
-            </View>
-          )}
-        </View>
+        {}
+        {!isLoading && (
+          <View style={styles.eventsList}>
+            {filteredEvents.length > 0 ? (
+              <FlatList
+                data={filteredEvents}
+                renderItem={({ item }) => (
+                  <EventsCard
+                    key={item.eventId}
+                    event={item}
+                    onPress={() => navigation.navigate('EventDetails', { event: item })}
+                  />
+                )}
+                keyExtractor={(item) => item.eventId.toString()}
+                horizontal={false}
+                showsVerticalScrollIndicator={false}
+                scrollEnabled={false}
+                contentContainerStyle={{ paddingBottom: 20 }}
+              />
+            ) : (
+              <View style={styles.emptyContainer}>
+                <Text style={{ color: theme.colors.onSurfaceVariant }}>
+                  {searchQuery.trim() !== ''
+                    ? 'No registered events match your search.'
+                    : 'You have not registered for any events yet.'}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -206,7 +226,7 @@ export default CalendarTab;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    height: "100%",
+    height: '100%',
     padding: 16,
     marginBottom: -50,
   },
@@ -234,10 +254,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 16,
   },
-  eventsList: {
-  },
+  eventsList: {},
   emptyContainer: {
     alignItems: 'center',
     marginTop: 32,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    marginVertical: 20,
   },
 });

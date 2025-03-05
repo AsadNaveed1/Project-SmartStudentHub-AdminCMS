@@ -1,5 +1,3 @@
-// RegisteredEventsContext.jsx
-
 import React, {
   createContext,
   useState,
@@ -10,18 +8,14 @@ import React, {
 import { Alert } from 'react-native';
 import api from '../src/backend/api';
 import { AuthContext } from './AuthContext';
-
 export const RegisteredEventsContext = createContext();
-
 export const RegisteredEventsProvider = ({ children }) => {
   const { authState } = useContext(AuthContext);
   const [events, setEvents] = useState([]);
   const [registeredEvents, setRegisteredEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const fetchEvents = async () => {
-    setIsLoading(true);
     try {
       const response = await api.get('/events');
       setEvents(response.data);
@@ -32,22 +26,32 @@ export const RegisteredEventsProvider = ({ children }) => {
         err.response?.data?.message || err.message || 'Failed to fetch events.'
       );
       Alert.alert('Error', err.response?.data?.message || 'Failed to fetch events.');
-    } finally {
-      setIsLoading(false);
+      throw err;
     }
   };
-
   const fetchRegisteredEvents = async () => {
     if (!authState.token) {
       setRegisteredEvents([]);
-      setIsLoading(false);
       return;
     }
-    setIsLoading(true);
     try {
       const response = await api.get('/auth/me');
       const user = response.data;
-      setRegisteredEvents(user.registeredEvents);
+      if (!Array.isArray(user.registeredEvents)) {
+        console.warn('No registered events found for the user.');
+        setRegisteredEvents([]);
+        return;
+      }
+      const fullRegisteredEvents = user.registeredEvents.map((regEvt) => {
+        const fullEvent = events.find((evt) => evt.eventId === regEvt.eventId);
+        if (fullEvent) {
+          return { ...fullEvent };
+        } else {
+          console.warn(`Full event details not found for eventId: ${regEvt.eventId}`);
+          return null;
+        }
+      }).filter(evt => evt !== null);
+      setRegisteredEvents(fullRegisteredEvents);
       setError(null);
     } catch (err) {
       console.error('Failed to fetch registered events:', err);
@@ -58,25 +62,31 @@ export const RegisteredEventsProvider = ({ children }) => {
         'Error',
         err.response?.data?.message || 'Failed to fetch registered events.'
       );
-    } finally {
-      setIsLoading(false);
     }
   };
-
   useEffect(() => {
-    fetchEvents();
-    fetchRegisteredEvents();
+    const initialize = async () => {
+      setIsLoading(true);
+      try {
+        await fetchEvents();
+        await fetchRegisteredEvents();
+      } catch (err) {
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    initialize();
   }, [authState.token]);
-
   const registerEvent = async (eventId, registrationData) => {
     console.log(`Attempting to register for event ID: ${eventId}`);
     try {
       const response = await api.post(`/events/${eventId}/register`, registrationData);
-      // Alert.alert('Success', response.data.message);
-      const event = events.find((evt) => evt.eventId === eventId);
-      if (event && !registeredEvents.find((regEvt) => regEvt.eventId === eventId)) {
-        setRegisteredEvents((prev) => [...prev, event]);
+      const registeredEvent = response.data;
+      const fullEvent = events.find((evt) => evt.eventId === eventId);
+      if (fullEvent && !registeredEvents.find((regEvt) => regEvt.eventId === eventId)) {
+        setRegisteredEvents((prev) => [...prev, fullEvent]);
       }
+      setError(null);
     } catch (err) {
       console.error('Failed to register for event:', err);
       setError(
@@ -88,14 +98,13 @@ export const RegisteredEventsProvider = ({ children }) => {
       );
     }
   };
-
   const withdrawEvent = async (eventId) => {
     try {
       const response = await api.post(`/events/${eventId}/withdraw`);
-      // Alert.alert('Success', response.data.message);
       setRegisteredEvents((prev) =>
         prev.filter((evt) => evt.eventId !== eventId)
       );
+      setError(null);
     } catch (err) {
       console.error('Failed to withdraw from event:', err);
       setError(
@@ -107,14 +116,12 @@ export const RegisteredEventsProvider = ({ children }) => {
       );
     }
   };
-
   const isRegistered = useCallback(
     (eventId) => {
       return registeredEvents.some((event) => event.eventId === eventId);
     },
     [registeredEvents]
   );
-
   const addEvent = async (newEventData) => {
     try {
       const response = await api.post('/events', newEventData);
@@ -131,7 +138,6 @@ export const RegisteredEventsProvider = ({ children }) => {
       );
     }
   };
-
   return (
     <RegisteredEventsContext.Provider
       value={{

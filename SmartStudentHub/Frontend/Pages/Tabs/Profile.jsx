@@ -178,18 +178,18 @@ const Profile = () => {
           <Caption style={styles.caption}>{user?.email}</Caption>
         </View>
         <View style={styles.infoSection}>
-          <View style={styles.row}>
+          {/* <View style={styles.row}>
             <Text style={[styles.label, { color: theme.colors.onBackground }]}>Full Name:</Text>
             <Text style={[styles.info, { color: theme.colors.onBackground }]}>{user?.fullName || 'N/A'}</Text>
-          </View>
+          </View> */}
           <View style={styles.row}>
             <Text style={[styles.label, { color: theme.colors.onBackground }]}>Username:</Text>
             <Text style={[styles.info, { color: theme.colors.onBackground }]}>{user?.username || 'N/A'}</Text>
           </View>
-          <View style={styles.row}>
+          {/* <View style={styles.row}>
             <Text style={[styles.label, { color: theme.colors.onBackground }]}>Email:</Text>
             <Text style={[styles.info, { color: theme.colors.onBackground }]}>{user?.email || 'N/A'}</Text>
-          </View>
+          </View> */}
           <View style={styles.row}>
             <Text style={[styles.label, { color: theme.colors.onBackground }]}>University:</Text>
             <Text style={[styles.info, { color: theme.colors.onBackground }]}>{user?.university || 'N/A'}</Text>
