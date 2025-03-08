@@ -1,3 +1,5 @@
+import 'react-native-get-random-values';
+import '@ethersproject/shims';
 import 'react-native-gesture-handler'; 
 import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -11,7 +13,6 @@ import { GroupsProvider } from './Frontend/newcontext/GroupsContext';
 import { OrganizationsProvider } from './Frontend/newcontext/OrganizationsContext';
 import { AuthProvider } from './Frontend/newcontext/AuthContext';
 import { RecommendationsProvider } from './Frontend/newcontext/RecommendationsContext'; 
-
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -33,7 +34,6 @@ export default function App() {
     </GestureHandlerRootView>
   );
 }
-
 const ThemeConsumer = () => {
   const { theme } = React.useContext(ThemeContext);
   if (!theme || !theme.colors) {

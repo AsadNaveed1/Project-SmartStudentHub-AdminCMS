@@ -7,14 +7,35 @@ import externalEventLogo from '../assets/external_event_logo.png';
 import RegisterEventModal from './RegisterEventModal';
 export default function EventsCard({ event, onPress }) {
   const theme = useTheme();
-  const { registerEvent, withdrawEvent, isRegistered } = useContext(RegisteredEventsContext); 
+  const { registerEvent, withdrawEvent, isRegistered, blockchainStatus } = useContext(RegisteredEventsContext); 
   const [modalVisible, setModalVisible] = useState(false);
   const handleRegister = () => {
+    if (!blockchainStatus.connected) {
+      Alert.alert(
+        'Blockchain Not Connected',
+        'Registration requires blockchain connection. Please try again later or contact support.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
     setModalVisible(true);
   };
   const handleWithdraw = () => {
-    withdrawEvent(event.eventId);
-    Alert.alert('Withdrawn', `You have withdrawn from "${event.title}"`);
+    Alert.alert(
+      'Withdraw Registration',
+      'Are you sure you want to withdraw from this event? Note: Your blockchain registration record cannot be removed.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Withdraw', 
+          style: 'destructive', 
+          onPress: () => {
+            withdrawEvent(event.eventId);
+            Alert.alert('Withdrawn', `You have withdrawn from "${event.title}"`);
+          }
+        }
+      ]
+    );
   };
   const registered = isRegistered(event.eventId);
   const getDefaultImage = () => {
@@ -34,7 +55,6 @@ export default function EventsCard({ event, onPress }) {
   };
   const handleModalSubmit = async (registrationData) => {
     await registerEvent(event.eventId, registrationData);
-    Alert.alert('Registered', `You have registered for "${event.title}"`);
     setModalVisible(false);
   };
   return (
@@ -77,6 +97,12 @@ export default function EventsCard({ event, onPress }) {
                 </View>
               ) : null
             )}
+            {}
+            {blockchainStatus.connected && (
+              <View style={[styles.pill, styles.blockchainPill]}>
+                <Text style={styles.pillText}>🔗 Blockchain</Text>
+              </View>
+            )}
           </View>
           <View style={styles.dateTimeContainer}>
             <Text style={[styles.date, { color: theme.colors.onSurfaceVariant }]}>
@@ -112,17 +138,33 @@ export default function EventsCard({ event, onPress }) {
         >
           <Text style={styles.buttonText}>Details</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.button,
-            registered ? styles.withdrawButton : styles.registerButton,
-          ]}
-          onPress={registered ? handleWithdraw : handleRegister}
-        >
-          <Text style={styles.buttonText}>{registered ? 'Withdraw' : 'Register'}</Text>
-        </TouchableOpacity>
+        {registered ? (
+          <TouchableOpacity
+            style={[styles.button, styles.withdrawButton]}
+            onPress={handleWithdraw}
+            disabled={blockchainStatus?.processing}
+          >
+            <Text style={styles.buttonText}>
+              {blockchainStatus?.processing ? 'Processing...' : 'Withdraw'}
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[styles.button, styles.registerButton]}
+            onPress={handleRegister}
+            disabled={blockchainStatus?.processing || !blockchainStatus?.connected}
+          >
+            <View style={styles.registerButtonContent}>
+              <Text style={styles.buttonText}>
+                {blockchainStatus?.processing ? 'Processing...' : 'Register'}
+              </Text>
+              {blockchainStatus?.connected && (
+                <Text style={styles.blockchainIndicator}>🔒</Text>
+              )}
+            </View>
+          </TouchableOpacity>
+        )}
       </View>
-      {}
       <RegisterEventModal
         visible={modalVisible}
         onClose={handleModalClose}
@@ -187,6 +229,9 @@ const styles = StyleSheet.create({
   },
   externalPill: {
     backgroundColor: '#ffeeba', 
+  },
+  blockchainPill: {
+    backgroundColor: '#e9ecef',
   },
   pillText: {
     fontSize: 12,
@@ -254,5 +299,15 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  registerButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  blockchainIndicator: {
+    marginLeft: 5,
+    fontSize: 12,
+    color: '#fff',
   },
 });

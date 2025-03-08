@@ -1,0 +1,40 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/Users/asad/Documents/Project-SmartStudentHub-AdminCMS/SmartStudentHub/blockchain/contracts/EventRegistration.sol": {
+      "lastModificationDate": 1741394898326,
+      "contentHash": "90a0966fba6b03893e34d106c23afb3b",
+      "sourceName": "contracts/EventRegistration.sol",
+      "solcConfig": {
+        "version": "0.8.17",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "EventRegistration"
+      ]
+    }
+  }
+}

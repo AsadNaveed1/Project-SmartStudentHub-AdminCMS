@@ -7,6 +7,8 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  ActivityIndicator,
+  Linking
 } from "react-native";
 import {
   Modal,
@@ -18,8 +20,11 @@ import {
   HelperText,
   TouchableRipple,
   Menu,
+  Chip,
+  Divider
 } from "react-native-paper";
 import { AuthContext } from "../newcontext/AuthContext";
+import { RegisteredEventsContext } from "../newcontext/RegisteredEventsContext";
 const CustomRadioButton = ({ options, selectedValue, onSelect }) => {
   return (
     <View style={styles.customRadioContainer}>
@@ -46,11 +51,14 @@ const CustomRadioButton = ({ options, selectedValue, onSelect }) => {
 const RegisterEventModal = ({ visible, onClose, onSubmit, event }) => {
   const theme = useTheme();
   const { authState } = useContext(AuthContext);
+  const { blockchainStatus, exportWalletInfo } = useContext(RegisteredEventsContext);
   const user = authState.user;
   const [salutation, setSalutation] = useState("");
   const [fullName, setFullName] = useState(user?.fullName || "");
   const [extraData, setExtraData] = useState({});
   const [errors, setErrors] = useState({});
+  const [showWalletInfo, setShowWalletInfo] = useState(false);
+  const [walletInfo, setWalletInfo] = useState(null);
   useEffect(() => {
     if (event.extraFields && Array.isArray(event.extraFields)) {
       const initialExtraData = {};
@@ -73,7 +81,7 @@ const RegisterEventModal = ({ visible, onClose, onSubmit, event }) => {
     }
     if (event.extraFields && Array.isArray(event.extraFields)) {
       event.extraFields.forEach((field) => {
-        if (field.required && !extraData[field.name].trim()) {
+        if (field.required && !extraData[field.name]?.trim()) {
           newErrors[field.name] = `${field.label} is required.`;
         }
       });
@@ -90,6 +98,15 @@ const RegisterEventModal = ({ visible, onClose, onSubmit, event }) => {
       };
       onSubmit(registrationData);
     }
+  };
+  const handleViewWalletInfo = async () => {
+    const info = await exportWalletInfo();
+    setWalletInfo(info);
+    setShowWalletInfo(true);
+  };
+  const handleViewTransaction = (txHash) => {
+    const explorerUrl = `https://honorable-steel-rasalhague.explorer.mainnet.skalenodes.com/tx/${txHash}`;
+    Linking.openURL(explorerUrl);
   };
   const salutationOptions = [
     { label: "Mr.", value: "Mr." },
@@ -116,7 +133,38 @@ const RegisterEventModal = ({ visible, onClose, onSubmit, event }) => {
               >
                 Register for {event.title}
               </Text>
-      
+              {}
+              <View style={styles.blockchainStatusContainer}>
+                <Chip 
+                  icon={blockchainStatus.connected ? "check-circle" : "alert-circle"} 
+                  style={{
+                    backgroundColor: blockchainStatus.connected ? '#d4edda' : '#f8d7da'
+                  }}
+                >
+                  {blockchainStatus.connected ? 'Blockchain Connected' : 'Blockchain Not Connected'}
+                </Chip>
+                {blockchainStatus.networkInfo && (
+                  <Text style={styles.networkInfo}>
+                    Network: {blockchainStatus.networkInfo.name || 'SKALE'} 
+                    {blockchainStatus.networkInfo.isSkale ? ' (Gas-Free)' : ''}
+                  </Text>
+                )}
+                {blockchainStatus.walletAddress && (
+                  <Text style={styles.walletAddress} numberOfLines={1} ellipsizeMode="middle">
+                    Wallet: {blockchainStatus.walletAddress}
+                  </Text>
+                )}
+                <Text style={styles.blockchainNote}>
+                  Your registration will be secured on the blockchain for immutability and transparency.
+                </Text>
+                <Button 
+                  mode="text" 
+                  onPress={handleViewWalletInfo}
+                  style={styles.walletButton}
+                >
+                  View Wallet Details
+                </Button>
+              </View>
               <View style={styles.fieldContainer}>
                 <Text style={styles.fieldTitle}>Salutation *</Text>
                 <CustomRadioButton
@@ -128,7 +176,6 @@ const RegisterEventModal = ({ visible, onClose, onSubmit, event }) => {
                   <HelperText type="error">{errors.salutation}</HelperText>
                 )}
               </View>
-            
               <TextInput
                 label="Full Name"
                 value={fullName}
@@ -140,7 +187,6 @@ const RegisterEventModal = ({ visible, onClose, onSubmit, event }) => {
               {errors.fullName && (
                 <HelperText type="error">{errors.fullName}</HelperText>
               )}
-          
               <TextInput
                 label="Email"
                 value={user?.email || ""}
@@ -148,7 +194,6 @@ const RegisterEventModal = ({ visible, onClose, onSubmit, event }) => {
                 style={styles.input}
                 disabled
               />
-        
               <TextInput
                 label="Degree"
                 value={user?.degree || ""}
@@ -156,7 +201,6 @@ const RegisterEventModal = ({ visible, onClose, onSubmit, event }) => {
                 style={styles.input}
                 disabled
               />
-       
               <TextInput
                 label="University Year"
                 value={user?.universityYear || ""}
@@ -164,7 +208,6 @@ const RegisterEventModal = ({ visible, onClose, onSubmit, event }) => {
                 style={styles.input}
                 disabled
               />
-             
               <TextInput
                 label="Username"
                 value={user?.username || ""}
@@ -172,7 +215,6 @@ const RegisterEventModal = ({ visible, onClose, onSubmit, event }) => {
                 style={styles.input}
                 disabled
               />
-          
               <TextInput
                 label="Faculty"
                 value={user?.faculty || ""}
@@ -180,23 +222,6 @@ const RegisterEventModal = ({ visible, onClose, onSubmit, event }) => {
                 style={styles.input}
                 disabled
               />
-          
-              {/* <TextInput
-                label="Department"
-                placeholder="Select department"
-                value={user?.department || ""}
-                mode="outlined"
-                style={styles.input}
-                multiline={true}
-                numberOfLines={
-                  user?.department && user?.department.length > 40 ? 2 : 1
-                }
-                editable={false}
-                right={<TextInput.Icon name="menu-down" />}
-                disabled
-              /> */}
-         
-            
               {event.extraFields &&
                 event.extraFields.map((field) => (
                   <View key={field.name} style={styles.extraFieldContainer}>
@@ -284,23 +309,62 @@ const RegisterEventModal = ({ visible, onClose, onSubmit, event }) => {
                     )}
                   </View>
                 ))}
-      
               <View style={styles.buttonContainer}>
                 <Button
                   mode="contained"
                   onPress={handleConfirm}
                   style={styles.confirmButton}
+                  disabled={blockchainStatus.processing || !blockchainStatus.connected}
+                  loading={blockchainStatus.processing}
                 >
-                  Confirm Registration
+                  {blockchainStatus.processing ? 'Processing on Blockchain...' : 'Confirm Registration'}
                 </Button>
                 <Button
                   mode="text"
                   onPress={onClose}
                   style={styles.cancelButton}
+                  disabled={blockchainStatus.processing}
                 >
                   Cancel
                 </Button>
               </View>
+              {blockchainStatus.lastTransaction && (
+                <View style={styles.transactionContainer}>
+                  <Text style={styles.transactionTitle}>Last Transaction:</Text>
+                  <Text style={styles.transactionHash} numberOfLines={1} ellipsizeMode="middle">
+                    {blockchainStatus.lastTransaction}
+                  </Text>
+                  <Button 
+                    mode="text" 
+                    onPress={() => handleViewTransaction(blockchainStatus.lastTransaction)}
+                    style={styles.viewTransactionButton}
+                  >
+                    View on Explorer
+                  </Button>
+                </View>
+              )}
+              {}
+              {showWalletInfo && walletInfo && (
+                <View style={styles.walletInfoContainer}>
+                  <Text style={styles.walletInfoTitle}>Your Blockchain Wallet</Text>
+                  <Divider style={styles.divider} />
+                  <Text style={styles.walletInfoLabel}>Public Address:</Text>
+                  <Text style={styles.walletInfoValue} selectable>{walletInfo.address}</Text>
+                  <Text style={styles.walletInfoLabel}>Private Key (Keep Secret!):</Text>
+                  <Text style={styles.walletInfoValue} selectable>{walletInfo.privateKey}</Text>
+                  <Text style={styles.walletInfoWarning}>
+                    Warning: Never share your private key with anyone. This key controls 
+                    your blockchain identity and all your registrations.
+                  </Text>
+                  <Button 
+                    mode="outlined" 
+                    onPress={() => setShowWalletInfo(false)}
+                    style={styles.closeWalletButton}
+                  >
+                    Close Wallet Info
+                  </Button>
+                </View>
+              )}
             </ScrollView>
           </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
@@ -320,6 +384,33 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
+  },
+  blockchainStatusContainer: {
+    marginBottom: 15,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: '#f8f9fa',
+    alignItems: 'center',
+  },
+  networkInfo: {
+    fontSize: 14,
+    marginTop: 8,
+    color: '#495057',
+  },
+  walletAddress: {
+    fontSize: 12,
+    marginTop: 4,
+    color: '#495057',
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  },
+  blockchainNote: {
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 8,
+    color: '#6c757d',
+  },
+  walletButton: {
+    marginTop: 8,
   },
   input: {
     marginBottom: 10,
@@ -382,5 +473,62 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   cancelButton: {},
+  transactionContainer: {
+    marginTop: 15,
+    padding: 10,
+    backgroundColor: '#e8f4f8',
+    borderRadius: 5,
+  },
+  transactionTitle: {
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  transactionHash: {
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    fontSize: 12,
+  },
+  viewTransactionButton: {
+    marginTop: 5,
+  },
+  walletInfoContainer: {
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#dee2e6',
+  },
+  walletInfoTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  divider: {
+    marginBottom: 10,
+  },
+  walletInfoLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginTop: 10,
+    color: '#495057',
+  },
+  walletInfoValue: {
+    fontSize: 12,
+    padding: 8,
+    backgroundColor: '#e9ecef',
+    borderRadius: 4,
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    marginTop: 5,
+  },
+  walletInfoWarning: {
+    fontSize: 12,
+    color: '#dc3545',
+    marginTop: 15,
+    textAlign: 'center',
+  },
+  closeWalletButton: {
+    marginTop: 15,
+  }
 });
 export default RegisterEventModal;
