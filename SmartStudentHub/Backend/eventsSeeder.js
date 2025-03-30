@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const Event = require('./models/Event');
@@ -19,33 +18,34 @@ const connectDB = async () => {
 
 const updateEvents = async () => {
   try {
+    await Event.deleteMany({});
+    console.log('All existing events deleted.');
+
     const organizations = await Organization.find();
     const orgMap = {};
     organizations.forEach(org => {
       orgMap[org.name] = org._id;
     });
 
+    let idCounter = 1;
+
     for (const eventData of sampleEvents) {
       const { eventId, organization, ...rest } = eventData;
+
+      const newEventId = eventId || idCounter.toString();
+      idCounter++;
 
       const orgId = orgMap[organization];
 
       if (!orgId) {
-        console.warn(`Organization not found for event ID ${eventId}: ${organization}`);
+        console.warn(`Organization not found for event ID ${newEventId}: ${organization}`);
         continue;
       }
 
-      const eventPayload = { ...rest, organization: orgId };
+      const eventPayload = { ...rest, eventId: newEventId, organization: orgId };
 
-      const existingEvent = await Event.findOne({ eventId });
-
-      if (existingEvent) {
-        await Event.updateOne({ eventId }, eventPayload);
-        console.log(`Updated Event ID: ${eventId}`);
-      } else {
-        await Event.create(eventPayload);
-        console.log(`Added New Event ID: ${eventId}`);
-      }
+      await Event.create(eventPayload);
+      console.log(`Added New Event ID: ${newEventId}`);
     }
     console.log('Events have been successfully updated.');
     process.exit();

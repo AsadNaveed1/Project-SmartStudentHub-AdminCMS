@@ -35,9 +35,11 @@ export default function EventManagement({ navigation }) {
   const [filteredOrganizations, setFilteredOrganizations] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [timeFilter, setTimeFilter] = useState("All");
+  const [eventCategoryFilter, setEventCategoryFilter] = useState("All");
   const [allMenuVisible, setAllMenuVisible] = useState(false);
   const [societyMenuVisible, setSocietyMenuVisible] = useState(false);
   const [externalMenuVisible, setExternalMenuVisible] = useState(false);
+  const [categoryMenuVisible, setCategoryMenuVisible] = useState(false);
   const [showRecommendations, setShowRecommendations] = useState(false);
   const societies = [
     "Artificial Intelligence Society",
@@ -48,13 +50,25 @@ export default function EventManagement({ navigation }) {
     "Music Society",
   ];
   const externalEvents = ["Volunteer", "Community Events", "Networking"];
+  const eventCategories = [
+    "Architecture & Engineering",
+    "Business & Economics",
+    "Culture and Arts",
+    "Education",
+    "Law and Politics",
+    "Medical & Health Care",
+    "Science & Technology",
+    "Social Development & Welfare",
+    "Sports and Recreation",
+    "Others"
+  ];
   const timeFilterOptions = ["All", "This Week", "Next Week", "This Month", "Next Month"];
   useEffect(() => {
     if (showRecommendations) {
       return;
     }
-    applyFilters(searchQuery, categoryFilter, timeFilter);
-  }, [events, organizations, searchQuery, categoryFilter, timeFilter, showRecommendations]);
+    applyFilters(searchQuery, categoryFilter, timeFilter, eventCategoryFilter);
+  }, [events, organizations, searchQuery, categoryFilter, timeFilter, eventCategoryFilter, showRecommendations]);
   useEffect(() => {
     if (searchQuery.trim() !== "") {
       const lowerCaseQuery = searchQuery.toLowerCase();
@@ -77,23 +91,83 @@ export default function EventManagement({ navigation }) {
     ) {
       if (societies.includes(selectedFilter)) {
         setCategoryFilter("Society Event");
-        applyFilters(searchQuery, "Society Event", timeFilter);
+        applyFilters(searchQuery, "Society Event", timeFilter, eventCategoryFilter);
       } else if (externalEvents.includes(selectedFilter)) {
         setCategoryFilter("External Event");
-        applyFilters(searchQuery, "External Event", timeFilter);
+        applyFilters(searchQuery, "External Event", timeFilter, eventCategoryFilter);
       }
     } else {
       setCategoryFilter(selectedFilter);
-      applyFilters(searchQuery, selectedFilter, timeFilter);
+      applyFilters(searchQuery, selectedFilter, timeFilter, eventCategoryFilter);
     }
     setShowRecommendations(false);
+    if (selectedFilter !== "By Category") {
+      setEventCategoryFilter("All");
+    }
   };
   const handleTimeFilter = (selectedTime) => {
     setTimeFilter(selectedTime);
-    applyFilters(searchQuery, categoryFilter, selectedTime);
+    applyFilters(searchQuery, categoryFilter, selectedTime, eventCategoryFilter);
     setShowRecommendations(false);
   };
-  const applyFilters = (query, selectedCategory, selectedTime) => {
+  const handleEventCategoryFilter = (selectedCategory) => {
+    setEventCategoryFilter(selectedCategory);
+    applyFilters(searchQuery, categoryFilter, timeFilter, selectedCategory);
+    setShowRecommendations(false);
+    if (selectedCategory !== "All") {
+      setCategoryFilter("By Category");
+    }
+  };
+  const handleByCategoryClick = () => {
+    setCategoryFilter("By Category");
+    setEventCategoryFilter("All");
+    setShowRecommendations(false);
+    applyFiltersByEventCategories();
+  };
+  const applyFiltersByEventCategories = () => {
+    let filtered = events.filter(event => 
+      eventCategories.includes(event.subtype)
+    );
+    if (timeFilter !== "All") {
+      filtered = applyTimeFilter(filtered, timeFilter);
+    }
+    setFilteredEvents(filtered);
+  };
+  const applyTimeFilter = (events, selectedTime) => {
+    if (selectedTime === "All") return events;
+    const now = moment();
+    if (selectedTime === "This Week") {
+      const startOfWeek = moment().startOf("isoWeek");
+      const endOfWeek = moment().endOf("isoWeek");
+      return events.filter((event) => {
+        const eventDate = moment(event.date, "DD-MM-YYYY");
+        return eventDate.isBetween(startOfWeek, endOfWeek, null, "[]");
+      });
+    } else if (selectedTime === "Next Week") {
+      const startOfNextWeek = moment().add(1, "weeks").startOf("isoWeek");
+      const endOfNextWeek = moment().add(1, "weeks").endOf("isoWeek");
+      return events.filter((event) => {
+        const eventDate = moment(event.date, "DD-MM-YYYY");
+        return eventDate.isBetween(startOfNextWeek, endOfNextWeek, null, "[]");
+      });
+    } else if (selectedTime === "This Month") {
+      const startOfMonth = moment().startOf("month");
+      const endOfMonth = moment().endOf("month");
+      return events.filter((event) => {
+        const eventDate = moment(event.date, "DD-MM-YYYY");
+        return eventDate.isBetween(startOfMonth, endOfMonth, null, "[]");
+      });
+    } else if (selectedTime === "Next Month") {
+      const startOfNextMonth = moment().add(1, "months").startOf("month");
+      const endOfNextMonth = moment().add(1, "months").endOf("month");
+      return events.filter((event) => {
+        const eventDate = moment(event.date, "DD-MM-YYYY");
+        return eventDate.isBetween(startOfNextMonth, endOfNextMonth, null, "[]");
+      });
+    }
+    return events;
+  };
+  const applyFilters = (query, selectedCategory, selectedTime, selectedEventCategory) => {
     let filtered = events;
     if (query.trim() !== "") {
       const lowerCaseQuery = query.toLowerCase();
@@ -103,7 +177,14 @@ export default function EventManagement({ navigation }) {
           (event.organization && event.organization.name.toLowerCase().includes(lowerCaseQuery))
       );
     }
-    if (selectedCategory !== "All") {
+    if (selectedCategory === "By Category") {
+      filtered = filtered.filter(event => 
+        eventCategories.includes(event.subtype)
+      );
+      if (selectedEventCategory !== "All") {
+        filtered = filtered.filter((event) => event.subtype === selectedEventCategory);
+      }
+    } else if (selectedCategory !== "All") {
       if (societies.includes(selectedCategory)) {
         filtered = filtered.filter(
           (event) =>
@@ -126,38 +207,11 @@ export default function EventManagement({ navigation }) {
       } else if (selectedCategory === "University Event") {
         filtered = filtered.filter((event) => event.type === "University Event");
       }
+    } else if (selectedEventCategory !== "All") {
+      filtered = filtered.filter((event) => event.subtype === selectedEventCategory);
     }
     if (selectedTime !== "All") {
-      const now = moment();
-      if (selectedTime === "This Week") {
-        const startOfWeek = moment().startOf("isoWeek");
-        const endOfWeek = moment().endOf("isoWeek");
-        filtered = filtered.filter((event) => {
-          const eventDate = moment(event.date, "DD-MM-YYYY");
-          return eventDate.isBetween(startOfWeek, endOfWeek, null, "[]");
-        });
-      } else if (selectedTime === "Next Week") {
-        const startOfNextWeek = moment().add(1, "weeks").startOf("isoWeek");
-        const endOfNextWeek = moment().add(1, "weeks").endOf("isoWeek");
-        filtered = filtered.filter((event) => {
-          const eventDate = moment(event.date, "DD-MM-YYYY");
-          return eventDate.isBetween(startOfNextWeek, endOfNextWeek, null, "[]");
-        });
-      } else if (selectedTime === "This Month") {
-        const startOfMonth = moment().startOf("month");
-        const endOfMonth = moment().endOf("month");
-        filtered = filtered.filter((event) => {
-          const eventDate = moment(event.date, "DD-MM-YYYY");
-          return eventDate.isBetween(startOfMonth, endOfMonth, null, "[]");
-        });
-      } else if (selectedTime === "Next Month") {
-        const startOfNextMonth = moment().add(1, "months").startOf("month");
-        const endOfNextMonth = moment().add(1, "months").endOf("month");
-        filtered = filtered.filter((event) => {
-          const eventDate = moment(event.date, "DD-MM-YYYY");
-          return eventDate.isBetween(startOfNextMonth, endOfNextMonth, null, "[]");
-        });
-      }
+      filtered = applyTimeFilter(filtered, selectedTime);
     }
     setFilteredEvents(filtered);
   };
@@ -165,6 +219,7 @@ export default function EventManagement({ navigation }) {
     fetchRecommendations();
     setCategoryFilter("All");
     setTimeFilter("All");
+    setEventCategoryFilter("All");
     setShowRecommendations(true);
   };
   const renderEvent = ({ item }) => (
@@ -405,6 +460,7 @@ export default function EventManagement({ navigation }) {
                   } else {
                     handleCategoryFilter("Society Event");
                   }
+                  setSocietyMenuVisible(false);
                 }}
               >
                 <Text
@@ -477,6 +533,7 @@ export default function EventManagement({ navigation }) {
                 style={styles.filterLabel}
                 onPress={() => {
                   handleCategoryFilter("External Event");
+                  setExternalMenuVisible(false);
                 }}
               >
                 <Text
@@ -488,8 +545,7 @@ export default function EventManagement({ navigation }) {
                         : theme.colors.Surface,
                   }}
                 >
-                  {externalEvents.includes(categoryFilter) ||
-                  categoryFilter === "External Event"
+                  {externalEvents.includes(categoryFilter)
                     ? categoryFilter
                     : "External Event"}
                 </Text>
@@ -533,7 +589,85 @@ export default function EventManagement({ navigation }) {
             />
           ))}
         </Menu>
- 
+        {}
+        <Menu
+          visible={categoryMenuVisible}
+          onDismiss={() => setCategoryMenuVisible(false)}
+          anchor={
+            <View
+              style={[
+                styles.filterButton,
+                (categoryFilter === "By Category" || eventCategoryFilter !== "All") && {
+                  backgroundColor: theme.colors.primary,
+                },
+              ]}
+            >
+              <TouchableOpacity
+                style={styles.filterLabel}
+                onPress={handleByCategoryClick}
+              >
+                <Text
+                  style={{
+                    color:
+                      (categoryFilter === "By Category" || eventCategoryFilter !== "All")
+                        ? "#fff"
+                        : theme.colors.Surface,
+                  }}
+                >
+                  {eventCategoryFilter !== "All" ? eventCategoryFilter : "By Category"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setCategoryMenuVisible(true)}
+                style={styles.iconButton}
+              >
+                <Icon
+                  name="caret-down"
+                  size={16}
+                  color={
+                    (categoryFilter === "By Category" || eventCategoryFilter !== "All")
+                      ? "#fff"
+                      : theme.colors.Surface
+                  }
+                />
+              </TouchableOpacity>
+            </View>
+          }
+          contentStyle={{
+            backgroundColor: theme.colors.surface,
+            borderColor: theme.colors.onSurfaceVariant,
+            borderWidth: 0.5,
+            borderRadius: 8,
+          }}
+        >
+          <Menu.Item
+            key="AllEventCategories"
+            onPress={() => {
+              handleEventCategoryFilter("All");
+              setCategoryFilter("By Category");
+              setCategoryMenuVisible(false);
+            }}
+            title="All Categories"
+            titleStyle={{ color: theme.colors.onSurface }}
+            style={{
+              backgroundColor: theme.colors.surface,
+            }}
+          />
+          {eventCategories.map((category) => (
+            <Menu.Item
+              key={category}
+              onPress={() => {
+                handleEventCategoryFilter(category);
+                setCategoryMenuVisible(false);
+              }}
+              title={category}
+              titleStyle={{ color: theme.colors.onSurface }}
+              style={{
+                backgroundColor: theme.colors.surface,
+              }}
+            />
+          ))}
+        </Menu>
         <TouchableOpacity
           key="Recommendations"
           style={[
@@ -579,8 +713,6 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: -50,
   },
-
-
   sectionListContent: {
     paddingBottom: 50, 
   },

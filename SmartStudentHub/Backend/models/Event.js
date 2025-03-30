@@ -7,7 +7,7 @@ const EventSchema = new mongoose.Schema({
   },
   title: {
     type: String,
-    required: true,
+    required: false,
   },
   image: {
     type: String,
@@ -49,7 +49,7 @@ const EventSchema = new mongoose.Schema({
   },
   location: {
     type: String,
-    required: true,
+    required: false,
   },
   registeredUsers: [{
     type: mongoose.Schema.Types.ObjectId,
