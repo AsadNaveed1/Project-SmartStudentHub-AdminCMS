@@ -14,6 +14,13 @@ app.use('/api/groups', require('./routes/groups'));
 app.use('/api/events', require('./routes/events'));
 app.use('/api/organizations', require('./routes/organizations'));
 app.use('/api/messages', require('./routes/messages'));
+app.use('/api/chatbot', require('./routes/chatbot'));
+const fs = require('fs');
+const path = require('path');
+const uploadsDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 app.get('/', (req, res) => {
   res.send('API is running...');
 });

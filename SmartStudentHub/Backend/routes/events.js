@@ -250,14 +250,14 @@ router.get('/recommendations', authMiddleware, async (req, res) => {
     })
       .populate('organization', 'name')
       .limit(20);
-    console.log(
-      'Content-Based Recommendations After Date Filter:',
-      contentBased.map((e) => ({
-        eventId: e.eventId,
-        subtype: e.subtype,
-        date: e.date,
-      }))
-    );
+    // console.log(
+    //   'Content-Based Recommendations After Date Filter:',
+    //   contentBased.map((e) => ({
+    //     eventId: e.eventId,
+    //     subtype: e.subtype,
+    //     date: e.date,
+    //   }))
+    // );
     const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:5003/recommend';
     const payload = {
       user_id: user._id.toString(),
@@ -295,14 +295,14 @@ router.get('/recommendations', authMiddleware, async (req, res) => {
       }
     });
     const combinedRecommendations = Array.from(combinedRecommendationsMap.values());
-    console.log(
-      'Combined Recommendations:',
-      combinedRecommendations.map((e) => ({
-        eventId: e.eventId,
-        subtype: e.subtype,
-        date: e.date,
-      }))
-    );
+    // console.log(
+    //   'Combined Recommendations:',
+    //   combinedRecommendations.map((e) => ({
+    //     eventId: e.eventId,
+    //     subtype: e.subtype,
+    //     date: e.date,
+    //   }))
+    // );
     res.json({
       contentBased: contentBased,
       mlBased: mlBased,
