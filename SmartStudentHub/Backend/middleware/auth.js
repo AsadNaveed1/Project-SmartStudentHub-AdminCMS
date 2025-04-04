@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Organization = require('../models/Organization');
 const dotenv = require('dotenv');
 dotenv.config();
 const authMiddleware = async (req, res, next) => {
@@ -11,11 +12,21 @@ const authMiddleware = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded.user;
-    const user = await User.findById(req.user.id).select('-password');
-    if (!user) {
-      return res.status(401).json({ message: 'User not found, authorization denied' });
+    if (req.user.type === 'organization') {
+      const organization = await Organization.findById(req.user.id).select('-password');
+      if (!organization) {
+        return res.status(401).json({ message: 'Organization not found, authorization denied' });
+      }
+      req.user = organization;
+      req.user.type = 'organization';
+    } else {
+      const user = await User.findById(req.user.id).select('-password');
+      if (!user) {
+        return res.status(401).json({ message: 'User not found, authorization denied' });
+      }
+      req.user = user;
+      req.user.type = 'user';
     }
-    req.user = user;
     next();
   } catch (error) {
     console.error('Auth Middleware Error:', error.message);

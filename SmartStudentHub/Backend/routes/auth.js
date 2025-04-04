@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const Organization = require("../models/Organization");
 const authMiddleware = require("../middleware/auth");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -24,6 +25,7 @@ router.post("/login", async (req, res) => {
     const payload = {
       user: {
         id: user.id,
+        type: 'user'
       },
     };
     jwt.sign(
@@ -47,11 +49,62 @@ router.post("/login", async (req, res) => {
             department: user.department,
             bio: user.bio,
           },
+          type: 'user'
         });
       }
     );
   } catch (error) {
     console.error("Login Route Error:", error.message);
+    res.status(500).send("Server error");
+  }
+});
+router.post("/organization/login", async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res
+      .status(400)
+      .json({ message: "Please provide email and password" });
+  }
+  try {
+    const organization = await Organization.findOne({ email }).select("+password");
+    if (!organization) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+    const isMatch = await organization.matchPassword(password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+    const payload = {
+      user: {
+        id: organization.id,
+        type: 'organization'
+      },
+    };
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" },
+      (err, token) => {
+        if (err) throw err;
+        res.json({
+          token,
+          organization: {
+            id: organization.id,
+            organizationId: organization.organizationId,
+            name: organization.name,
+            email: organization.email,
+            description: organization.description,
+            location: organization.location,
+            type: organization.type,
+            subtype: organization.subtype,
+            image: organization.image
+          },
+          type: 'organization'
+        });
+      }
+    );
+  } catch (error) {
+    console.error("Organization Login Route Error:", error.message);
     res.status(500).send("Server error");
   }
 });
@@ -160,6 +213,7 @@ router.post("/signup", async (req, res) => {
     const payload = {
       user: {
         id: user.id,
+        type: 'user'
       },
     };
     jwt.sign(
@@ -183,6 +237,7 @@ router.post("/signup", async (req, res) => {
             department: user.department,
             bio: user.bio,
           },
+          type: 'user'
         });
       }
     );
@@ -191,16 +246,96 @@ router.post("/signup", async (req, res) => {
     res.status(500).send("Server error");
   }
 });
+router.post("/organization/signup", async (req, res) => {
+  const {
+    name,
+    email,
+    password,
+    description,
+    location,
+    type,
+    subtype,
+    image
+  } = req.body;
+  if (!name || !email || !password || !description || !location || !type) {
+    return res.status(400).json({ message: "Please fill in all required fields." });
+  }
+  try {
+    let organization = await Organization.findOne({ email });
+    if (organization) {
+      return res.status(400).json({ message: "Email already registered." });
+    }
+    const organizationId = `org_${Date.now()}`;
+    organization = new Organization({
+      organizationId,
+      name,
+      email,
+      password,
+      description,
+      location,
+      type,
+      subtype: subtype || null,
+      image: image || "https://via.placeholder.com/150"
+    });
+    await organization.save();
+    const payload = {
+      user: {
+        id: organization.id,
+        type: 'organization'
+      },
+    };
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" },
+      (err, token) => {
+        if (err) throw err;
+        res.status(201).json({
+          token,
+          organization: {
+            id: organization.id,
+            organizationId: organization.organizationId,
+            name: organization.name,
+            email: organization.email,
+            description: organization.description,
+            location: organization.location,
+            type: organization.type,
+            subtype: organization.subtype,
+            image: organization.image
+          },
+          type: 'organization'
+        });
+      }
+    );
+  } catch (error) {
+    console.error("Organization Signup Error:", error.message);
+    res.status(500).send("Server error");
+  }
+});
 router.get("/me", authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id)
-      .select("-password")
-      .populate("joinedGroups", "groupId courseName description")
-      .populate("registeredEvents", "eventId title description date time location");
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
+    if (req.user.type === 'organization') {
+      const organization = await Organization.findById(req.user.id).select("-password");
+      if (!organization) {
+        return res.status(404).json({ message: "Organization not found." });
+      }
+      return res.json({
+        organization,
+        type: 'organization'
+      });
+    } else {
+      const user = await User.findById(req.user.id)
+        .select("-password")
+        .populate("joinedGroups", "groupId courseName description")
+        .populate("registeredEvents", "eventId title description date time location");
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
+      return res.json({
+        user,
+        type: 'user'
+      });
     }
-    res.json(user);
   } catch (error) {
     console.error("GET /me Error:", error.message);
     res.status(500).send("Server error");
