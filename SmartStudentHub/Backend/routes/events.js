@@ -7,6 +7,7 @@ const Organization = require('../models/Organization');
 const User = require('../models/User');
 const authMiddleware = require('../middleware/auth');
 const dotenv = require('dotenv');
+const mongoose = require('mongoose');
 dotenv.config();
 const triggerModelRetrain = async () => {
   try {
@@ -52,6 +53,125 @@ router.get('/category/:category', async (req, res) => {
   } catch (error) {
     console.error('Error fetching events by category:', error.message);
     res.status(500).send('Server Error');
+  }
+});
+router.get('/recommendations', authMiddleware, async (req, res) => {
+  try {
+    console.log("Recommendations requested for user:", req.user.id);
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      console.log("User not found");
+      return res.status(400).json({ message: 'User not found.' });
+    }
+    console.log("User found, registered events count:", user.registeredEvents ? user.registeredEvents.length : 0);
+    let registeredEvents = [];
+    if (user.registeredEvents && user.registeredEvents.length > 0) {
+      if (typeof user.registeredEvents[0] === 'string' || 
+          user.registeredEvents[0] instanceof mongoose.Types.ObjectId) {
+        registeredEvents = await Event.find({
+          _id: { $in: user.registeredEvents }
+        });
+        console.log("Fetched events from IDs, count:", registeredEvents.length);
+      } else {
+        registeredEvents = user.registeredEvents;
+        console.log("Using pre-populated events, count:", registeredEvents.length);
+      }
+    }
+    if (registeredEvents.length === 0) {
+      console.log("No registered events found for user");
+      return res.json({
+        contentBased: [],
+        mlBased: [],
+        combined: [],
+        message: 'No registered events to base recommendations on.',
+      });
+    }
+    const types = new Set();
+    const subtypes = new Set();
+    const registeredEventIds = new Set();
+    registeredEvents.forEach((event) => {
+      if (event.type) types.add(event.type);
+      if (event.subtype) subtypes.add(event.subtype);
+      if (event.eventId) registeredEventIds.add(event.eventId);
+    });
+    console.log('Types:', Array.from(types));
+    console.log('Subtypes:', Array.from(subtypes));
+    console.log('Registered Event IDs:', Array.from(registeredEventIds));
+    let contentBased = [];
+    if (types.size > 0 || subtypes.size > 0) {
+      const query = {
+        $and: [
+          {
+            $or: [
+              { type: { $in: Array.from(types) } },
+              { subtype: { $in: Array.from(subtypes) } },
+            ],
+          },
+          { eventId: { $nin: Array.from(registeredEventIds) } },
+          { date: { $gte: moment().format('DD-MM-YYYY') } },
+        ],
+      };
+      console.log('Content-based query:', JSON.stringify(query));
+      contentBased = await Event.find(query)
+        .populate('organization', 'name image')
+        .limit(20);
+      console.log('Content-based results count:', contentBased.length);
+    }
+    const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:5003/recommend';
+    const payload = {
+      user_id: user._id.toString(),
+      num_recommendations: 5,
+    };
+    let mlBased = [];
+    try {
+      console.log('Requesting ML recommendations from:', ML_SERVICE_URL);
+      const mlResponse = await axios.post(ML_SERVICE_URL, payload, { timeout: 5000 });
+      if (mlResponse.data && mlResponse.data.recommendations) {
+        mlBased = mlResponse.data.recommendations;
+        console.log('ML-Based Recommendations received, count:', mlBased.length);
+      } else {
+        console.warn('ML service response does not contain recommendations.');
+      }
+      mlBased = mlBased.filter(
+        (event) =>
+          !registeredEventIds.has(event.eventId) &&
+          moment(event.date, 'DD-MM-YYYY').isSameOrAfter(moment(), 'day')
+      );
+      console.log('ML-Based Recommendations After Filtering, count:', mlBased.length);
+    } catch (mlError) {
+      console.error('ML Service Error:', mlError.message);
+      if (mlError.response && mlError.response.data) {
+        console.error('ML Service Response:', mlError.response.data);
+      }
+      mlBased = [];
+    }
+    const combinedRecommendationsMap = new Map();
+    contentBased.forEach((event) => {
+      combinedRecommendationsMap.set(event.eventId, event);
+    });
+    mlBased.forEach((mlEvent) => {
+      if (!combinedRecommendationsMap.has(mlEvent.eventId)) {
+        combinedRecommendationsMap.set(mlEvent.eventId, mlEvent);
+      }
+    });
+    const combinedRecommendations = Array.from(combinedRecommendationsMap.values());
+    console.log('Combined recommendations count:', combinedRecommendations.length);
+    res.json({
+      contentBased: contentBased,
+      mlBased: mlBased,
+      combined: combinedRecommendations,
+    });
+  } catch (error) {
+    console.error('Error fetching recommendations:', error.message);
+    if (error.stack) {
+      console.error('Stack trace:', error.stack);
+    }
+    res.json({
+      contentBased: [],
+      mlBased: [],
+      combined: [],
+      message: 'Error fetching recommendations: ' + error.message,
+    });
   }
 });
 router.get('/:id', async (req, res) => {
@@ -253,96 +373,6 @@ router.post('/:id/withdraw', authMiddleware, async (req, res) => {
     res.json({ message: 'Withdrawn from the event successfully.' });
   } catch (error) {
     console.error('Error withdrawing from event:', error.message);
-    res.status(500).send('Server Error');
-  }
-});
-router.get('/recommendations', authMiddleware, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).populate('registeredEvents');
-    if (!user) {
-      return res.status(400).json({ message: 'User not found.' });
-    }
-    const registeredEvents = user.registeredEvents;
-    if (registeredEvents.length === 0) {
-      return res.json({
-        contentBased: [],
-        mlBased: [],
-        combined: [],
-        message: 'No registered events to base recommendations on.',
-      });
-    }
-    const types = new Set();
-    const subtypes = new Set();
-    const registeredEventIds = new Set();
-    registeredEvents.forEach((event) => {
-      if (event.type) types.add(event.type);
-      if (event.subtype) subtypes.add(event.subtype);
-      if (event.eventId) registeredEventIds.add(event.eventId);
-    });
-    console.log('Types:', Array.from(types));
-    console.log('Subtypes:', Array.from(subtypes));
-    console.log('Registered Event IDs:', Array.from(registeredEventIds));
-    const contentBased = await Event.find({
-      $and: [
-        {
-          $or: [
-            { type: { $in: Array.from(types) } },
-            { subtype: { $in: Array.from(subtypes) } },
-          ],
-        },
-        { eventId: { $nin: Array.from(registeredEventIds) } },
-        { date: { $gte: moment().format('DD-MM-YYYY') } },
-      ],
-    })
-      .populate('organization', 'name image')
-      .limit(20);
-    const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:5003/recommend';
-    const payload = {
-      user_id: user._id.toString(),
-      num_recommendations: 5,
-    };
-    let mlBased = [];
-    try {
-      const mlResponse = await axios.post(ML_SERVICE_URL, payload, { timeout: 5000 });
-      if (mlResponse.data && mlResponse.data.recommendations) {
-        mlBased = mlResponse.data.recommendations;
-        console.log('ML-Based Recommendations:', mlBased);
-      } else {
-        console.warn('ML service response does not contain recommendations.');
-      }
-      mlBased = mlBased.filter(
-        (event) =>
-          !registeredEventIds.has(event.eventId) &&
-          moment(event.date, 'DD-MM-YYYY').isSameOrAfter(moment(), 'day')
-      );
-      console.log('ML-Based Recommendations After Filtering:', mlBased);
-    } catch (mlError) {
-      console.error('ML Service Error:', mlError.message);
-      if (mlError.response && mlError.response.data) {
-        console.error('ML Service Response:', mlError.response.data);
-      }
-      mlBased = [];
-    }
-    const combinedRecommendationsMap = new Map();
-    contentBased.forEach((event) => {
-      combinedRecommendationsMap.set(event.eventId, event);
-    });
-    mlBased.forEach((mlEvent) => {
-      if (!combinedRecommendationsMap.has(mlEvent.eventId)) {
-        combinedRecommendationsMap.set(mlEvent.eventId, mlEvent);
-      }
-    });
-    const combinedRecommendations = Array.from(combinedRecommendationsMap.values());
-    res.json({
-      contentBased: contentBased,
-      mlBased: mlBased,
-      combined: combinedRecommendations,
-    });
-  } catch (error) {
-    console.error('Error fetching recommendations:', error.message);
-    if (error.response && error.response.data) {
-      console.error('Response data:', error.response.data);
-    }
     res.status(500).send('Server Error');
   }
 });
