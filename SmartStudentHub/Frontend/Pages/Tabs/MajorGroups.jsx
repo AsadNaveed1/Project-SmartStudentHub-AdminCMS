@@ -263,7 +263,7 @@ export default function MajorGroups() {
             >
               <Text
                 style={{
-                  color: departmentFilter !== 'All' ? '#fff' : theme.colors.onSurface,
+                  color: departmentFilter !== 'All' ? '#fff' : theme.colors.Surface,
                   marginRight: 6,
                 }}
               >
@@ -272,7 +272,7 @@ export default function MajorGroups() {
               <Icon
                 name="caret-down"
                 size={16}
-                color={departmentFilter !== 'All' ? '#fff' : theme.colors.onSurface}
+                color={departmentFilter !== 'All' ? '#fff' : theme.colors.Surface}
               />
             </TouchableOpacity>
           }
@@ -309,7 +309,7 @@ export default function MajorGroups() {
             >
               <Text
                 style={{
-                  color: commonCoreFilter !== 'All' ? '#fff' : theme.colors.onSurface,
+                  color: commonCoreFilter !== 'All' ? '#fff' : theme.colors.Surface,
                   marginRight: 6,
                 }}
               >
@@ -318,7 +318,7 @@ export default function MajorGroups() {
               <Icon
                 name="caret-down"
                 size={16}
-                color={commonCoreFilter !== 'All' ? '#fff' : theme.colors.onSurface}
+                color={commonCoreFilter !== 'All' ? '#fff' : theme.colors.Surface}
               />
             </TouchableOpacity>
           }
@@ -355,7 +355,7 @@ export default function MajorGroups() {
             >
               <Text
                 style={{
-                  color: otherFilter !== 'All' ? '#fff' : theme.colors.onSurface,
+                  color: otherFilter !== 'All' ? '#fff' : theme.colors.Surface,
                   marginRight: 6,
                 }}
               >
@@ -364,7 +364,7 @@ export default function MajorGroups() {
               <Icon
                 name="caret-down"
                 size={16}
-                color={otherFilter !== 'All' ? '#fff' : theme.colors.onSurface}
+                color={otherFilter !== 'All' ? '#fff' : theme.colors.Surface}
               />
             </TouchableOpacity>
           }

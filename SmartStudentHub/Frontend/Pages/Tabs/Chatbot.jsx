@@ -17,7 +17,6 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import api from '../../src/backend/api';
-
 const Chatbot = () => {
   const theme = useTheme();
   const [messages, setMessages] = useState([
@@ -27,13 +26,9 @@ const Chatbot = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const flatListRef = useRef(null);
-
-  // Function to parse markdown formatting (only removes ** bold markers)
   const parseMarkdown = (text) => {
-    // Replace **text** with plain text (removes bold formatting)
     return text.replace(/\*\*(.*?)\*\*/g, '$1');
   };
-  
   const sendMessage = async () => {
     if ((inputText.trim() === '' && !selectedFile) || isLoading) return;
     const userMessage = { 
@@ -97,7 +92,6 @@ const Chatbot = () => {
       setIsLoading(false);
     }
   };
-  
   const pickDocument = async () => {
     if (isLoading) return;
     try {
@@ -113,7 +107,6 @@ const Chatbot = () => {
       Alert.alert('Error', 'Failed to select document.');
     }
   };
-  
   const pickImage = async () => {
     if (isLoading) return;
     try {
@@ -139,7 +132,6 @@ const Chatbot = () => {
       Alert.alert('Error', 'Failed to select image.');
     }
   };
-  
   const renderMessage = ({ item }) => (
     <View style={[
       styles.messageBubble, 
@@ -165,12 +157,11 @@ const Chatbot = () => {
       </Text>
     </View>
   );
-  
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={[styles.container, { backgroundColor: theme.colors.background }]}
-      keyboardVerticalOffset={100}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
     >
       <View style={styles.header}>
         <Text style={[styles.headerText, { color: theme.colors.primary }]}>
@@ -266,7 +257,6 @@ const Chatbot = () => {
     </KeyboardAvoidingView>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -351,5 +341,4 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 });
-
 export default Chatbot;
