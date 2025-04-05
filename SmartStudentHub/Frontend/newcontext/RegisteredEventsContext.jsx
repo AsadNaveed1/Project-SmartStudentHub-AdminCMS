@@ -8,6 +8,7 @@ import React, {
 import { Alert } from 'react-native';
 import api from '../src/backend/api';
 import { AuthContext } from './AuthContext';
+import moment from 'moment';
 export const RegisteredEventsContext = createContext();
 export const RegisteredEventsProvider = ({ children }) => {
   const { authState } = useContext(AuthContext);
@@ -18,7 +19,11 @@ export const RegisteredEventsProvider = ({ children }) => {
   const fetchEvents = async () => {
     try {
       const response = await api.get('/events');
-      setEvents(response.data);
+      const upcomingEvents = response.data.filter(event => {
+        const eventDate = moment(event.date, "DD-MM-YYYY");
+        return eventDate.isSameOrAfter(moment(), 'day');
+      });
+      setEvents(upcomingEvents);
       setError(null);
     } catch (err) {
       console.error('Failed to fetch events:', err);
@@ -53,7 +58,12 @@ export const RegisteredEventsProvider = ({ children }) => {
             return regEvt;
           }
         }).filter(evt => evt !== null);
-        setRegisteredEvents(fullRegisteredEvents);
+        const upcomingRegisteredEvents = fullRegisteredEvents.filter(event => {
+          if (!event.date) return true;
+          const eventDate = moment(event.date, "DD-MM-YYYY");
+          return eventDate.isSameOrAfter(moment(), 'day');
+        });
+        setRegisteredEvents(upcomingRegisteredEvents);
         setError(null);
       } else {
         console.warn('No registered events found for the user.');
@@ -141,7 +151,10 @@ export const RegisteredEventsProvider = ({ children }) => {
   const addEvent = async (newEventData) => {
     try {
       const response = await api.post('/events', newEventData);
-      setEvents((prev) => [...prev, response.data]);
+      const eventDate = moment(response.data.date, "DD-MM-YYYY");
+      if (eventDate.isSameOrAfter(moment(), 'day')) {
+        setEvents((prev) => [...prev, response.data]);
+      }
       await fetchEvents();
       Alert.alert('Success', 'Event added successfully.');
       return true;

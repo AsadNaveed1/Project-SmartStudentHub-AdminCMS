@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { styled } from 'styled-components';
 import { FaSearch, FaEye, FaEdit, FaTrash, FaSpinner, FaTimes, FaMapMarkerAlt, 
-         FaCalendarAlt, FaClock, FaUserFriends, FaImage, FaExclamationTriangle } from 'react-icons/fa';
+         FaCalendarAlt, FaClock, FaUserFriends, FaImage, FaExclamationTriangle,
+         FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { eventService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
@@ -18,6 +19,8 @@ const ManageEvents = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const eventsPerPage = 10;
   useEffect(() => {
     fetchEvents();
   }, []);
@@ -43,7 +46,12 @@ const ManageEvents = () => {
         organizationId: event.organization?._id || null,
         registeredUsers: event.registeredUsers || []
       }));
-      setEvents(formattedEvents);
+      const sortedEvents = formattedEvents.sort((a, b) => {
+        if (a.status === 'upcoming' && b.status !== 'upcoming') return -1;
+        if (a.status !== 'upcoming' && b.status === 'upcoming') return 1;
+        return moment(a.date, 'DD-MM-YYYY').diff(moment(b.date, 'DD-MM-YYYY'));
+      });
+      setEvents(sortedEvents);
     } catch (err) {
       console.error('Error fetching events:', err);
       setError('Failed to load events. Please try again.');
@@ -53,6 +61,7 @@ const ManageEvents = () => {
   };
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1);
   };
   const filteredEvents = events.filter(event => {
     if (!searchTerm) return true;
@@ -64,6 +73,10 @@ const ManageEvents = () => {
       (event.organization && event.organization.toLowerCase().includes(searchLower))
     );
   });
+  const indexOfLastEvent = currentPage * eventsPerPage;
+  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
+  const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+  const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
   const handleViewEvent = async (eventId) => {
     try {
       setIsLoading(true);
@@ -123,7 +136,7 @@ const ManageEvents = () => {
     setSelectedEvent(null);
   };
   const handleEventUpdated = (updatedEvent) => {
-    setEvents(events.map(event => 
+    const updatedEvents = events.map(event => 
       event.id === updatedEvent.id ? {
         ...event,
         ...updatedEvent,
@@ -131,9 +144,21 @@ const ManageEvents = () => {
           ? 'upcoming' 
           : 'past',
       } : event
-    ));
+    );
+    const sortedEvents = updatedEvents.sort((a, b) => {
+      if (a.status === 'upcoming' && b.status !== 'upcoming') return -1;
+      if (a.status !== 'upcoming' && b.status === 'upcoming') return 1;
+      return moment(a.date, 'DD-MM-YYYY').diff(moment(b.date, 'DD-MM-YYYY'));
+    });
+    setEvents(sortedEvents);
     setEditModalOpen(false);
     setSelectedEvent(null);
+  };
+  const goToNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  };
+  const goToPreviousPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
   };
   if (isLoading && !selectedEvent) {
     return (
@@ -173,8 +198,8 @@ const ManageEvents = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredEvents.length > 0 ? (
-                filteredEvents.map(event => (
+              {currentEvents.length > 0 ? (
+                currentEvents.map(event => (
                   <TableRow key={event.id}>
                     <TableCell>{event.title}</TableCell>
                     <TableCell>
@@ -230,7 +255,30 @@ const ManageEvents = () => {
           </EventsTable>
         </ScrollableTable>
       </TableContainer>
-      {}
+      {filteredEvents.length > 0 && (
+        <PaginationContainer>
+          <PaginationInfo>
+            Showing {indexOfFirstEvent + 1}-{Math.min(indexOfLastEvent, filteredEvents.length)} of {filteredEvents.length} events
+          </PaginationInfo>
+          <PaginationControls>
+            <PaginationButton 
+              onClick={goToPreviousPage} 
+              disabled={currentPage === 1}
+              title="Previous page"
+            >
+              <FaChevronLeft />
+            </PaginationButton>
+            <PageIndicator>{currentPage} of {totalPages}</PageIndicator>
+            <PaginationButton 
+              onClick={goToNextPage} 
+              disabled={currentPage === totalPages}
+              title="Next page"
+            >
+              <FaChevronRight />
+            </PaginationButton>
+          </PaginationControls>
+        </PaginationContainer>
+      )}
       {viewModalOpen && selectedEvent && (
         <ModalOverlay>
           <ModalContainer>
@@ -307,7 +355,6 @@ const ManageEvents = () => {
           </ModalContainer>
         </ModalOverlay>
       )}
-      {}
       {editModalOpen && selectedEvent && (
         <EditEventModal
           isOpen={editModalOpen}
@@ -316,7 +363,6 @@ const ManageEvents = () => {
           onEventUpdated={handleEventUpdated}
         />
       )}
-      {}
       {deleteModalOpen && selectedEvent && (
         <DeleteConfirmationModal
           isOpen={deleteModalOpen}
@@ -470,6 +516,46 @@ const ActionButton = styled.button`
       background-color: #fed7d7;
     }
   }
+`;
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding: 10px 0;
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 15px;
+  }
+`;
+const PaginationInfo = styled.div`
+  font-size: 0.9rem;
+  color: #718096;
+`;
+const PaginationControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+const PaginationButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${props => props.disabled ? '#edf2f7' : 'white'};
+  color: ${props => props.disabled ? '#a0aec0' : '#4a5568'};
+  border: 1px solid ${props => props.disabled ? '#edf2f7' : '#e2e8f0'};
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  transition: all 0.2s;
+  &:hover:not(:disabled) {
+    background-color: #edf2f7;
+    border-color: #cbd5e0;
+  }
+`;
+const PageIndicator = styled.div`
+  font-size: 0.9rem;
+  color: #4a5568;
 `;
 const ModalOverlay = styled.div`
   position: fixed;

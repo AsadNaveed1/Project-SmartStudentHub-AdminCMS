@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { styled } from 'styled-components';
-import { FaSearch, FaEye, FaChevronDown, FaChevronUp, FaTimes, FaSpinner } from 'react-icons/fa';
+import { FaSearch, FaEye, FaChevronDown, FaChevronUp, FaTimes, FaSpinner, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { eventService } from '../services/api';
 import moment from 'moment';
 const Applicants = () => {
@@ -11,6 +11,8 @@ const Applicants = () => {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const eventsPerPage = 10;
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -40,7 +42,12 @@ const Applicants = () => {
             applicants
           };
         });
-        setEvents(formattedEvents);
+        const sortedEvents = formattedEvents.sort((a, b) => {
+          if (a.status === 'upcoming' && b.status !== 'upcoming') return -1;
+          if (a.status !== 'upcoming' && b.status === 'upcoming') return 1;
+          return moment(a.date, 'DD-MM-YYYY').diff(moment(b.date, 'DD-MM-YYYY'));
+        });
+        setEvents(sortedEvents);
       } catch (err) {
         console.error('Error fetching events:', err);
         setError('Failed to load events. Please try again.');
@@ -52,6 +59,7 @@ const Applicants = () => {
   }, []);
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1);
   };
   const handleApplicantSearch = (e) => {
     setApplicantSearchTerm(e.target.value);
@@ -65,6 +73,10 @@ const Applicants = () => {
       (event.location && event.location.toLowerCase().includes(searchLower))
     );
   });
+  const indexOfLastEvent = currentPage * eventsPerPage;
+  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
+  const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+  const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
   const handleViewApplicants = (eventId) => {
     const event = events.find(e => e.id === eventId);
     if (selectedEventId === eventId) {
@@ -81,6 +93,12 @@ const Applicants = () => {
     setSelectedEventId(null);
     setSelectedEvent(null);
     setApplicantSearchTerm('');
+  };
+  const goToNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  };
+  const goToPreviousPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
   };
   const filteredApplicants = selectedEvent?.applicants.filter(applicant => {
     if (!applicantSearchTerm) return true;
@@ -131,8 +149,8 @@ const Applicants = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredEvents.length > 0 ? (
-                filteredEvents.map(event => (
+              {currentEvents.length > 0 ? (
+                currentEvents.map(event => (
                   <TableRow key={event.id} isActive={selectedEventId === event.id}>
                     <TableCell>{event.title}</TableCell>
                     <TableCell>
@@ -169,6 +187,30 @@ const Applicants = () => {
           </EventsTable>
         </ScrollableTable>
       </TableContainer>
+      {filteredEvents.length > 0 && (
+        <PaginationContainer>
+          <PaginationInfo>
+            Showing {indexOfFirstEvent + 1}-{Math.min(indexOfLastEvent, filteredEvents.length)} of {filteredEvents.length} events
+          </PaginationInfo>
+          <PaginationControls>
+            <PaginationButton 
+              onClick={goToPreviousPage} 
+              disabled={currentPage === 1}
+              title="Previous page"
+            >
+              <FaChevronLeft />
+            </PaginationButton>
+            <PageIndicator>{currentPage} of {totalPages}</PageIndicator>
+            <PaginationButton 
+              onClick={goToNextPage} 
+              disabled={currentPage === totalPages}
+              title="Next page"
+            >
+              <FaChevronRight />
+            </PaginationButton>
+          </PaginationControls>
+        </PaginationContainer>
+      )}
       {selectedEvent && (
         <ApplicantsTableSection>
           <ApplicantsTableHeader>
@@ -375,6 +417,46 @@ const ActionButton = styled.button`
   &:hover {
     background-color: ${props => props.isActive ? '#bee3f8' : '#edf2f7'};
   }
+`;
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding: 10px 0;
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 15px;
+  }
+`;
+const PaginationInfo = styled.div`
+  font-size: 0.9rem;
+  color: #718096;
+`;
+const PaginationControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+const PaginationButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${props => props.disabled ? '#edf2f7' : 'white'};
+  color: ${props => props.disabled ? '#a0aec0' : '#4a5568'};
+  border: 1px solid ${props => props.disabled ? '#edf2f7' : '#e2e8f0'};
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  transition: all 0.2s;
+  &:hover:not(:disabled) {
+    background-color: #edf2f7;
+    border-color: #cbd5e0;
+  }
+`;
+const PageIndicator = styled.div`
+  font-size: 0.9rem;
+  color: #4a5568;
 `;
 const ApplicantsTableSection = styled.div`
   margin-top: 30px;

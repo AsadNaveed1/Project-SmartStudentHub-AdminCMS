@@ -31,7 +31,7 @@ export default function EventManagement({ navigation }) {
     fetchRecommendations 
   } = useContext(RecommendationsContext); 
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredEvents, setFilteredEvents] = useState(events);
+  const [filteredEvents, setFilteredEvents] = useState([]);
   const [filteredOrganizations, setFilteredOrganizations] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [timeFilter, setTimeFilter] = useState("All");
@@ -63,12 +63,23 @@ export default function EventManagement({ navigation }) {
     "Others"
   ];
   const timeFilterOptions = ["All", "This Week", "Next Week", "This Month", "Next Month"];
+  const getSortedEvents = () => {
+    return [...events].sort((a, b) => {
+      const dateA = moment(a.date, "DD-MM-YYYY");
+      const dateB = moment(b.date, "DD-MM-YYYY");
+      return dateA.diff(moment(), 'days') - dateB.diff(moment(), 'days');
+    });
+  };
   useEffect(() => {
-    if (showRecommendations) {
-      return;
+    if (!showRecommendations) {
+      applyFilters(searchQuery, categoryFilter, timeFilter, eventCategoryFilter);
     }
-    applyFilters(searchQuery, categoryFilter, timeFilter, eventCategoryFilter);
-  }, [events, organizations, searchQuery, categoryFilter, timeFilter, eventCategoryFilter, showRecommendations]);
+  }, [events, organizations]);
+  useEffect(() => {
+    if (!showRecommendations) {
+      applyFilters(searchQuery, categoryFilter, timeFilter, eventCategoryFilter);
+    }
+  }, [searchQuery, categoryFilter, timeFilter, eventCategoryFilter, showRecommendations]);
   useEffect(() => {
     if (searchQuery.trim() !== "") {
       const lowerCaseQuery = searchQuery.toLowerCase();
@@ -91,14 +102,11 @@ export default function EventManagement({ navigation }) {
     ) {
       if (societies.includes(selectedFilter)) {
         setCategoryFilter("Society Event");
-        applyFilters(searchQuery, "Society Event", timeFilter, eventCategoryFilter);
       } else if (externalEvents.includes(selectedFilter)) {
         setCategoryFilter("External Event");
-        applyFilters(searchQuery, "External Event", timeFilter, eventCategoryFilter);
       }
     } else {
       setCategoryFilter(selectedFilter);
-      applyFilters(searchQuery, selectedFilter, timeFilter, eventCategoryFilter);
     }
     setShowRecommendations(false);
     if (selectedFilter !== "By Category") {
@@ -107,12 +115,10 @@ export default function EventManagement({ navigation }) {
   };
   const handleTimeFilter = (selectedTime) => {
     setTimeFilter(selectedTime);
-    applyFilters(searchQuery, categoryFilter, selectedTime, eventCategoryFilter);
     setShowRecommendations(false);
   };
   const handleEventCategoryFilter = (selectedCategory) => {
     setEventCategoryFilter(selectedCategory);
-    applyFilters(searchQuery, categoryFilter, timeFilter, selectedCategory);
     setShowRecommendations(false);
     if (selectedCategory !== "All") {
       setCategoryFilter("By Category");
@@ -122,10 +128,10 @@ export default function EventManagement({ navigation }) {
     setCategoryFilter("By Category");
     setEventCategoryFilter("All");
     setShowRecommendations(false);
-    applyFiltersByEventCategories();
   };
   const applyFiltersByEventCategories = () => {
-    let filtered = events.filter(event => 
+    const sortedEvents = getSortedEvents();
+    let filtered = sortedEvents.filter(event => 
       eventCategories.includes(event.subtype)
     );
     if (timeFilter !== "All") {
@@ -133,42 +139,43 @@ export default function EventManagement({ navigation }) {
     }
     setFilteredEvents(filtered);
   };
-  const applyTimeFilter = (events, selectedTime) => {
-    if (selectedTime === "All") return events;
+  const applyTimeFilter = (eventsToFilter, selectedTime) => {
+    if (selectedTime === "All") return eventsToFilter;
     const now = moment();
     if (selectedTime === "This Week") {
       const startOfWeek = moment().startOf("isoWeek");
       const endOfWeek = moment().endOf("isoWeek");
-      return events.filter((event) => {
+      return eventsToFilter.filter((event) => {
         const eventDate = moment(event.date, "DD-MM-YYYY");
         return eventDate.isBetween(startOfWeek, endOfWeek, null, "[]");
       });
     } else if (selectedTime === "Next Week") {
       const startOfNextWeek = moment().add(1, "weeks").startOf("isoWeek");
       const endOfNextWeek = moment().add(1, "weeks").endOf("isoWeek");
-      return events.filter((event) => {
+      return eventsToFilter.filter((event) => {
         const eventDate = moment(event.date, "DD-MM-YYYY");
         return eventDate.isBetween(startOfNextWeek, endOfNextWeek, null, "[]");
       });
     } else if (selectedTime === "This Month") {
       const startOfMonth = moment().startOf("month");
       const endOfMonth = moment().endOf("month");
-      return events.filter((event) => {
+      return eventsToFilter.filter((event) => {
         const eventDate = moment(event.date, "DD-MM-YYYY");
         return eventDate.isBetween(startOfMonth, endOfMonth, null, "[]");
       });
     } else if (selectedTime === "Next Month") {
       const startOfNextMonth = moment().add(1, "months").startOf("month");
       const endOfNextMonth = moment().add(1, "months").endOf("month");
-      return events.filter((event) => {
+      return eventsToFilter.filter((event) => {
         const eventDate = moment(event.date, "DD-MM-YYYY");
         return eventDate.isBetween(startOfNextMonth, endOfNextMonth, null, "[]");
       });
     }
-    return events;
+    return eventsToFilter;
   };
   const applyFilters = (query, selectedCategory, selectedTime, selectedEventCategory) => {
-    let filtered = events;
+    const sortedEvents = getSortedEvents();
+    let filtered = sortedEvents;
     if (query.trim() !== "") {
       const lowerCaseQuery = query.toLowerCase();
       filtered = filtered.filter(
@@ -222,6 +229,14 @@ export default function EventManagement({ navigation }) {
     setEventCategoryFilter("All");
     setShowRecommendations(true);
   };
+  const getSortedRecommendations = (recommendations) => {
+    if (!recommendations || !recommendations.length) return [];
+    return [...recommendations].sort((a, b) => {
+      const dateA = moment(a.date, "DD-MM-YYYY");
+      const dateB = moment(b.date, "DD-MM-YYYY");
+      return dateA.diff(moment(), 'days') - dateB.diff(moment(), 'days');
+    });
+  };
   const renderEvent = ({ item }) => (
     <EventsCard
       event={item}
@@ -240,17 +255,19 @@ export default function EventManagement({ navigation }) {
   const getSections = () => {
     const sections = [];
     if (showRecommendations) {
-      if (contentBased.length > 0) {
+      const sortedContentBasedRecs = getSortedRecommendations(contentBased);
+      const sortedMlBasedRecs = getSortedRecommendations(mlBased);
+      if (sortedContentBasedRecs.length > 0) {
         sections.push({
           title: "Recommendations",
-          data: contentBased,
+          data: sortedContentBasedRecs,
           type: "event",
         });
       }
-      if (mlBased.length > 0) {
+      if (sortedMlBasedRecs.length > 0) {
         sections.push({
           title: "Others also joined these events",
-          data: mlBased,
+          data: sortedMlBasedRecs,
           type: "event",
         });
       }
