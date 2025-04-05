@@ -15,25 +15,31 @@ const Applicants = () => {
     const fetchEvents = async () => {
       try {
         setIsLoading(true);
-        const eventsData = await eventService.getAllEvents();
-        const formattedEvents = eventsData.map(event => ({
-          id: event.eventId,
-          title: event.title,
-          type: event.type,
-          subtype: event.subtype,
-          location: event.location,
-          date: event.date,
-          status: moment(event.date, 'DD-MM-YYYY').isSameOrAfter(moment(), 'day') ? 'upcoming' : 'past',
-          applicants: event.registeredUsers ? event.registeredUsers.map(user => ({
-            id: user._id,
-            name: user.fullName,
-            email: user.email,
-            phone: user.phone || 'Not provided',
-            uniYear: user.academicYear || 'Not provided',
-            degree: user.degree || 'Not provided',
-            faculty: user.faculty || 'Not provided'
-          })) : []
-        }));
+        const eventsData = await eventService.getEventsByOrganization();
+        const formattedEvents = eventsData.map(event => {
+          const applicants = event.registeredUsers ? event.registeredUsers.map(user => {
+            return {
+              id: user._id || 'Unknown ID',
+              name: user.fullName || 'No Name',
+              email: user.email || 'No Email',
+              uniYear: user.universityYear || 'Not provided',
+              degree: user.degree || 'Not provided',
+              faculty: user.faculty || 'Not provided'
+            };
+          }) : [];
+          return {
+            id: event.eventId || 'Unknown Event',
+            title: event.title || 'Untitled Event',
+            type: event.type || 'N/A',
+            subtype: event.subtype || '',
+            location: event.location || 'Not specified',
+            date: event.date || 'No date',
+            status: event.date && moment(event.date, 'DD-MM-YYYY').isSameOrAfter(moment(), 'day') 
+              ? 'upcoming' 
+              : 'past',
+            applicants
+          };
+        });
         setEvents(formattedEvents);
       } catch (err) {
         console.error('Error fetching events:', err);
@@ -51,11 +57,12 @@ const Applicants = () => {
     setApplicantSearchTerm(e.target.value);
   };
   const filteredEvents = events.filter(event => {
+    if (!searchTerm) return true;
     const searchLower = searchTerm.toLowerCase();
     return (
       event.title.toLowerCase().includes(searchLower) ||
-      event.type.toLowerCase().includes(searchLower) ||
-      event.location.toLowerCase().includes(searchLower)
+      (event.type && event.type.toLowerCase().includes(searchLower)) ||
+      (event.location && event.location.toLowerCase().includes(searchLower))
     );
   });
   const handleViewApplicants = (eventId) => {
@@ -79,14 +86,13 @@ const Applicants = () => {
     if (!applicantSearchTerm) return true;
     const searchLower = applicantSearchTerm.toLowerCase();
     return (
-      applicant.name.toLowerCase().includes(searchLower) ||
-      applicant.email.toLowerCase().includes(searchLower) ||
-      applicant.phone.includes(searchLower) ||
+      (applicant.name && applicant.name.toLowerCase().includes(searchLower)) ||
+      (applicant.email && applicant.email.toLowerCase().includes(searchLower)) ||
       (applicant.degree && applicant.degree.toLowerCase().includes(searchLower)) ||
       (applicant.faculty && applicant.faculty.toLowerCase().includes(searchLower)) ||
       (applicant.uniYear && applicant.uniYear.toLowerCase().includes(searchLower))
     );
-  });
+  }) || [];
   if (isLoading) {
     return (
       <LoadingContainer>
@@ -110,7 +116,6 @@ const Applicants = () => {
           <FaSearch />
         </SearchIcon>
       </SearchContainer>
-      {}
       <TableContainer>
         <ScrollableTable>
           <EventsTable>
@@ -132,7 +137,7 @@ const Applicants = () => {
                     <TableCell>{event.title}</TableCell>
                     <TableCell>
                       <div>{event.type}</div>
-                      <small>{event.subtype}</small>
+                      {event.subtype && <small>{event.subtype}</small>}
                     </TableCell>
                     <TableCell>{event.location}</TableCell>
                     <TableCell>{event.date}</TableCell>
@@ -164,7 +169,6 @@ const Applicants = () => {
           </EventsTable>
         </ScrollableTable>
       </TableContainer>
-      {}
       {selectedEvent && (
         <ApplicantsTableSection>
           <ApplicantsTableHeader>
@@ -173,7 +177,6 @@ const Applicants = () => {
               <FaTimes />
             </CloseButton>
           </ApplicantsTableHeader>
-          {}
           <SearchContainer>
             <SearchInput
               type="text"
@@ -196,7 +199,6 @@ const Applicants = () => {
                     <DetailHeader>ID</DetailHeader>
                     <DetailHeader>Name</DetailHeader>
                     <DetailHeader>Email</DetailHeader>
-                    <DetailHeader>Phone</DetailHeader>
                     <DetailHeader>Uni Year</DetailHeader>
                     <DetailHeader>Degree</DetailHeader>
                     <DetailHeader>Faculty</DetailHeader>
@@ -209,7 +211,6 @@ const Applicants = () => {
                         <DetailCell>{applicant.id}</DetailCell>
                         <DetailCell>{applicant.name}</DetailCell>
                         <DetailCell>{applicant.email}</DetailCell>
-                        <DetailCell>{applicant.phone}</DetailCell>
                         <DetailCell>{applicant.uniYear}</DetailCell>
                         <DetailCell>{applicant.degree}</DetailCell>
                         <DetailCell>{applicant.faculty}</DetailCell>
@@ -217,7 +218,7 @@ const Applicants = () => {
                     ))
                   ) : (
                     <DetailRow>
-                      <EmptyTableCell colSpan="7">
+                      <EmptyTableCell colSpan="6">
                         {selectedEvent.applicants.length === 0 
                           ? 'No applicants have registered for this event yet.' 
                           : 'No applicants match your search criteria.'}

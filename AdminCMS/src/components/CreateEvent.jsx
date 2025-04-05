@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { styled } from 'styled-components';
-import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaTag, FaBuilding, FaUsers, FaMoneyBill, FaImage, FaPlus } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaTag, FaBuilding, FaUsers, FaMoneyBill, FaImage, FaPlus } from 'react-icons/fa';
 import { eventService } from '../services/api';
 const CreateEvent = () => {
   const navigate = useNavigate();
@@ -41,10 +41,33 @@ const CreateEvent = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData({
-          ...formData,
-          image: reader.result
-        });
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const maxWidth = 1000;
+          const maxHeight = 562;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth || height > maxHeight) {
+            if (width / height > maxWidth / maxHeight) {
+              height = height * (maxWidth / width);
+              width = maxWidth;
+            } else {
+              width = width * (maxHeight / height);
+              height = maxHeight;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+          const resizedImage = canvas.toDataURL('image/jpeg', 0.9);
+          setFormData({
+            ...formData,
+            image: resizedImage
+          });
+        };
+        img.src = reader.result;
       };
       reader.readAsDataURL(file);
     }
@@ -56,12 +79,26 @@ const CreateEvent = () => {
     try {
       const eventId = `event_${Date.now()}`;
       const time = `${formData.startTime} - ${formData.endTime}`;
+      const dateParts = formData.date.split('-');
+      const formattedDate = dateParts.length === 3 
+        ? `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}` 
+        : formData.date;
+      const eventType = "External Event";
       const eventData = {
         ...formData,
+        date: formattedDate,
         time,
         eventId,
-        organization: organizationData.organizationId,
-        organizationName: organizationData.name
+        organizationId: organizationData.organizationId,
+        organizationName: organizationData.name,
+        organization: {
+          name: organizationData.name,
+          id: organizationData.organizationId,
+          organizationId: organizationData.organizationId,
+          image: organizationData.image
+        },
+        type: eventType,
+        subtype: formData.category
       };
       await eventService.createEvent(eventData);
       alert('Event created successfully!');
@@ -119,7 +156,7 @@ const CreateEvent = () => {
                 {formData.image && formData.image !== 'https://via.placeholder.com/500' ? (
                   <ImagePreview src={formData.image} alt="Event Image" />
                 ) : (
-                  <ImagePlaceholder width="120px" height="80px" radius="4px">
+                  <ImagePlaceholder width="180px" height="101px" radius="4px">
                     <FaPlus />
                   </ImagePlaceholder>
                 )}
@@ -542,8 +579,8 @@ const ImageUploadContainer = styled.div`
   }
 `;
 const ImagePreview = styled.img`
-  width: 120px;
-  height: 80px;
+  width: 180px;
+  height: 101px; 
   border-radius: 4px;
   object-fit: cover;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);

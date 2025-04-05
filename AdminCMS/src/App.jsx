@@ -9,7 +9,9 @@ import Dashboard from './components/Dashboard';
 import EditProfile from './components/EditProfile';
 import Login from './components/Login';
 import Signup from './components/Signup';
+import SetOrganizationCredentials from './components/SetOrganizationCredentials';
 import { authService } from './services/api';
+
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true' && localStorage.getItem('token');
   if (!isAuthenticated) {
@@ -17,12 +19,14 @@ const ProtectedRoute = ({ children }) => {
   }
   return children;
 };
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
     localStorage.getItem('isAuthenticated') === 'true' && localStorage.getItem('token')
   );
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const verifyAuth = async () => {
       try {
@@ -46,6 +50,7 @@ function App() {
     };
     verifyAuth();
   }, []);
+
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem('token');
@@ -62,6 +67,7 @@ function App() {
       window.removeEventListener('storage', checkAuth);
     };
   }, [user]);
+
   if (loading) {
     return (
       <LoadingContainer>
@@ -70,11 +76,13 @@ function App() {
       </LoadingContainer>
     );
   }
+
   return (
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/set-organization-credentials" element={<SetOrganizationCredentials />} />
         <Route path="*" element={
           <ProtectedRoute>
             <AppContainer>
@@ -96,7 +104,9 @@ function App() {
     </Router>
   );
 }
+
 export default App;
+
 const LoadingContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -105,6 +115,7 @@ const LoadingContainer = styled.div`
   height: 100vh;
   background-color: #f5f5f5;
 `;
+
 const LoadingSpinner = styled.div`
   border: 4px solid rgba(0, 0, 0, 0.1);
   border-radius: 50%;
@@ -118,6 +129,7 @@ const LoadingSpinner = styled.div`
     100% { transform: rotate(360deg); }
   }
 `;
+
 const AppContainer = styled.div`
   display: flex;
   height: 100vh;
@@ -126,6 +138,7 @@ const AppContainer = styled.div`
     flex-direction: column;
   }
 `;
+
 const MainContent = styled.main`
   flex: 1;
   padding: 20px;
@@ -136,3 +149,5 @@ const MainContent = styled.main`
     padding-top: 50px; 
   }
 `;
+
+//http://localhost:5173/set-organization-credentials

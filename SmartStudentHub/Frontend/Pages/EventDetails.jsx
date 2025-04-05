@@ -23,7 +23,15 @@ export default function EventDetails({ route, navigation }) {
   const { registerEvent, withdrawEvent, isRegistered } = useContext(RegisteredEventsContext);
   const registered = isRegistered(event.eventId); 
   const [modalVisible, setModalVisible] = useState(false);
+  const seatsLeft = event.capacity > 0 
+    ? Math.max(0, event.capacity - (event.registeredUsers ? event.registeredUsers.length : 0))
+    : null;
+  const isFull = event.capacity > 0 && seatsLeft === 0;
   const handleRegister = () => {
+    if (isFull) {
+      Alert.alert('Registration Closed', 'This event has reached its maximum capacity.');
+      return;
+    }
     setModalVisible(true);
   };
   const handleModalClose = () => {
@@ -65,10 +73,10 @@ export default function EventDetails({ route, navigation }) {
         `${event.date} ${startTimeStr}`,
         "DD-MM-YYYY hh:mm A"
       ).toDate();
-      const endTime = moment(
+      const endTime = endTimeStr ? moment(
         `${event.date} ${endTimeStr}`,
         "DD-MM-YYYY hh:mm A"
-      ).toDate();
+      ).toDate() : moment(startTime).add(1, 'hours').toDate();
       await Calendar.createEventAsync(defaultCalendar.id, {
         title: event.title,
         startDate: startTime,
@@ -114,6 +122,8 @@ export default function EventDetails({ route, navigation }) {
   const handleBack = () => {
     navigation.goBack();
   };
+  const priceDisplay = event.price > 0 ? `HKD $${event.price}` : 'Free';
+  const seatsLeftDisplay = seatsLeft !== null ? (isFull ? '0' : seatsLeft) : '-';
   return (
     <SafeAreaView
       style={[
@@ -179,6 +189,23 @@ export default function EventDetails({ route, navigation }) {
                   {moment(event.date, 'DD-MM-YYYY').format('MMM Do, YYYY')}
                 </Text>
               </View>
+              {}
+              <View style={styles.infoRow}>
+                <IconButton
+                  icon="currency-usd"
+                  size={16}
+                  style={styles.infoIcon}
+                  color={theme.colors.onSurfaceVariant}
+                />
+                <Text
+                  style={[
+                    styles.infoText,
+                    { color: theme.colors.onSurfaceVariant },
+                  ]}
+                >
+                  {priceDisplay}
+                </Text>
+              </View>
             </View>
             <View style={styles.column}>
               <View style={styles.infoRow}>
@@ -212,6 +239,26 @@ export default function EventDetails({ route, navigation }) {
                   ]}
                 >
                   {event.time}
+                </Text>
+              </View>
+              {}
+              <View style={styles.infoRow}>
+                <IconButton
+                  icon="account-group"
+                  size={16}
+                  style={styles.infoIcon}
+                  color={theme.colors.onSurfaceVariant}
+                />
+                <Text
+                  style={[
+                    styles.infoText,
+                    { 
+                      color: isFull ? '#e53e3e' : theme.colors.onSurfaceVariant,
+                      fontWeight: isFull ? '700' : '400' 
+                    },
+                  ]}
+                >
+                  {seatsLeftDisplay} {seatsLeft !== null ? 'spots remaining' : ''}
                 </Text>
               </View>
             </View>
@@ -263,12 +310,18 @@ export default function EventDetails({ route, navigation }) {
               onPress={registered ? handleWithdraw : handleRegister}
               style={[
                 styles.registerButton,
-                registered ? styles.withdrawButton : styles.registerButtonStyle,
+                registered ? styles.withdrawButton : (
+                  isFull && !registered ? styles.fullButton : styles.registerButtonStyle
+                ),
               ]}
               contentStyle={styles.buttonContent}
               labelStyle={styles.registerButtonLabel}
+              disabled={isFull && !registered}
             >
-              {registered ? 'Withdraw' : 'Register'}
+              {registered 
+                ? 'Withdraw' 
+                : (isFull ? 'Event Full' : 'Register')
+              }
             </Button>
             <IconButton
               icon="calendar-plus"
@@ -336,7 +389,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: 16,
   },
   infoColumns: {
     flexDirection: "row",
@@ -352,7 +405,7 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 0, 
+    marginBottom: 12, 
   },
   infoIcon: {
     marginRight: 4,
@@ -369,7 +422,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "600",
-    marginTop: 5, 
+    marginTop: 8, 
     marginBottom: 12,
   },
   description: {
@@ -404,5 +457,8 @@ const styles = StyleSheet.create({
   },
   registerButtonStyle: {
     backgroundColor: '#28a745',
+  },
+  fullButton: {
+    backgroundColor: '#cbd5e0',
   },
 });

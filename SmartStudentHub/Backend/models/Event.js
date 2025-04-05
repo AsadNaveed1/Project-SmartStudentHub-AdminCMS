@@ -15,7 +15,7 @@ const EventSchema = new mongoose.Schema({
   },
   summary: {
     type: String,
-    required: true,
+    required: false,
   },
   description: {
     type: String,
@@ -50,6 +50,16 @@ const EventSchema = new mongoose.Schema({
   location: {
     type: String,
     required: false,
+  },
+  capacity: {
+    type: Number,
+    required: false,
+    default: 0
+  },
+  price: {
+    type: Number,
+    required: false,
+    default: 0
   },
   registeredUsers: [{
     type: mongoose.Schema.Types.ObjectId,

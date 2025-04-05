@@ -17,8 +17,14 @@ export default function EventsCard({ event, onPress }) {
     Alert.alert('Withdrawn', `You have withdrawn from "${event.title}"`);
   };
   const registered = isRegistered(event.eventId);
-  const getDefaultImage = () => {
-    if (event.organization && event.organization.name === 'HKU') {
+  const getOrganizationLogo = () => {
+    if (event.organization && 
+        event.organization.image && 
+        event.organization.image !== 'https://via.placeholder.com/150' &&
+        !event.organization.image.includes('placeholder')) {
+      return { uri: event.organization.image };
+    }
+    else if (event.organization && event.organization.name === 'HKU') {
       return hkuLogo;
     }
     return externalEventLogo;
@@ -50,7 +56,7 @@ export default function EventsCard({ event, onPress }) {
         activeOpacity={0.8}
       >
         <Image
-          source={getDefaultImage()}
+          source={getOrganizationLogo()}
           style={styles.image}
           resizeMode="cover"
         />
@@ -122,7 +128,6 @@ export default function EventsCard({ event, onPress }) {
           <Text style={styles.buttonText}>{registered ? 'Withdraw' : 'Register'}</Text>
         </TouchableOpacity>
       </View>
-      {}
       <RegisterEventModal
         visible={modalVisible}
         onClose={handleModalClose}

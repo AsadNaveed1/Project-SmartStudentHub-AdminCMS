@@ -3,6 +3,7 @@ import { styled } from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaLock, FaCalendarCheck } from 'react-icons/fa';
 import { authService } from '../services/api';
+import axios from 'axios';
 const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -33,11 +34,27 @@ const Login = () => {
     try {
       let response;
       if (userType === 'organization') {
-        response = await authService.organizationLogin(formData.email, formData.password);
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userType', 'organization');
-        localStorage.setItem('organizationData', JSON.stringify(response.organization));
+        try {
+          response = await axios.post('/api/auth/organization/login', {
+            email: formData.email.trim(),
+            password: formData.password
+          });
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem('userType', 'organization');
+          localStorage.setItem('organizationData', JSON.stringify(response.data.organization));
+        } catch (err) {
+          console.error('Organization login error details:', err);
+          if (err.response) {
+            setError(`Error (${err.response.status}): ${err.response.data.message || 'Unknown error'}`);
+          } else if (err.request) {
+            setError('No response received from server. Please check your connection.');
+          } else {
+            setError(`Error: ${err.message}`);
+          }
+          setIsLoading(false);
+          return;
+        }
       } else {
         response = await authService.login(formData.email, formData.password);
         localStorage.setItem('token', response.token);
@@ -50,6 +67,25 @@ const Login = () => {
     } catch (err) {
       console.error('Login error:', err);
       setError(err.response?.data?.message || 'Failed to login. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const checkOrganization = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get('/api/organizations');
+      const orgs = response.data;
+      const matchingOrgsByEmail = orgs.filter(org => 
+        org.email && org.email.toLowerCase() === formData.email.toLowerCase()
+      );
+      if (matchingOrgsByEmail.length > 0) {
+        setError(`Organization with email ${formData.email} exists! ID: ${matchingOrgsByEmail[0].organizationId}`);
+      } else {
+        setError(`No organization found with email ${formData.email}`);
+      }
+    } catch (err) {
+      setError('Error checking organizations: ' + (err.response?.data?.message || err.message));
     } finally {
       setIsLoading(false);
     }
@@ -133,10 +169,24 @@ const Login = () => {
           <SubmitButton type="submit" disabled={isLoading}>
             {isLoading ? 'Signing in...' : 'Sign In'}
           </SubmitButton>
+          {}
+          {userType === 'organization' && (
+            <DebugButton 
+              type="button" 
+              onClick={checkOrganization} 
+              disabled={isLoading || !formData.email}
+            >
+              Check if organization exists
+            </DebugButton>
+          )}
         </LoginForm>
         <SignupPrompt>
           {userType === 'organization' ? (
-            <>New organization? <SignupLink to="/signup">Create an organization account</SignupLink></>
+            <>
+              New organization? <SignupLink to="/signup">Create an organization account</SignupLink>
+              <br />
+              <SignupLink to="/set-organization-credentials">Set credentials for existing organization</SignupLink>
+            </>
           ) : (
             <>Don't have an account? <SignupLink to="/user-signup">Sign up as a user</SignupLink></>
           )}
@@ -146,6 +196,24 @@ const Login = () => {
   );
 };
 export default Login;
+const DebugButton = styled.button`
+  margin-top: 10px;
+  background-color: #f7fafc;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  &:hover {
+    background-color: #edf2f7;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
 const LoginContainer = styled.div`
   display: flex;
   justify-content: center;

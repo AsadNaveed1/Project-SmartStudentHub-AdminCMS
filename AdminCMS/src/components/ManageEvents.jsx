@@ -1,74 +1,141 @@
 import React, { useState, useEffect } from 'react';
 import { styled } from 'styled-components';
-import { FaSearch, FaEye, FaEdit, FaTrash, FaSpinner } from 'react-icons/fa';
+import { FaSearch, FaEye, FaEdit, FaTrash, FaSpinner, FaTimes, FaMapMarkerAlt, 
+         FaCalendarAlt, FaClock, FaUserFriends, FaImage, FaExclamationTriangle } from 'react-icons/fa';
 import { eventService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
+import EditEventModal from './EditEventModal';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
 const ManageEvents = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setIsLoading(true);
-        const eventsData = await eventService.getAllEvents();
-        const formattedEvents = eventsData.map(event => ({
-          id: event.eventId,
-          title: event.title,
-          type: event.type,
-          subtype: event.subtype,
-          location: event.location,
-          date: event.date,
-          time: event.time,
-          status: moment(event.date, 'DD-MM-YYYY').isSameOrAfter(moment(), 'day') ? 'upcoming' : 'past',
-          organization: event.organization?.name || 'Unknown Organization',
-          organizationId: event.organization?._id || null,
-          registeredUsers: event.registeredUsers || []
-        }));
-        setEvents(formattedEvents);
-      } catch (err) {
-        console.error('Error fetching events:', err);
-        setError('Failed to load events. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchEvents();
   }, []);
+  const fetchEvents = async () => {
+    try {
+      setIsLoading(true);
+      const eventsData = await eventService.getEventsByOrganization();
+      const formattedEvents = eventsData.map(event => ({
+        id: event.eventId,
+        _id: event._id,
+        title: event.title,
+        type: event.type,
+        subtype: event.subtype,
+        location: event.location,
+        date: event.date,
+        time: event.time,
+        description: event.description || '',
+        summary: event.summary || '',
+        capacity: event.capacity || 'Unlimited',
+        image: event.image || 'https://via.placeholder.com/500',
+        status: moment(event.date, 'DD-MM-YYYY').isSameOrAfter(moment(), 'day') ? 'upcoming' : 'past',
+        organization: event.organization?.name || 'Unknown Organization',
+        organizationId: event.organization?._id || null,
+        registeredUsers: event.registeredUsers || []
+      }));
+      setEvents(formattedEvents);
+    } catch (err) {
+      console.error('Error fetching events:', err);
+      setError('Failed to load events. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
   const filteredEvents = events.filter(event => {
+    if (!searchTerm) return true;
     const searchLower = searchTerm.toLowerCase();
     return (
       event.title.toLowerCase().includes(searchLower) ||
-      event.type.toLowerCase().includes(searchLower) ||
-      event.location.toLowerCase().includes(searchLower) ||
+      (event.type && event.type.toLowerCase().includes(searchLower)) ||
+      (event.location && event.location.toLowerCase().includes(searchLower)) ||
       (event.organization && event.organization.toLowerCase().includes(searchLower))
     );
   });
-  const handleViewEvent = (eventId) => {
-    alert(`View event with ID: ${eventId}`);
-  };
-  const handleEditEvent = (eventId) => {
-    navigate(`/edit-event/${eventId}`);
-  };
-  const handleDeleteEvent = async (eventId) => {
-    if (window.confirm('Are you sure you want to delete this event?')) {
-      try {
-        await eventService.deleteEvent(eventId);
-        setEvents(events.filter(event => event.id !== eventId));
-        alert('Event deleted successfully');
-      } catch (err) {
-        console.error('Error deleting event:', err);
-        alert('Failed to delete event. Please try again.');
-      }
+  const handleViewEvent = async (eventId) => {
+    try {
+      setIsLoading(true);
+      const eventDetails = await eventService.getEventById(eventId);
+      const localEvent = events.find(e => e.id === eventId);
+      setSelectedEvent({
+        ...localEvent,
+        ...eventDetails,
+      });
+      setViewModalOpen(true);
+    } catch (err) {
+      console.error('Error fetching event details:', err);
+      setError('Failed to load event details. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
-  if (isLoading) {
+  const handleEditEvent = async (eventId) => {
+    try {
+      setIsLoading(true);
+      const eventDetails = await eventService.getEventById(eventId);
+      const localEvent = events.find(e => e.id === eventId);
+      setSelectedEvent({
+        ...localEvent,
+        ...eventDetails,
+      });
+      setEditModalOpen(true);
+    } catch (err) {
+      console.error('Error fetching event details:', err);
+      setError('Failed to load event details. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handleDeleteClick = (event) => {
+    setSelectedEvent(event);
+    setDeleteModalOpen(true);
+  };
+  const handleDeleteConfirm = async () => {
+    try {
+      setIsSubmitting(true);
+      await eventService.deleteEvent(selectedEvent.id);
+      setEvents(events.filter(event => event.id !== selectedEvent.id));
+      setDeleteModalOpen(false);
+      setSelectedEvent(null);
+    } catch (err) {
+      console.error('Error deleting event:', err);
+      setError('Failed to delete event. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  const handleModalClose = () => {
+    setViewModalOpen(false);
+    setEditModalOpen(false);
+    setDeleteModalOpen(false);
+    setSelectedEvent(null);
+  };
+  const handleEventUpdated = (updatedEvent) => {
+    setEvents(events.map(event => 
+      event.id === updatedEvent.id ? {
+        ...event,
+        ...updatedEvent,
+        status: updatedEvent.date && moment(updatedEvent.date, 'DD-MM-YYYY').isSameOrAfter(moment(), 'day') 
+          ? 'upcoming' 
+          : 'past',
+      } : event
+    ));
+    setEditModalOpen(false);
+    setSelectedEvent(null);
+  };
+  if (isLoading && !selectedEvent) {
     return (
       <LoadingContainer>
         <FaSpinner className="spinner" />
@@ -112,12 +179,12 @@ const ManageEvents = () => {
                     <TableCell>{event.title}</TableCell>
                     <TableCell>
                       <div>{event.type}</div>
-                      <small>{event.subtype}</small>
+                      {event.subtype && <small>{event.subtype}</small>}
                     </TableCell>
                     <TableCell>{event.location}</TableCell>
                     <TableCell>
                       <div>{event.date}</div>
-                      <small>{event.time}</small>
+                      {event.time && <small>{event.time}</small>}
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={event.status}>
@@ -144,7 +211,7 @@ const ManageEvents = () => {
                         <ActionButton
                           title="Delete"
                           className="delete"
-                          onClick={() => handleDeleteEvent(event.id)}
+                          onClick={() => handleDeleteClick(event)}
                         >
                           <FaTrash />
                         </ActionButton>
@@ -163,6 +230,101 @@ const ManageEvents = () => {
           </EventsTable>
         </ScrollableTable>
       </TableContainer>
+      {}
+      {viewModalOpen && selectedEvent && (
+        <ModalOverlay>
+          <ModalContainer>
+            <ModalHeader>
+              <ModalTitle>{selectedEvent.title}</ModalTitle>
+              <CloseButton onClick={handleModalClose}>
+                <FaTimes />
+              </CloseButton>
+            </ModalHeader>
+            <ModalBody>
+              <EventImageContainer>
+                <EventImage src={selectedEvent.image} alt={selectedEvent.title} />
+              </EventImageContainer>
+              <EventDetails>
+                <DetailItem>
+                  <DetailIcon><FaMapMarkerAlt /></DetailIcon>
+                  <DetailText>
+                    <DetailLabel>Location</DetailLabel>
+                    <DetailValue>{selectedEvent.location}</DetailValue>
+                  </DetailText>
+                </DetailItem>
+                <DetailItem>
+                  <DetailIcon><FaCalendarAlt /></DetailIcon>
+                  <DetailText>
+                    <DetailLabel>Date</DetailLabel>
+                    <DetailValue>{selectedEvent.date}</DetailValue>
+                  </DetailText>
+                </DetailItem>
+                <DetailItem>
+                  <DetailIcon><FaClock /></DetailIcon>
+                  <DetailText>
+                    <DetailLabel>Time</DetailLabel>
+                    <DetailValue>{selectedEvent.time || 'Not specified'}</DetailValue>
+                  </DetailText>
+                </DetailItem>
+                <DetailItem>
+                  <DetailIcon><FaUserFriends /></DetailIcon>
+                  <DetailText>
+                    <DetailLabel>Capacity</DetailLabel>
+                    <DetailValue>{selectedEvent.capacity || 'Unlimited'}</DetailValue>
+                  </DetailText>
+                </DetailItem>
+              </EventDetails>
+              <EventSection>
+                <SectionTitle>Event Type</SectionTitle>
+                <SectionContent>
+                  {selectedEvent.type} {selectedEvent.subtype && `- ${selectedEvent.subtype}`}
+                </SectionContent>
+              </EventSection>
+              {selectedEvent.summary && (
+                <EventSection>
+                  <SectionTitle>Summary</SectionTitle>
+                  <SectionContent>{selectedEvent.summary}</SectionContent>
+                </EventSection>
+              )}
+              {selectedEvent.description && (
+                <EventSection>
+                  <SectionTitle>Description</SectionTitle>
+                  <SectionContent>{selectedEvent.description}</SectionContent>
+                </EventSection>
+              )}
+              <EventSection>
+                <SectionTitle>Registered Applicants</SectionTitle>
+                <SectionContent>
+                  <StatusBadge status={selectedEvent.status === 'upcoming' ? 'active' : 'inactive'}>
+                    {selectedEvent.registeredUsers?.length || 0} {selectedEvent.registeredUsers?.length === 1 ? 'person' : 'people'} registered
+                  </StatusBadge>
+                </SectionContent>
+              </EventSection>
+            </ModalBody>
+            <ModalFooter>
+              <CloseModalButton onClick={handleModalClose}>Close</CloseModalButton>
+            </ModalFooter>
+          </ModalContainer>
+        </ModalOverlay>
+      )}
+      {}
+      {editModalOpen && selectedEvent && (
+        <EditEventModal
+          isOpen={editModalOpen}
+          onClose={handleModalClose}
+          event={selectedEvent}
+          onEventUpdated={handleEventUpdated}
+        />
+      )}
+      {}
+      {deleteModalOpen && selectedEvent && (
+        <DeleteConfirmationModal
+          isOpen={deleteModalOpen}
+          onClose={handleModalClose}
+          onConfirm={handleDeleteConfirm}
+          eventTitle={selectedEvent.title}
+        />
+      )}
     </ManageEventsContainer>
   );
 };
@@ -282,9 +444,9 @@ const StatusBadge = styled.span`
   border-radius: 4px;
   font-size: 0.8rem;
   font-weight: 500;
-  background-color: ${props => props.status === 'upcoming' ? '#ebf8ff' : '#f7fafc'};
-  color: ${props => props.status === 'upcoming' ? '#3182ce' : '#718096'};
-  border: 1px solid ${props => props.status === 'upcoming' ? '#bee3f8' : '#e2e8f0'};
+  background-color: ${props => props.status === 'upcoming' || props.status === 'active' ? '#ebf8ff' : '#f7fafc'};
+  color: ${props => props.status === 'upcoming' || props.status === 'active' ? '#3182ce' : '#718096'};
+  border: 1px solid ${props => props.status === 'upcoming' || props.status === 'active' ? '#bee3f8' : '#e2e8f0'};
 `;
 const ActionButtonsContainer = styled.div`
   display: flex;
@@ -307,5 +469,140 @@ const ActionButton = styled.button`
     &:hover {
       background-color: #fed7d7;
     }
+  }
+`;
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+`;
+const ModalContainer = styled.div`
+  background-color: white;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: fadeIn 0.3s;
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+`;
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+`;
+const ModalTitle = styled.h2`
+  margin: 0;
+  font-size: 1.5rem;
+  color: #2d3748;
+`;
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #718096;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  &:hover {
+    background-color: #f7fafc;
+    color: #e53e3e;
+  }
+`;
+const ModalBody = styled.div`
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(90vh - 130px);
+`;
+const EventImageContainer = styled.div`
+  width: 100%;
+  height: 200px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f7fafc;
+`;
+const EventImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+const EventDetails = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+`;
+const DetailItem = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+`;
+const DetailIcon = styled.div`
+  color: #4a5568;
+  min-width: 20px;
+  padding-top: 2px;
+`;
+const DetailText = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+const DetailLabel = styled.span`
+  color: #718096;
+  font-size: 0.875rem;
+`;
+const DetailValue = styled.span`
+  color: #2d3748;
+  font-weight: 500;
+`;
+const EventSection = styled.div`
+  margin-bottom: 20px;
+`;
+const SectionTitle = styled.h3`
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  color: #4a5568;
+`;
+const SectionContent = styled.div`
+  color: #2d3748;
+  line-height: 1.5;
+`;
+const ModalFooter = styled.div`
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+`;
+const CloseModalButton = styled.button`
+  padding: 8px 16px;
+  background-color: #edf2f7;
+  color: #4a5568;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover {
+    background-color: #e2e8f0;
   }
 `;

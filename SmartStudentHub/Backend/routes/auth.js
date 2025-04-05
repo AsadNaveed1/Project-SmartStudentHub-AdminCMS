@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Organization = require("../models/Organization");
 const authMiddleware = require("../middleware/auth");
+const bcrypt = require("bcryptjs");
 const dotenv = require("dotenv");
 dotenv.config();
 router.post("/login", async (req, res) => {
@@ -309,6 +310,65 @@ router.post("/organization/signup", async (req, res) => {
     );
   } catch (error) {
     console.error("Organization Signup Error:", error.message);
+    res.status(500).send("Server error");
+  }
+});
+router.post("/organization/set-credentials", async (req, res) => {
+  const { organizationId, email, password } = req.body;
+  if (!organizationId || !email || !password) {
+    return res.status(400).json({ message: "Organization ID, email, and password are required" });
+  }
+  try {
+    let organization = await Organization.findOne({ organizationId });
+    if (!organization) {
+      return res.status(404).json({ message: "Organization not found" });
+    }
+    const emailExists = await Organization.findOne({ email });
+    if (emailExists && emailExists.organizationId !== organizationId) {
+      return res.status(400).json({ message: "Email already in use by another organization" });
+    }
+    organization.email = email;
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    organization = await Organization.findOneAndUpdate(
+      { organizationId },
+      { 
+        email,
+        password: hashedPassword 
+      },
+      { new: true }
+    );
+    const payload = {
+      user: {
+        id: organization.id,
+        type: 'organization'
+      },
+    };
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" },
+      (err, token) => {
+        if (err) throw err;
+        res.status(200).json({
+          token,
+          organization: {
+            id: organization.id,
+            organizationId: organization.organizationId,
+            name: organization.name,
+            email: organization.email,
+            description: organization.description,
+            location: organization.location,
+            type: organization.type,
+            subtype: organization.subtype,
+            image: organization.image
+          },
+          type: 'organization'
+        });
+      }
+    );
+  } catch (error) {
+    console.error("Set Organization Credentials Error:", error.message);
     res.status(500).send("Server error");
   }
 });

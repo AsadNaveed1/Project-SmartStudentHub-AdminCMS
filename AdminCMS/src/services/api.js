@@ -1,11 +1,14 @@
 import axios from 'axios';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -16,6 +19,7 @@ api.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -37,6 +41,7 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 export const authService = {
   login: async (email, password) => {
     const response = await api.post('/auth/login', { email, password });
@@ -57,8 +62,21 @@ export const authService = {
   getCurrentUser: async () => {
     const response = await api.get('/auth/me');
     return response.data;
+  },
+  updateUserProfile: async (profileData) => {
+    const response = await api.put('/auth/profile', profileData);
+    return response.data;
+  },
+  logout: () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userType');
+    localStorage.removeItem('userData');
+    localStorage.removeItem('organizationData');
+    window.dispatchEvent(new Event('storage'));
   }
 };
+
 export const organizationService = {
   getAllOrganizations: async () => {
     const response = await api.get('/organizations');
@@ -75,11 +93,21 @@ export const organizationService = {
   deleteOrganization: async (id) => {
     const response = await api.delete(`/organizations/${id}`);
     return response.data;
+  },
+  getOrganizationEvents: async (id) => {
+    // This is implied by your structure but not explicitly defined
+    const response = await api.get(`/organizations/${id}/events`);
+    return response.data;
   }
 };
+
 export const eventService = {
   getAllEvents: async () => {
     const response = await api.get('/events');
+    return response.data;
+  },
+  getEventsByOrganization: async () => {
+    const response = await api.get('/events/organization');
     return response.data;
   },
   getEventById: async (id) => {
@@ -105,8 +133,21 @@ export const eventService = {
   getEventApplicants: async (id) => {
     const event = await api.get(`/events/${id}`);
     return event.data.registeredUsers || [];
+  },
+  registerForEvent: async (id) => {
+    const response = await api.post(`/events/${id}/register`);
+    return response.data;
+  },
+  withdrawFromEvent: async (id) => {
+    const response = await api.post(`/events/${id}/withdraw`);
+    return response.data;
+  },
+  getEventRecommendations: async () => {
+    const response = await api.get('/events/recommendations');
+    return response.data;
   }
 };
+
 export const userService = {
   getAllUsers: async () => {
     const response = await api.get('/users');
@@ -115,6 +156,13 @@ export const userService = {
   getUserById: async (id) => {
     const response = await api.get(`/users/${id}`);
     return response.data;
+  },
+  // These might not be explicitly defined in your backend routes
+  // but would be useful based on your app structure
+  getUserEvents: async () => {
+    const response = await api.get('/users/events');
+    return response.data;
   }
 };
+
 export default api;

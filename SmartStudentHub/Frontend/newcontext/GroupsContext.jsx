@@ -2,7 +2,6 @@ import React, { createContext, useState, useEffect, useCallback, useContext } fr
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../src/backend/api';
 import { AuthContext } from './AuthContext'; 
-
 export const GroupsContext = createContext();
 export const GroupsProvider = ({ children }) => {
   const { authState } = useContext(AuthContext);
@@ -26,11 +25,18 @@ export const GroupsProvider = ({ children }) => {
     setIsLoading(true);
     try {
       const response = await api.get('/auth/me');
-      const user = response.data;
-      setJoinedGroups(user.joinedGroups);
+      console.log('Auth/me response:', response.data);
+      const userData = response.data.user;
+      if (userData && Array.isArray(userData.joinedGroups)) {
+        setJoinedGroups(userData.joinedGroups);
+      } else {
+        console.warn('User joinedGroups is not an array:', userData?.joinedGroups);
+        setJoinedGroups([]);
+      }
     } catch (err) {
       console.error('Failed to fetch joined groups:', err);
       setError(err.response?.data?.message || err.message);
+      setJoinedGroups([]);
     } finally {
       setIsLoading(false);
     }
@@ -41,6 +47,9 @@ export const GroupsProvider = ({ children }) => {
       fetchJoinedGroups();
     }
   }, [authState.isLoading, authState.token]);
+  useEffect(() => {
+    console.log('joinedGroups updated:', joinedGroups);
+  }, [joinedGroups]);
   const joinGroup = async (groupId) => {
     try {
       await api.post(`/groups/${groupId}/join`);
@@ -48,6 +57,7 @@ export const GroupsProvider = ({ children }) => {
       if (updatedGroup && !joinedGroups.find((g) => g.groupId === groupId)) {
         setJoinedGroups((prev) => [...prev, updatedGroup]);
       }
+      await fetchJoinedGroups();
     } catch (err) {
       console.error('Failed to join group:', err);
       setError(err.response?.data?.message || err.message);
@@ -57,6 +67,7 @@ export const GroupsProvider = ({ children }) => {
     try {
       await api.post(`/groups/${groupId}/leave`);
       setJoinedGroups((prev) => prev.filter((group) => group.groupId !== groupId));
+      await fetchJoinedGroups();
     } catch (err) {
       console.error('Failed to leave group:', err);
       setError(err.response?.data?.message || err.message);
@@ -64,7 +75,10 @@ export const GroupsProvider = ({ children }) => {
   };
   const isGroupJoined = useCallback(
     (groupId) => {
-      return joinedGroups.some((group) => group.groupId === groupId);
+      return Array.isArray(joinedGroups) && joinedGroups.some((group) => {
+        return group.groupId === groupId || 
+               (group._id && group.groupId && group.groupId === groupId);
+      });
     },
     [joinedGroups]
   );
@@ -72,6 +86,7 @@ export const GroupsProvider = ({ children }) => {
     try {
       const response = await api.post('/groups', newGroupData);
       setGroups((prev) => [...prev, response.data]);
+      await fetchGroups();
     } catch (err) {
       console.error('Failed to add group:', err);
       setError(err.response?.data?.message || err.message);

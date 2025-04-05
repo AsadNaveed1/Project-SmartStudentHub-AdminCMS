@@ -21,10 +21,24 @@ router.get('/', async (req, res) => {
   try {
     const events = await Event.find()
       .populate('registeredUsers', 'fullName email')
-      .populate('organization', 'name');
+      .populate('organization', 'name image');
     res.json(events);
   } catch (error) {
     console.error('Error fetching events:', error.message);
+    res.status(500).send('Server Error');
+  }
+});
+router.get('/organization', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.type !== 'organization') {
+      return res.status(403).json({ message: 'Not authorized. Only organizations can access their events.' });
+    }
+    const events = await Event.find({ organization: req.user.id })
+    .populate('registeredUsers', 'fullName email universityYear degree faculty department')
+    .populate('organization', 'name image');
+    res.json(events);
+  } catch (error) {
+    console.error('Error fetching organization events:', error.message);
     res.status(500).send('Server Error');
   }
 });
@@ -33,10 +47,24 @@ router.get('/category/:category', async (req, res) => {
     const { category } = req.params;
     const events = await Event.find({ subtype: category })
       .populate('registeredUsers', 'fullName email')
-      .populate('organization', 'name');
+      .populate('organization', 'name image');
     res.json(events);
   } catch (error) {
     console.error('Error fetching events by category:', error.message);
+    res.status(500).send('Server Error');
+  }
+});
+router.get('/:id', async (req, res) => {
+  try {
+    const event = await Event.findOne({ eventId: req.params.id })
+      .populate('registeredUsers', 'fullName email username university universityYear degree degreeClassification faculty department')
+      .populate('organization', 'name email location type image');
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found.' });
+    }
+    res.json(event);
+  } catch (error) {
+    console.error('Error fetching event:', error.message);
     res.status(500).send('Server Error');
   }
 });
@@ -54,6 +82,8 @@ router.post('/', authMiddleware, async (req, res) => {
     subtype,
     location,
     name,
+    capacity,
+    price
   } = req.body;
   if (!organizationId) {
     return res.status(400).json({ message: 'Organization ID is required.' });
@@ -83,8 +113,11 @@ router.post('/', authMiddleware, async (req, res) => {
       subtype,
       location,
       name,
+      capacity: capacity || 0,
+      price: price || 0
     });
     await event.save();
+    await event.populate('organization', 'name image');
     await triggerModelRetrain();
     res.status(201).json(event);
   } catch (error) {
@@ -105,6 +138,8 @@ router.put('/:id', authMiddleware, async (req, res) => {
     subtype,
     location,
     name,
+    capacity,
+    price
   } = req.body;
   const eventFields = {};
   if (title) eventFields.title = title;
@@ -122,10 +157,15 @@ router.put('/:id', authMiddleware, async (req, res) => {
   if (subtype) eventFields.subtype = subtype;
   if (location) eventFields.location = location;
   if (name) eventFields.name = name;
+  if (capacity !== undefined) eventFields.capacity = capacity;
+  if (price !== undefined) eventFields.price = price;
   try {
     let event = await Event.findOne({ eventId: req.params.id });
     if (!event) {
       return res.status(404).json({ message: 'Event not found.' });
+    }
+    if (req.user.type === 'organization' && event.organization.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to update this event.' });
     }
     if (organizationId) {
       let organization = await Organization.findOne({ organizationId: organizationId });
@@ -138,29 +178,11 @@ router.put('/:id', authMiddleware, async (req, res) => {
       { eventId: req.params.id },
       { $set: eventFields },
       { new: true }
-    ).populate('organization', 'name');
+    ).populate('organization', 'name image');
     await triggerModelRetrain();
     res.json(event);
   } catch (error) {
     console.error('Error updating event:', error.message);
-    res.status(500).send('Server Error');
-  }
-});
-router.delete('/:id', authMiddleware, async (req, res) => {
-  try {
-    const event = await Event.findOne({ eventId: req.params.id });
-    if (!event) {
-      return res.status(404).json({ message: 'Event not found.' });
-    }
-    await User.updateMany(
-      { registeredEvents: event._id },
-      { $pull: { registeredEvents: event._id } }
-    );
-    await event.remove();
-    await triggerModelRetrain();
-    res.json({ message: 'Event removed.' });
-  } catch (error) {
-    console.error('Error deleting event:', error.message);
     res.status(500).send('Server Error');
   }
 });
@@ -173,6 +195,9 @@ router.post('/:id/register', authMiddleware, async (req, res) => {
     if (event.registeredUsers.includes(req.user.id)) {
       return res.status(400).json({ message: 'User already registered for this event.' });
     }
+    if (event.capacity > 0 && event.registeredUsers.length >= event.capacity) {
+      return res.status(400).json({ message: 'This event has reached its maximum capacity.' });
+    }
     event.registeredUsers.push(req.user.id);
     await event.save();
     const user = await User.findById(req.user.id);
@@ -182,6 +207,27 @@ router.post('/:id/register', authMiddleware, async (req, res) => {
     res.json({ message: 'Registered for the event successfully.' });
   } catch (error) {
     console.error('Error registering for event:', error.message);
+    res.status(500).send('Server Error');
+  }
+});
+router.delete('/:id', authMiddleware, async (req, res) => {
+  try {
+    const event = await Event.findOne({ eventId: req.params.id });
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found.' });
+    }
+    if (req.user.type === 'organization' && event.organization.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to delete this event.' });
+    }
+    await User.updateMany(
+      { registeredEvents: event._id },
+      { $pull: { registeredEvents: event._id } }
+    );
+    await Event.deleteOne({ _id: event._id });
+    await triggerModelRetrain();
+    res.json({ message: 'Event removed.' });
+  } catch (error) {
+    console.error('Error deleting event:', error.message);
     res.status(500).send('Server Error');
   }
 });
@@ -248,16 +294,8 @@ router.get('/recommendations', authMiddleware, async (req, res) => {
         { date: { $gte: moment().format('DD-MM-YYYY') } },
       ],
     })
-      .populate('organization', 'name')
+      .populate('organization', 'name image')
       .limit(20);
-    // console.log(
-    //   'Content-Based Recommendations After Date Filter:',
-    //   contentBased.map((e) => ({
-    //     eventId: e.eventId,
-    //     subtype: e.subtype,
-    //     date: e.date,
-    //   }))
-    // );
     const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:5003/recommend';
     const payload = {
       user_id: user._id.toString(),
@@ -295,14 +333,6 @@ router.get('/recommendations', authMiddleware, async (req, res) => {
       }
     });
     const combinedRecommendations = Array.from(combinedRecommendationsMap.values());
-    // console.log(
-    //   'Combined Recommendations:',
-    //   combinedRecommendations.map((e) => ({
-    //     eventId: e.eventId,
-    //     subtype: e.subtype,
-    //     date: e.date,
-    //   }))
-    // );
     res.json({
       contentBased: contentBased,
       mlBased: mlBased,

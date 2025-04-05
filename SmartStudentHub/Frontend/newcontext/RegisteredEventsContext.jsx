@@ -36,32 +36,35 @@ export const RegisteredEventsProvider = ({ children }) => {
     }
     try {
       const response = await api.get('/auth/me');
-      const user = response.data;
-      if (!Array.isArray(user.registeredEvents)) {
+      console.log('Auth/me response for events:', response.data);
+      const userData = response.data.user;
+      if (userData && Array.isArray(userData.registeredEvents)) {
+        console.log('Found registered events:', userData.registeredEvents.length);
+        const fullRegisteredEvents = userData.registeredEvents.map((regEvt) => {
+          const fullEvent = events.find((evt) =>
+            (regEvt._id && evt._id === regEvt._id) ||
+            (regEvt.eventId && evt.eventId === regEvt.eventId) ||
+            (typeof regEvt === 'string' && evt._id === regEvt)
+          );
+          if (fullEvent) {
+            return { ...fullEvent };
+          } else {
+            console.warn(`Full event details not found for event:`, regEvt);
+            return regEvt;
+          }
+        }).filter(evt => evt !== null);
+        setRegisteredEvents(fullRegisteredEvents);
+        setError(null);
+      } else {
         console.warn('No registered events found for the user.');
         setRegisteredEvents([]);
-        return;
       }
-      const fullRegisteredEvents = user.registeredEvents.map((regEvt) => {
-        const fullEvent = events.find((evt) => evt.eventId === regEvt.eventId);
-        if (fullEvent) {
-          return { ...fullEvent };
-        } else {
-          console.warn(`Full event details not found for eventId: ${regEvt.eventId}`);
-          return null;
-        }
-      }).filter(evt => evt !== null);
-      setRegisteredEvents(fullRegisteredEvents);
-      setError(null);
     } catch (err) {
       console.error('Failed to fetch registered events:', err);
       setError(
         err.response?.data?.message || err.message || 'Failed to fetch registered events.'
       );
-      Alert.alert(
-        'Error',
-        err.response?.data?.message || 'Failed to fetch registered events.'
-      );
+      setRegisteredEvents([]);
     }
   };
   useEffect(() => {
@@ -75,18 +78,24 @@ export const RegisteredEventsProvider = ({ children }) => {
         setIsLoading(false);
       }
     };
-    initialize();
+    if (authState.token) {
+      initialize();
+    } else {
+      setRegisteredEvents([]);
+    }
   }, [authState.token]);
+  useEffect(() => {
+    if (events.length > 0 && authState.token) {
+      fetchRegisteredEvents();
+    }
+  }, [events, authState.token]);
   const registerEvent = async (eventId, registrationData) => {
     console.log(`Attempting to register for event ID: ${eventId}`);
     try {
       const response = await api.post(`/events/${eventId}/register`, registrationData);
-      const registeredEvent = response.data;
-      const fullEvent = events.find((evt) => evt.eventId === eventId);
-      if (fullEvent && !registeredEvents.find((regEvt) => regEvt.eventId === eventId)) {
-        setRegisteredEvents((prev) => [...prev, fullEvent]);
-      }
+      await fetchRegisteredEvents();
       setError(null);
+      return true;
     } catch (err) {
       console.error('Failed to register for event:', err);
       setError(
@@ -96,15 +105,18 @@ export const RegisteredEventsProvider = ({ children }) => {
         'Registration Failed',
         err.response?.data?.message || 'An error occurred during registration.'
       );
+      return false;
     }
   };
   const withdrawEvent = async (eventId) => {
     try {
-      const response = await api.post(`/events/${eventId}/withdraw`);
+      await api.post(`/events/${eventId}/withdraw`);
       setRegisteredEvents((prev) =>
         prev.filter((evt) => evt.eventId !== eventId)
       );
+      await fetchRegisteredEvents();
       setError(null);
+      return true;
     } catch (err) {
       console.error('Failed to withdraw from event:', err);
       setError(
@@ -114,11 +126,15 @@ export const RegisteredEventsProvider = ({ children }) => {
         'Withdrawal Failed',
         err.response?.data?.message || 'An error occurred during withdrawal.'
       );
+      return false;
     }
   };
   const isRegistered = useCallback(
     (eventId) => {
-      return registeredEvents.some((event) => event.eventId === eventId);
+      return Array.isArray(registeredEvents) && registeredEvents.some((event) => 
+        event.eventId === eventId || 
+        (event._id && eventId === event._id)
+      );
     },
     [registeredEvents]
   );
@@ -126,7 +142,9 @@ export const RegisteredEventsProvider = ({ children }) => {
     try {
       const response = await api.post('/events', newEventData);
       setEvents((prev) => [...prev, response.data]);
+      await fetchEvents();
       Alert.alert('Success', 'Event added successfully.');
+      return true;
     } catch (err) {
       console.error('Failed to add event:', err);
       setError(
@@ -136,6 +154,7 @@ export const RegisteredEventsProvider = ({ children }) => {
         'Add Event Failed',
         err.response?.data?.message || 'An error occurred while adding the event.'
       );
+      return false;
     }
   };
   return (

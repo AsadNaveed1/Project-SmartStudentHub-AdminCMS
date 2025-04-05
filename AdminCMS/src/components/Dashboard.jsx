@@ -32,7 +32,7 @@ const Dashboard = ({ user }) => {
     const fetchEventData = async () => {
       try {
         setIsLoading(true);
-        const eventsData = await eventService.getAllEvents();
+        const eventsData = await eventService.getEventsByOrganization();
         const currentDate = moment();
         const upcomingEvents = eventsData.filter(event => 
           moment(event.date, 'DD-MM-YYYY').isSameOrAfter(currentDate, 'day')
@@ -40,11 +40,32 @@ const Dashboard = ({ user }) => {
         const totalRegistrations = eventsData.reduce((total, event) => 
           total + (event.registeredUsers ? event.registeredUsers.length : 0), 0
         );
-        const mockActivities = [
-          { id: 1, type: 'registration', user: 'John Doe', event: upcomingEvents[0]?.title || 'Event', time: '2 hours ago' },
-          { id: 2, type: 'event_created', user: 'Admin', event: 'New Event', time: '3 hours ago' },
-          { id: 3, type: 'registration', user: 'Jane Smith', event: upcomingEvents[1]?.title || 'Event', time: '5 hours ago' },
-        ];
+        const mockActivities = [];
+        if (upcomingEvents.length > 0) {
+          mockActivities.push({ 
+            id: 1, 
+            type: 'registration', 
+            user: 'New user', 
+            event: upcomingEvents[0]?.title || 'Event', 
+            time: '2 hours ago' 
+          });
+        }
+        mockActivities.push({ 
+          id: 2, 
+          type: 'event_created', 
+          user: 'You', 
+          event: 'New Event', 
+          time: '3 hours ago' 
+        });
+        if (upcomingEvents.length > 1) {
+          mockActivities.push({ 
+            id: 3, 
+            type: 'registration', 
+            user: 'Another user', 
+            event: upcomingEvents[1]?.title || 'Event', 
+            time: '5 hours ago' 
+          });
+        }
         const sortedUpcomingEvents = [...upcomingEvents].sort((a, b) => 
           moment(a.date, 'DD-MM-YYYY').diff(moment(b.date, 'DD-MM-YYYY'))
         );
@@ -75,7 +96,7 @@ const Dashboard = ({ user }) => {
           totalEvents: eventsData.length,
           upcomingEvents: upcomingEvents.length,
           totalApplicants: totalRegistrations,
-          recentApplicants: 10,
+          recentApplicants: Math.min(10, totalRegistrations),
           recentEvents: formattedEvents.slice(0, 3),
           popularEvents: popularEvents
         });
@@ -129,7 +150,6 @@ const Dashboard = ({ user }) => {
         </TimeframeSelector>
       </DashboardHeader>
       {error && <ErrorAlert>{error}</ErrorAlert>}
-      {}
       <StatsGrid>
         <StatCard>
           <StatIconContainer color="#4299e1">
@@ -138,7 +158,7 @@ const Dashboard = ({ user }) => {
           <StatContent>
             <StatValue>{stats.totalEvents}</StatValue>
             <StatLabel>Total Events</StatLabel>
-            <StatTrend isPositive>+2 this {timeframe}</StatTrend>
+            <StatTrend isPositive>+{Math.min(2, stats.totalEvents)} this {timeframe}</StatTrend>
           </StatContent>
         </StatCard>
         <StatCard>
@@ -180,9 +200,7 @@ const Dashboard = ({ user }) => {
           </StatContent>
         </StatCard>
       </StatsGrid>
-      {}
       <DashboardContent>
-        {}
         <DashboardColumn>
           <SectionCard>
             <SectionHeader>
@@ -247,7 +265,6 @@ const Dashboard = ({ user }) => {
             )}
           </SectionCard>
         </DashboardColumn>
-        {}
         <DashboardColumn>
           <SectionCard>
             <SectionHeader>
