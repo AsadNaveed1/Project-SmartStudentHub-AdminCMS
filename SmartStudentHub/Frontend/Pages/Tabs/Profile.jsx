@@ -6,7 +6,9 @@ import {
   Platform, 
   TouchableWithoutFeedback, 
   Keyboard, 
-  ScrollView 
+  ScrollView,
+  Image,
+  TouchableOpacity
 } from 'react-native';
 import { 
   Avatar, 
@@ -21,12 +23,15 @@ import {
   ActivityIndicator,
   Snackbar,
   Menu,
-  TouchableRipple
+  TouchableRipple,
+  IconButton,
+  Divider
 } from 'react-native-paper';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { RegisteredEventsContext } from '../../newcontext/RegisteredEventsContext';
 import { GroupsContext } from '../../newcontext/GroupsContext';
 import { AuthContext } from '../../newcontext/AuthContext';
+import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 const Profile = () => {
   const theme = useTheme();
@@ -47,6 +52,7 @@ const Profile = () => {
   const [department, setDepartment] = useState(user?.department || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [loading, setLoading] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMsg, setSnackbarMsg] = useState('');
   const [visibleDegreeClassificationMenu, setVisibleDegreeClassificationMenu] = useState(false);
@@ -58,6 +64,7 @@ const Profile = () => {
   const [visibleDepartmentMenu, setVisibleDepartmentMenu] = useState(false);
   const openDepartmentMenu = () => setVisibleDepartmentMenu(true);
   const closeDepartmentMenu = () => setVisibleDepartmentMenu(false);
+  const [profileImage, setProfileImage] = useState(user?.profilePic || 'https://via.placeholder.com/150');
   const facultiesData = {
     "Faculty of Architecture": [
       "Department of Architecture",
@@ -153,6 +160,90 @@ const Profile = () => {
   const handleLogout = () => {
     logout();
   };
+  const pickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        setSnackbarMsg('Permission to access media library is required!');
+        setSnackbarVisible(true);
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        uploadImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Image picker error:', error);
+      setSnackbarMsg('Failed to pick image.');
+      setSnackbarVisible(true);
+    }
+  };
+  const takePicture = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        setSnackbarMsg('Permission to access camera is required!');
+        setSnackbarVisible(true);
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        uploadImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Camera error:', error);
+      setSnackbarMsg('Failed to take picture.');
+      setSnackbarVisible(true);
+    }
+  };
+  const uploadImage = async (uri) => {
+    setImageLoading(true);
+    try {
+      const formData = new FormData();
+      const filename = uri.split('/').pop();
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image';
+      formData.append('profilePic', {
+        uri,
+        name: filename,
+        type,
+      });
+      const response = await axios.post(
+        'http://localhost:5002/api/auth/profile/upload-pic',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${authState.token}`,
+          },
+        }
+      );
+      setProfileImage(response.data.profilePic);
+      updateUser({ 
+        user: { 
+          ...user, 
+          profilePic: response.data.profilePic 
+        } 
+      });
+      setSnackbarMsg('Profile picture updated successfully!');
+      setSnackbarVisible(true);
+    } catch (error) {
+      console.error('Upload image error:', error.response?.data?.message || error.message);
+      setSnackbarMsg(error.response?.data?.message || 'Failed to upload image.');
+      setSnackbarVisible(true);
+    } finally {
+      setImageLoading(false);
+    }
+  };
   return (
     <SafeAreaView
       style={[
@@ -178,18 +269,10 @@ const Profile = () => {
           <Caption style={styles.caption}>{user?.email}</Caption>
         </View>
         <View style={styles.infoSection}>
-          {/* <View style={styles.row}>
-            <Text style={[styles.label, { color: theme.colors.onBackground }]}>Full Name:</Text>
-            <Text style={[styles.info, { color: theme.colors.onBackground }]}>{user?.fullName || 'N/A'}</Text>
-          </View> */}
           <View style={styles.row}>
             <Text style={[styles.label, { color: theme.colors.onBackground }]}>Username:</Text>
             <Text style={[styles.info, { color: theme.colors.onBackground }]}>{user?.username || 'N/A'}</Text>
           </View>
-          {/* <View style={styles.row}>
-            <Text style={[styles.label, { color: theme.colors.onBackground }]}>Email:</Text>
-            <Text style={[styles.info, { color: theme.colors.onBackground }]}>{user?.email || 'N/A'}</Text>
-          </View> */}
           <View style={styles.row}>
             <Text style={[styles.label, { color: theme.colors.onBackground }]}>University:</Text>
             <Text style={[styles.info, { color: theme.colors.onBackground }]}>{user?.university || 'N/A'}</Text>
@@ -246,6 +329,7 @@ const Profile = () => {
           </Button>
         </View>
       </ScrollView>
+      {}
       <Portal>
         <Modal 
           visible={visible} 
@@ -256,6 +340,42 @@ const Profile = () => {
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
               <ScrollView>
                 <Text style={styles.modalTitle}>Edit Profile</Text>
+                {}
+                <View style={styles.profilePicSection}>
+                  {imageLoading ? (
+                    <View style={styles.avatarContainer}>
+                      <ActivityIndicator size="large" color={theme.colors.primary} />
+                    </View>
+                  ) : (
+                    <Avatar.Image 
+                      source={{ uri: user?.profilePic || 'https://via.placeholder.com/150' }}
+                      size={80}
+                    />
+                  )}
+                  <View style={styles.profilePicButtons}>
+                    <Button 
+                      mode="contained" 
+                      icon="camera" 
+                      onPress={takePicture}
+                      disabled={imageLoading}
+                      style={styles.picButton}
+                      compact
+                    >
+                      Camera
+                    </Button>
+                    <Button 
+                      mode="contained" 
+                      icon="image" 
+                      onPress={pickImage}
+                      disabled={imageLoading}
+                      style={styles.picButton}
+                      compact
+                    >
+                      Gallery
+                    </Button>
+                  </View>
+                </View>
+                <Divider style={styles.divider} />
                 <TextInput
                   label="Full Name"
                   value={fullName}
@@ -546,5 +666,30 @@ const styles = StyleSheet.create({
   },
   menuTouchable: {
     width: '100%',
+  },
+  profilePicSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 15,
+  },
+  profilePicButtons: {
+    flex: 1,
+    marginLeft: 15,
+  },
+  picButton: {
+    marginBottom: 10,
+  },
+  avatarContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  divider: {
+    marginBottom: 15,
+    height: 1,
   },
 });

@@ -31,6 +31,7 @@ export default function ChatPage({ route }) {
   const [newMessageCount, setNewMessageCount] = useState(0);
   const flatListRef = useRef(null);
   const socketRef = useRef(null);
+  
   useEffect(() => {
     console.log("Current User ID:", currentUser.id);
     const initializeSocket = async () => {
@@ -71,6 +72,7 @@ export default function ChatPage({ route }) {
       }
     };
   }, [group._id, currentUser.id]);
+  
   const handleSend = useCallback(() => {
     if (inputText.trim() === "") return;
     const messageData = {
@@ -79,7 +81,9 @@ export default function ChatPage({ route }) {
     };
     socketRef.current.emit("sendMessage", messageData);
     setInputText("");
+    Keyboard.dismiss();
   }, [inputText, group._id]);
+  
   const renderItem = ({ item }) => {
     const isUser = item.sender._id === currentUser.id;
     const messageBubbleStyle = isUser
@@ -125,11 +129,13 @@ export default function ChatPage({ route }) {
       </View>
     );
   };
+  
   const scrollToBottom = () => {
     if (flatListRef.current && messages.length > 0) {
       flatListRef.current.scrollToEnd({ animated: true });
     }
   };
+  
   const handleScroll = (event) => {
     const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
     const paddingToBottom = 20;
@@ -140,10 +146,12 @@ export default function ChatPage({ route }) {
       setNewMessageCount(0);
     }
   };
+  
   const handlePressNewMessage = () => {
     scrollToBottom();
     setNewMessageCount(0);
   };
+  
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.surface }]}
@@ -151,71 +159,64 @@ export default function ChatPage({ route }) {
       <KeyboardAvoidingView
         style={styles.keyboardAvoiding}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 45 : 90}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 85 : 0}
       >
-        <View style={styles.inner}>
-          {isLoading ? (
-            <View style={styles.loaderContainer}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-            </View>
-          ) : (
-            <FlatList
-              ref={flatListRef}
-              data={messages}
-              keyExtractor={(item) => item._id}
-              renderItem={renderItem}
-              contentContainerStyle={styles.messagesList}
-              showsVerticalScrollIndicator={false}
-              onScroll={handleScroll}
-              scrollEventThrottle={16}
-              keyboardShouldPersistTaps="always"
-              keyboardDismissMode="on-drag"
-              style={styles.flatList}
-            />
-          )}
-          {newMessageCount > 0 && (
-            <TouchableOpacity
-              style={styles.newMessageButton}
-              onPress={handlePressNewMessage}
-            >
-              <Text style={styles.newMessageText}>
-                {newMessageCount} New Message{newMessageCount > 1 ? "s" : ""}
-              </Text>
-            </TouchableOpacity>
-          )}
-          <View
-            style={[
-              styles.inputContainer,
-              { backgroundColor: theme.colors.surface },
-            ]}
-          >
-            <TextInput
-              style={[styles.input, { color: theme.colors.text }]}
-              placeholder="Type a message"
-              placeholderTextColor={theme.colors.placeholder || "#6e6e6e"}
-              value={inputText}
-              onChangeText={setInputText}
-              multiline
-            />
-            <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
-              <Icon name="send" size={20} color={theme.colors.primary} />
-            </TouchableOpacity>
+        {isLoading ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
           </View>
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={(item) => item._id}
+            renderItem={renderItem}
+            contentContainerStyle={styles.messagesList}
+            showsVerticalScrollIndicator={false}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="interactive"
+            style={styles.flatList}
+          />
+        )}
+        
+        {newMessageCount > 0 && (
+          <TouchableOpacity
+            style={styles.newMessageButton}
+            onPress={handlePressNewMessage}
+          >
+            <Text style={styles.newMessageText}>
+              {newMessageCount} New Message{newMessageCount > 1 ? "s" : ""}
+            </Text>
+          </TouchableOpacity>
+        )}
+        
+        <View
+          style={[
+            styles.inputContainer,
+            { backgroundColor: theme.colors.surface },
+          ]}
+        >
+          <TextInput
+            style={[styles.input, { color: theme.colors.text }]}
+            placeholder="Type a message"
+            placeholderTextColor={theme.colors.placeholder || "#6e6e6e"}
+            value={inputText}
+            onChangeText={setInputText}
+            multiline
+          />
+          <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+            <Icon name="send" size={20} color={theme.colors.primary} />
+          </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
-  keyboardAvoiding: {
-    flex: 1,
-    marginTop: -90,
-    paddingTop: 40,
-  },
-  inner: {
     flex: 1,
   },
   loaderContainer: {
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 9,
     alignItems: "center",
     borderTopWidth: 1,
     borderTopColor: "#ccc",
@@ -299,14 +300,16 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
+    marginBottom: 12,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 14,
     borderRadius: 20,
     backgroundColor: "#f2f2f2",
     maxHeight: 100,
   },
   sendButton: {
     marginLeft: 8,
+    padding: 8,
   },
   newMessageButton: {
     position: "absolute",
@@ -324,10 +327,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    zIndex: 1,
   },
   newMessageText: {
     color: "#fff",
     fontSize: 14,
     fontWeight: "600",
+  },
+  keyboardAvoiding: {
+    flex: 1,
+    marginTop: -90,
+    paddingTop: 40,
   },
 });

@@ -4,11 +4,14 @@ const connectDB = require('./db');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+const path = require('path');
 dotenv.config();
 const app = express();
 connectDB();
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cors());
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/groups', require('./routes/groups'));
 app.use('/api/events', require('./routes/events'));
@@ -16,7 +19,6 @@ app.use('/api/organizations', require('./routes/organizations'));
 app.use('/api/messages', require('./routes/messages'));
 app.use('/api/chatbot', require('./routes/chatbot'));
 const fs = require('fs');
-const path = require('path');
 const uploadsDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -27,7 +29,6 @@ app.get('/', (req, res) => {
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
-//port is 5002 in env file
 const PORT = process.env.PORT || 5001;
 const server = http.createServer(app);
 const io = new Server(server, {

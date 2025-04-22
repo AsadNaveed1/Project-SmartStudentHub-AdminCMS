@@ -17,6 +17,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import api from '../../src/backend/api';
+
 const Chatbot = () => {
   const theme = useTheme();
   const [messages, setMessages] = useState([
@@ -26,20 +27,25 @@ const Chatbot = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const flatListRef = useRef(null);
+
   const parseMarkdown = (text) => {
     return text.replace(/\*\*(.*?)\*\*/g, '$1');
   };
+
   const sendMessage = async () => {
     if ((inputText.trim() === '' && !selectedFile) || isLoading) return;
+    
     const userMessage = { 
       id: Date.now().toString(), 
       text: inputText || 'Uploaded file', 
       isUser: true,
       file: selectedFile 
     };
+    
     setMessages(prevMessages => [...prevMessages, userMessage]);
     setInputText('');
     setIsLoading(true);
+    
     try {
       let response;
       if (selectedFile) {
@@ -49,11 +55,13 @@ const Chatbot = () => {
           type: selectedFile.mimeType || 'image/jpeg',
           name: selectedFile.name || 'file.jpg'
         });
+        
         if (inputText.trim()) {
           formData.append('message', inputText);
         } else {
           formData.append('message', 'Please analyze this image.');
         }
+        
         response = await Promise.race([
           api.post('/chatbot/upload-and-chat', formData, {
             headers: {
@@ -70,6 +78,7 @@ const Chatbot = () => {
           message: inputText 
         });
       }
+      
       if (response.data && response.data.response) {
         const botResponse = { 
           id: (Date.now() + 1).toString(), 
@@ -92,6 +101,7 @@ const Chatbot = () => {
       setIsLoading(false);
     }
   };
+
   const pickDocument = async () => {
     if (isLoading) return;
     try {
@@ -107,6 +117,7 @@ const Chatbot = () => {
       Alert.alert('Error', 'Failed to select document.');
     }
   };
+
   const pickImage = async () => {
     if (isLoading) return;
     try {
@@ -115,11 +126,13 @@ const Chatbot = () => {
         Alert.alert('Permission Required', 'Sorry, we need camera roll permissions to make this work!');
         return;
       }
+      
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         quality: 0.8,
       });
+      
       if (!result.canceled && result.assets && result.assets.length > 0) {
         setSelectedFile({
           uri: result.assets[0].uri,
@@ -132,6 +145,7 @@ const Chatbot = () => {
       Alert.alert('Error', 'Failed to select image.');
     }
   };
+
   const renderMessage = ({ item }) => (
     <View style={[
       styles.messageBubble, 
@@ -142,12 +156,14 @@ const Chatbot = () => {
         alignSelf: item.isUser ? 'flex-end' : 'flex-start',
       }
     ]}>
-      {item.file && (
-        <Image 
-          source={{ uri: item.file.uri }} 
-          style={styles.attachedImage} 
-          resizeMode="cover"
-        />
+      {item.file && item.file.uri && (
+        <View style={styles.imageContainer}>
+          <Image 
+            source={{ uri: item.file.uri }} 
+            style={styles.attachedImage} 
+            resizeMode="cover"
+          />
+        </View>
       )}
       <Text style={[
         styles.messageText, 
@@ -157,6 +173,7 @@ const Chatbot = () => {
       </Text>
     </View>
   );
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -168,6 +185,7 @@ const Chatbot = () => {
           AI Assistant
         </Text>
       </View>
+      
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -182,8 +200,15 @@ const Chatbot = () => {
           flatListRef.current?.scrollToEnd({ animated: false })
         }
       />
+      
       {selectedFile && (
         <View style={styles.selectedFileContainer}>
+          {selectedFile.uri && (
+            <Image 
+              source={{ uri: selectedFile.uri }} 
+              style={styles.selectedFileImage} 
+            />
+          )}
           <Text style={styles.selectedFileText} numberOfLines={1}>
             {selectedFile.name || 'File selected'}
           </Text>
@@ -196,6 +221,7 @@ const Chatbot = () => {
           </TouchableOpacity>
         </View>
       )}
+      
       <View style={styles.inputContainer}>
         <TouchableOpacity 
           style={styles.attachButton} 
@@ -208,6 +234,7 @@ const Chatbot = () => {
             color={isLoading ? theme.colors.disabled : theme.colors.primary} 
           />
         </TouchableOpacity>
+        
         <TouchableOpacity 
           style={styles.imageButton} 
           onPress={pickImage}
@@ -219,6 +246,7 @@ const Chatbot = () => {
             color={isLoading ? theme.colors.disabled : theme.colors.primary} 
           />
         </TouchableOpacity>
+        
         <TextInput
           style={[
             styles.input, 
@@ -235,6 +263,7 @@ const Chatbot = () => {
           multiline
           editable={!isLoading}
         />
+        
         <TouchableOpacity 
           style={[
             styles.sendButton, 
@@ -257,6 +286,7 @@ const Chatbot = () => {
     </KeyboardAvoidingView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -330,15 +360,27 @@ const styles = StyleSheet.create({
   selectedFileText: {
     flex: 1,
     fontSize: 14,
+    marginLeft: 8,
+  },
+  selectedFileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
   },
   removeFileButton: {
     padding: 4,
+  },
+  imageContainer: {
+    width: '100%',
+    borderRadius: 8,
+    marginBottom: 8,
+    overflow: 'hidden',
   },
   attachedImage: {
     width: '100%',
     height: 150,
     borderRadius: 8,
-    marginBottom: 8,
   },
 });
+
 export default Chatbot;

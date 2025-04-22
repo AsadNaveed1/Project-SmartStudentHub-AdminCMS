@@ -6,7 +6,38 @@ const Organization = require("../models/Organization");
 const authMiddleware = require("../middleware/auth");
 const bcrypt = require("bcryptjs");
 const dotenv = require("dotenv");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 dotenv.config();
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, "../../uploads/profile-pics");
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    cb(null, "profile-" + uniqueSuffix + ext);
+  },
+});
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only image files are allowed!"), false);
+  }
+};
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+  fileFilter: fileFilter,
+});
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -49,6 +80,7 @@ router.post("/login", async (req, res) => {
             faculty: user.faculty,
             department: user.department,
             bio: user.bio,
+            profilePic: user.profilePic,
           },
           type: 'user'
         });
@@ -138,10 +170,39 @@ router.put("/profile", authMiddleware, async (req, res) => {
       faculty: user.faculty,
       department: user.department,
       bio: user.bio,
+      profilePic: user.profilePic,
     });
   } catch (error) {
     console.error("Update Profile Route Error:", error.message);
     res.status(500).send("Server error");
+  }
+});
+router.post("/profile/upload-pic", authMiddleware, upload.single('profilePic'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    const fileUrl = `/uploads/profile-pics/${req.file.filename}`;
+    const absoluteUrl = `http://${req.get('host')}${fileUrl}`;
+    let user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.profilePic && user.profilePic.includes('/uploads/profile-pics/')) {
+      const oldFilePath = path.join(__dirname, '../..', user.profilePic);
+      if (fs.existsSync(oldFilePath)) {
+        fs.unlinkSync(oldFilePath);
+      }
+    }
+    user.profilePic = absoluteUrl;
+    await user.save();
+    res.json({
+      profilePic: user.profilePic,
+      message: "Profile picture updated successfully"
+    });
+  } catch (error) {
+    console.error("Upload Profile Picture Error:", error.message);
+    res.status(500).json({ message: "Server error during file upload" });
   }
 });
 router.post("/signup", async (req, res) => {
@@ -209,6 +270,7 @@ router.post("/signup", async (req, res) => {
       faculty,
       department,
       bio,
+      profilePic: 'https://via.placeholder.com/150'
     });
     await user.save();
     const payload = {
@@ -237,6 +299,7 @@ router.post("/signup", async (req, res) => {
             faculty: user.faculty,
             department: user.department,
             bio: user.bio,
+            profilePic: user.profilePic,
           },
           type: 'user'
         });

@@ -349,23 +349,27 @@ const EmptyMessage = styled.div`
 const DashboardContainer = styled.div`
   width: 100%;
 `;
+const PageHeader = styled.h1`
+  font-size: 1.8rem;
+  color: #333;
+  margin: 0;
+  
+  @media (max-width: 768px) {
+    text-align: center;
+    padding-top: 15px;
+    margin-bottom: 10px;
+  }
+`;
 const DashboardHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  
   @media (max-width: 768px) {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 15px;
-  }
-`;
-const PageHeader = styled.h1`
-  font-size: 1.8rem;
-  color: #333;
-  margin: 0;
-  @media (max-width: 768px) {
-    margin-top: 10px; 
   }
 `;
 const TimeframeSelector = styled.div`

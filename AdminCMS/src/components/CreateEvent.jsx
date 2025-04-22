@@ -358,6 +358,11 @@ const PageHeader = styled.div`
     color: #718096;
     margin: 0;
   }
+  
+  @media (max-width: 768px) {
+    text-align: center;
+    padding-top: 15px;
+  }
 `;
 const ErrorMessage = styled.div`
   background-color: #fed7d7;

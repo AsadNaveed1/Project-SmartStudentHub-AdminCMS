@@ -97,28 +97,12 @@ const Login = () => {
           <LogoIcon>
             <FaCalendarCheck />
           </LogoIcon>
-          <LogoText>Event CMS</LogoText>
+          <LogoText>Admin CMS</LogoText>
         </LogoContainer>
         <LoginHeader>
           <h1>Welcome Back</h1>
           <p>Sign in to your account</p>
         </LoginHeader>
-        <UserTypeToggle>
-          <ToggleButton 
-            active={userType === 'organization'} 
-            onClick={() => setUserType('organization')}
-            type="button"
-          >
-            Organization
-          </ToggleButton>
-          <ToggleButton 
-            active={userType === 'user'} 
-            onClick={() => setUserType('user')}
-            type="button"
-          >
-            Regular User
-          </ToggleButton>
-        </UserTypeToggle>
         {error && (
           <ErrorMessage>
             {error}
@@ -185,7 +169,6 @@ const Login = () => {
             <>
               New organization? <SignupLink to="/signup">Create an organization account</SignupLink>
               <br />
-              <SignupLink to="/set-organization-credentials">Set credentials for existing organization</SignupLink>
             </>
           ) : (
             <>Don't have an account? <SignupLink to="/user-signup">Sign up as a user</SignupLink></>

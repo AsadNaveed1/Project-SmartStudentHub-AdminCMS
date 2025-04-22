@@ -1,192 +1,261 @@
-import React, { useState, useContext } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Modal, Portal, TextInput, Button, useTheme } from 'react-native-paper';
-import { Picker } from '@react-native-picker/picker';
-import Autocomplete from 'react-native-autocomplete-input';
+import React, { useState, useContext, useEffect } from 'react';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
+import {
+  Modal,
+  Portal,
+  Text,
+  Button,
+  TextInput,
+  useTheme,
+  HelperText,
+  TouchableRipple,
+  Menu,
+} from 'react-native-paper';
 import { GroupsContext } from '../newcontext/GroupsContext';
 
-
-const departments = [
-  {
-    name: 'Architecture',
-    courses: ['ARCH7305 Horticulture and Design', 'ARCH7500 Urban Planning'],
-  },
-  {
-    name: 'Computer Science',
-    courses: ['COMP3330 App Development', 'COMP2396 Object-oriented Programming and Java'],
-  },
-  {
-    name: 'Biomedical Engineering',
-    courses: ['BMED4505 Advanced Bioelectronics', 'BMED4600 Biomedical Imaging'],
-  },
-  {
-    name: 'Economics',
-    courses: ['ECON0501 Economic Development', 'ECON0600 Behavioral Economics'],
-  },
-  {
-    name: 'School of Business',
-    courses: ['STRA4701 Strategic Management', 'STRA4800 Marketing Analysis'],
-  },
-  
-];
-
-export default function CreateGroupModal({ visible, onDismiss }) {
+const CreateGroupModal = ({ visible, onDismiss }) => {
   const theme = useTheme();
   const { addGroup, joinGroup } = useContext(GroupsContext);
 
-  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [department, setDepartment] = useState('');
   const [courseCode, setCourseCode] = useState('');
   const [courseName, setCourseName] = useState('');
-  const [filteredCourses, setFilteredCourses] = useState([]);
-  const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [courseMenuVisible, setCourseMenuVisible] = useState(false);
+  const [departmentMenuVisible, setDepartmentMenuVisible] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  const handleCourseNameChange = (text) => {
-    setCourseName(text);
-    if (text.length > 0) {
-      const department = departments.find((dept) => dept.name === selectedDepartment);
-      if (department) {
-        const regex = new RegExp(`${text}`, 'i');
-        setFilteredCourses(
-          department.courses.filter((course) => course.toLowerCase().includes(text.toLowerCase()))
-        );
-        setShowAutocomplete(true);
-      }
-    } else {
-      setFilteredCourses([]);
-      setShowAutocomplete(false);
-    }
+  const departments = [
+    'Architecture',
+    'Computer Science',
+    'Biomedical Engineering',
+    'Economics',
+    'School of Business',
+  ];
+
+  const coursesByDepartment = {
+    'Architecture': ['ARCH7305 Horticulture and Design', 'ARCH7500 Urban Planning'],
+    'Computer Science': ['COMP3330 App Development', 'COMP2396 Object-oriented Programming and Java'],
+    'Biomedical Engineering': ['BMED4505 Advanced Bioelectronics', 'BMED4600 Biomedical Imaging'],
+    'Economics': ['ECON0501 Economic Development', 'ECON0600 Behavioral Economics'],
+    'School of Business': ['STRA4701 Strategic Management', 'STRA4800 Marketing Analysis'],
+  };
+
+  const resetForm = () => {
+    setDepartment('');
+    setCourseCode('');
+    setCourseName('');
+    setErrors({});
   };
 
   const handleSelectCourse = (course) => {
     const [code, ...nameParts] = course.split(' ');
     setCourseCode(code);
     setCourseName(nameParts.join(' '));
-    setFilteredCourses([]);
-    setShowAutocomplete(false);
+    setCourseMenuVisible(false);
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    
+    if (!department) {
+      newErrors.department = 'Department is required';
+    }
+    
+    if (!courseCode || !courseName) {
+      newErrors.course = 'Course is required';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleCreateGroup = () => {
-    if (!selectedDepartment || !courseCode || !courseName) {
-      alert('Please fill in all fields.');
-      return;
+    if (validate()) {
+      const newGroup = {
+        id: `${courseCode}-${Date.now()}`,
+        courseCode,
+        courseName,
+        department: department,
+        commonCore: null,
+        description: `Group for ${department} students enrolled in ${courseCode} ${courseName}.`,
+        groupId: `${courseCode}-${Date.now()}`,
+      };
+
+      addGroup(newGroup);
+      joinGroup(newGroup.id);
+      
+      resetForm();
+      onDismiss();
     }
-
-    
-    const newGroup = {
-      id: `${courseCode}-${Date.now()}`, 
-      courseCode,
-      courseName,
-      department: selectedDepartment,
-      commonCore: null,
-      description: `Group for ${selectedDepartment} students enrolled in ${courseCode} ${courseName}.`,
-    };
-
-    addGroup(newGroup);
-    joinGroup(newGroup.id); 
-
-    
-    setSelectedDepartment('');
-    setCourseCode('');
-    setCourseName('');
-    setFilteredCourses([]);
-    setShowAutocomplete(false);
-
-    onDismiss();
   };
 
   return (
     <Portal>
-      <Modal visible={visible} onDismiss={onDismiss} contentContainerStyle={[styles.modalContainer, { backgroundColor: theme.colors.surface }]}>
-        <Text style={[styles.modalTitle, { color: theme.colors.onSurface }]}>Create New Group</Text>
-
-        <Text style={[styles.label, { color: theme.colors.onSurfaceVariant }]}>Department</Text>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedDepartment}
-            onValueChange={(itemValue) => setSelectedDepartment(itemValue)}
-            style={{ color: selectedDepartment ? theme.colors.onSurface : theme.colors.onSurfaceVariant }}
+      <Modal
+        visible={visible}
+        onDismiss={onDismiss}
+        contentContainerStyle={[
+          styles.modalContainer,
+          { backgroundColor: theme.colors.background }
+        ]}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
           >
-            <Picker.Item label="Select Department" value="" />
-            {departments.map((dept) => (
-              <Picker.Item key={dept.name} label={dept.name} value={dept.name} />
-            ))}
-          </Picker>
-        </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={[styles.title, { color: theme.colors.onBackground }]}>
+                Create New Study Group
+              </Text>
 
-        {selectedDepartment ? (
-          <>
-            <Text style={[styles.label, { color: theme.colors.onSurfaceVariant }]}>Course Code & Name</Text>
-            <Autocomplete
-              data={filteredCourses}
-              defaultValue={courseName}
-              onChangeText={handleCourseNameChange}
-              placeholder="Enter course code or name"
-              flatListProps={{
-                keyExtractor: (_, idx) => idx.toString(),
-                renderItem: ({ item }) => (
-                  <TouchableOpacity onPress={() => handleSelectCourse(item)}>
-                    <Text style={[styles.autocompleteItem, { color: theme.colors.onSurface }]}>
-                      {item}
-                    </Text>
-                  </TouchableOpacity>
-                ),
-              }}
-              inputContainerStyle={styles.autocompleteContainer}
-              listContainerStyle={styles.autocompleteListContainer}
-              style={[styles.autocompleteInput, { color: theme.colors.onSurface }]}
-            />
-          </>
-        ) : null}
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldTitle}>Department *</Text>
+                <Menu
+                  visible={departmentMenuVisible}
+                  onDismiss={() => setDepartmentMenuVisible(false)}
+                  anchor={
+                    <TouchableRipple
+                      onPress={() => setDepartmentMenuVisible(true)}
+                      style={styles.menuTouchable}
+                    >
+                      <View pointerEvents="none">
+                        <TextInput
+                          label="Select Department"
+                          value={department}
+                          mode="outlined"
+                          style={styles.input}
+                          editable={false}
+                          error={!!errors.department}
+                          right={<TextInput.Icon name="menu-down" />}
+                        />
+                      </View>
+                    </TouchableRipple>
+                  }
+                >
+                  {departments.map((dept) => (
+                    <Menu.Item
+                      key={dept}
+                      onPress={() => {
+                        setDepartment(dept);
+                        setDepartmentMenuVisible(false);
+                        setCourseCode('');
+                        setCourseName('');
+                      }}
+                      title={dept}
+                    />
+                  ))}
+                </Menu>
+                {errors.department && (
+                  <HelperText type="error">{errors.department}</HelperText>
+                )}
+              </View>
 
-        <Button mode="contained" onPress={handleCreateGroup} style={styles.createButton}>
-          Create Group
-        </Button>
+              {department && (
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.fieldTitle}>Course *</Text>
+                  <Menu
+                    visible={courseMenuVisible}
+                    onDismiss={() => setCourseMenuVisible(false)}
+                    anchor={
+                      <TouchableRipple
+                        onPress={() => setCourseMenuVisible(true)}
+                        style={styles.menuTouchable}
+                      >
+                        <View pointerEvents="none">
+                          <TextInput
+                            label="Select Course"
+                            value={courseCode && courseName ? `${courseCode} ${courseName}` : ''}
+                            mode="outlined"
+                            style={styles.input}
+                            editable={false}
+                            error={!!errors.course}
+                            right={<TextInput.Icon name="menu-down" />}
+                          />
+                        </View>
+                      </TouchableRipple>
+                    }
+                  >
+                    {coursesByDepartment[department]?.map((course) => (
+                      <Menu.Item
+                        key={course}
+                        onPress={() => handleSelectCourse(course)}
+                        title={course}
+                      />
+                    ))}
+                  </Menu>
+                  {errors.course && (
+                    <HelperText type="error">{errors.course}</HelperText>
+                  )}
+                </View>
+              )}
+
+              <View style={styles.buttonContainer}>
+                <Button
+                  mode="contained"
+                  onPress={handleCreateGroup}
+                  style={styles.confirmButton}
+                >
+                  Create Group
+                </Button>
+                <Button
+                  mode="text"
+                  onPress={() => {
+                    resetForm();
+                    onDismiss();
+                  }}
+                  style={styles.cancelButton}
+                >
+                  Cancel
+                </Button>
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
       </Modal>
     </Portal>
   );
-}
+};
 
 const styles = StyleSheet.create({
   modalContainer: {
-    backgroundColor: 'white',
-    padding: 20,
     margin: 20,
+    padding: 20,
     borderRadius: 8,
   },
-  modalTitle: {
+  title: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: 20,
+    textAlign: 'center',
   },
-  label: {
-    fontSize: 14,
-    marginBottom: 4,
+  fieldContainer: {
+    marginBottom: 15,
   },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    marginBottom: 16,
+  fieldTitle: {
+    fontSize: 16,
+    marginBottom: 5,
   },
-  autocompleteContainer: {
-    borderWidth: 0,
+  input: {
+    marginBottom: 10,
   },
-  autocompleteInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    padding: 8,
-    marginBottom: 16,
+  menuTouchable: {
+    width: '100%',
   },
-  autocompleteListContainer: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
+  buttonContainer: {
+    marginTop: 20,
   },
-  autocompleteItem: {
-    padding: 8,
+  confirmButton: {
+    marginBottom: 10,
   },
-  createButton: {
-    marginTop: 8,
-  },
+  cancelButton: {},
 });
+
+export default CreateGroupModal;

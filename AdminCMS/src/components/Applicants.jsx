@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { styled } from 'styled-components';
-import { FaSearch, FaEye, FaChevronDown, FaChevronUp, FaTimes, FaSpinner, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaSearch, FaEye, FaChevronDown, FaChevronUp, FaTimes, FaSpinner, FaChevronLeft, FaChevronRight, FaFileExcel } from 'react-icons/fa';
 import { eventService } from '../services/api';
 import moment from 'moment';
+import * as XLSX from 'xlsx';
+
 const Applicants = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [applicantSearchTerm, setApplicantSearchTerm] = useState('');
@@ -13,6 +15,7 @@ const Applicants = () => {
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const eventsPerPage = 10;
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -57,13 +60,16 @@ const Applicants = () => {
     };
     fetchEvents();
   }, []);
+
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1);
   };
+
   const handleApplicantSearch = (e) => {
     setApplicantSearchTerm(e.target.value);
   };
+
   const filteredEvents = events.filter(event => {
     if (!searchTerm) return true;
     const searchLower = searchTerm.toLowerCase();
@@ -73,10 +79,12 @@ const Applicants = () => {
       (event.location && event.location.toLowerCase().includes(searchLower))
     );
   });
+
   const indexOfLastEvent = currentPage * eventsPerPage;
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
   const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
   const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
+
   const handleViewApplicants = (eventId) => {
     const event = events.find(e => e.id === eventId);
     if (selectedEventId === eventId) {
@@ -89,17 +97,21 @@ const Applicants = () => {
       setApplicantSearchTerm('');
     }
   };
+
   const closeApplicantsTable = () => {
     setSelectedEventId(null);
     setSelectedEvent(null);
     setApplicantSearchTerm('');
   };
+
   const goToNextPage = () => {
     setCurrentPage(prev => Math.min(prev + 1, totalPages));
   };
+
   const goToPreviousPage = () => {
     setCurrentPage(prev => Math.max(prev - 1, 1));
   };
+
   const filteredApplicants = selectedEvent?.applicants.filter(applicant => {
     if (!applicantSearchTerm) return true;
     const searchLower = applicantSearchTerm.toLowerCase();
@@ -111,6 +123,31 @@ const Applicants = () => {
       (applicant.uniYear && applicant.uniYear.toLowerCase().includes(searchLower))
     );
   }) || [];
+
+  const exportToExcel = () => {
+    if (!selectedEvent || !selectedEvent.applicants.length) {
+      alert('No applicants to export');
+      return;
+    }
+
+    const dataToExport = selectedEvent.applicants.map(applicant => ({
+      'ID': applicant.id,
+      'Name': applicant.name,
+      'Email': applicant.email,
+      'University Year': applicant.uniYear,
+      'Degree': applicant.degree,
+      'Faculty': applicant.faculty
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Applicants');
+    
+    const fileName = `${selectedEvent.title.replace(/[^a-zA-Z0-9]/g, '_')}_Applicants_${moment().format('YYYY-MM-DD')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
   if (isLoading) {
     return (
       <LoadingContainer>
@@ -119,6 +156,7 @@ const Applicants = () => {
       </LoadingContainer>
     );
   }
+
   return (
     <ApplicantsContainer>
       <PageHeader>Event Applicants</PageHeader>
@@ -219,17 +257,26 @@ const Applicants = () => {
               <FaTimes />
             </CloseButton>
           </ApplicantsTableHeader>
-          <SearchContainer>
-            <SearchInput
-              type="text"
-              placeholder="Search applicants..."
-              value={applicantSearchTerm}
-              onChange={handleApplicantSearch}
-            />
-            <SearchIcon>
-              <FaSearch />
-            </SearchIcon>
-          </SearchContainer>
+          <ApplicantsSearchContainer>
+            <SearchContainer>
+              <SearchInput
+                type="text"
+                placeholder="Search applicants..."
+                value={applicantSearchTerm}
+                onChange={handleApplicantSearch}
+              />
+              <SearchIcon>
+                <FaSearch />
+              </SearchIcon>
+            </SearchContainer>
+            <ExportButton 
+              onClick={exportToExcel}
+              disabled={selectedEvent.applicants.length === 0}
+              title="Export to Excel"
+            >
+              <FaFileExcel /> Export Excel
+            </ExportButton>
+          </ApplicantsSearchContainer>
           <ApplicantsSummary>
             Showing {filteredApplicants.length} of {selectedEvent.applicants.length} applicants
           </ApplicantsSummary>
@@ -276,10 +323,13 @@ const Applicants = () => {
     </ApplicantsContainer>
   );
 };
+
 export default Applicants;
+
 const ApplicantsContainer = styled.div`
   width: 100%;
 `;
+
 const LoadingContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -297,14 +347,18 @@ const LoadingContainer = styled.div`
     100% { transform: rotate(360deg); }
   }
 `;
+
 const PageHeader = styled.h1`
   margin-bottom: 24px;
   font-size: 1.8rem;
   color: #333;
+  
   @media (max-width: 768px) {
-    margin-top: 10px; 
+    text-align: center;
+    padding-top: 15px;
   }
 `;
+
 const ErrorAlert = styled.div`
   background-color: #fed7d7;
   color: #c53030;
@@ -313,11 +367,17 @@ const ErrorAlert = styled.div`
   margin-bottom: 20px;
   font-size: 0.9rem;
 `;
+
 const SearchContainer = styled.div`
   position: relative;
   margin-bottom: 20px;
   max-width: 400px;
+  
+  @media (max-width: 768px) {
+    max-width: 100%;
+  }
 `;
+
 const SearchInput = styled.input`
   width: 100%;
   padding: 10px 40px 10px 12px;
@@ -329,6 +389,7 @@ const SearchInput = styled.input`
     border-color: #4299e1;
   }
 `;
+
 const SearchIcon = styled.span`
   position: absolute;
   right: 12px;
@@ -336,17 +397,65 @@ const SearchIcon = styled.span`
   transform: translateY(-50%);
   color: #a0aec0;
 `;
+
+const ApplicantsSearchContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    
+    & > ${SearchContainer} {
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+`;
+
+const ExportButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #1e7e34;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 15px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #17692d;
+  }
+  
+  &:disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 768px) {
+    align-self: flex-end;
+  }
+`;
+
 const ApplicantsSummary = styled.div`
   margin-bottom: 15px;
   font-size: 0.9rem;
   color: #718096;
 `;
+
 const TableContainer = styled.div`
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden; 
 `;
+
 const ScrollableTable = styled.div`
   width: 100%;
   overflow-x: auto;
@@ -358,11 +467,13 @@ const ScrollableTable = styled.div`
     background-position: right;
   }
 `;
+
 const EventsTable = styled.table`
   width: 100%;
   min-width: 750px; 
   border-collapse: collapse;
 `;
+
 const TableHeader = styled.th`
   padding: 16px;
   text-align: left;
@@ -371,12 +482,14 @@ const TableHeader = styled.th`
   color: #4a5568;
   white-space: nowrap; 
 `;
+
 const TableRow = styled.tr`
   background-color: ${props => props.isActive ? '#ebf8ff' : 'transparent'};
   &:hover {
     background-color: ${props => props.isActive ? '#ebf8ff' : '#f7fafc'};
   }
 `;
+
 const TableCell = styled.td`
   padding: 16px;
   border-bottom: 1px solid #e2e8f0;
@@ -387,11 +500,13 @@ const TableCell = styled.td`
     margin-top: 4px;
   }
 `;
+
 const EmptyTableCell = styled.td`
   padding: 24px 16px;
   text-align: center;
   color: #718096;
 `;
+
 const StatusBadge = styled.span`
   display: inline-block;
   padding: 4px 8px;
@@ -402,6 +517,7 @@ const StatusBadge = styled.span`
   color: ${props => props.status === 'upcoming' ? '#3182ce' : '#718096'};
   border: 1px solid ${props => props.status === 'upcoming' ? '#bee3f8' : '#e2e8f0'};
 `;
+
 const ActionButton = styled.button`
   display: flex;
   align-items: center;
@@ -418,6 +534,7 @@ const ActionButton = styled.button`
     background-color: ${props => props.isActive ? '#bee3f8' : '#edf2f7'};
   }
 `;
+
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: space-between;
@@ -429,15 +546,18 @@ const PaginationContainer = styled.div`
     gap: 15px;
   }
 `;
+
 const PaginationInfo = styled.div`
   font-size: 0.9rem;
   color: #718096;
 `;
+
 const PaginationControls = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
 `;
+
 const PaginationButton = styled.button`
   display: flex;
   align-items: center;
@@ -454,10 +574,12 @@ const PaginationButton = styled.button`
     border-color: #cbd5e0;
   }
 `;
+
 const PageIndicator = styled.div`
   font-size: 0.9rem;
   color: #4a5568;
 `;
+
 const ApplicantsTableSection = styled.div`
   margin-top: 30px;
   animation: fadeIn 0.3s ease-in-out;
@@ -466,6 +588,7 @@ const ApplicantsTableSection = styled.div`
     to { opacity: 1; transform: translateY(0); }
   }
 `;
+
 const ApplicantsTableHeader = styled.div`
   display: flex;
   justify-content: space-between;
@@ -477,6 +600,7 @@ const ApplicantsTableHeader = styled.div`
     margin: 0;
   }
 `;
+
 const CloseButton = styled.button`
   background: none;
   border: none;
@@ -492,11 +616,13 @@ const CloseButton = styled.button`
     color: #e53e3e;
   }
 `;
+
 const ApplicantsTable = styled.table`
   width: 100%;
   min-width: 850px; 
   border-collapse: collapse;
 `;
+
 const DetailHeader = styled.th`
   padding: 12px 8px;
   text-align: left;
@@ -506,6 +632,7 @@ const DetailHeader = styled.th`
   font-size: 0.9rem;
   white-space: nowrap;
 `;
+
 const DetailRow = styled.tr`
   &:nth-child(odd) {
     background-color: #f7fafc;
@@ -514,6 +641,7 @@ const DetailRow = styled.tr`
     background-color: #edf2f7;
   }
 `;
+
 const DetailCell = styled.td`
   padding: 10px 8px;
   font-size: 0.9rem;

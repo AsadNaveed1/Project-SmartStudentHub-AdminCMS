@@ -399,8 +399,10 @@ const PageHeader = styled.h1`
   margin-bottom: 24px;
   font-size: 1.8rem;
   color: #333;
+  
   @media (max-width: 768px) {
-    margin-top: 10px; 
+    text-align: center;
+    padding-top: 15px;
   }
 `;
 const ErrorAlert = styled.div`
@@ -415,6 +417,10 @@ const SearchContainer = styled.div`
   position: relative;
   margin-bottom: 20px;
   max-width: 400px;
+  
+  @media (max-width: 768px) {
+    max-width: 100%;
+  }
 `;
 const SearchInput = styled.input`
   width: 100%;
