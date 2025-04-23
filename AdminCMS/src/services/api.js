@@ -95,7 +95,6 @@ export const organizationService = {
     return response.data;
   },
   getOrganizationEvents: async (id) => {
-    // This is implied by your structure but not explicitly defined
     const response = await api.get(`/organizations/${id}/events`);
     return response.data;
   }
@@ -157,8 +156,6 @@ export const userService = {
     const response = await api.get(`/users/${id}`);
     return response.data;
   },
-  // These might not be explicitly defined in your backend routes
-  // but would be useful based on your app structure
   getUserEvents: async () => {
     const response = await api.get('/users/events');
     return response.data;
