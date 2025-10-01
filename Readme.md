@@ -27,8 +27,6 @@
     - [⚙️ Event Management](#️⚙️-event-management)
     - [📋 Applicant Tracking](#📋-applicant-tracking)
     - [✏️ Profile Management](#✏️-profile-management-1)
-- [Architecture Overview](#architecture-overview)
-- [Core Modules & Contexts](#core-modules--contexts)
 - [Technology Stack](#technology-stack)
   - [Frontend](#frontend)
   - [Backend](#backend)
@@ -36,6 +34,8 @@
   - [AI & Machine Learning](#ai--machine-learning)
   - [Data Collection](#data-collection)
   - [Deployment](#deployment)
+- [Architecture Overview](#architecture-overview)
+- [Core Modules & Contexts](#core-modules--contexts)
 - [Setup Guide](#setup-guide)  
 - [License](#license)
 
@@ -112,50 +112,6 @@
 - **Organization Details**: Update name, description, location, and logo
 - **Logo Preview**: Visual confirmation of organization branding
 
-
----
-
-## Architecture Overview
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     Client Applications                     │
-├──────────────────────────────┬──────────────────────────────┤
-│   Student Mobile App         │      Admin Web CMS           │
-│   (React Native + Expo)      │      (ReactJS)               │
-└──────────────┬───────────────┴────────────┬─────────────────┘
-               │                            │
-               │  RESTful API / WebSocket   │
-               │                            │
-┌──────────────┴────────────────────────────┴────────┐
-│                    Backend Server                  │
-│              (Node.js + Express.js)                │
-├────────────────────────────────────────────────────┤
-│  • Authentication Middleware (JWT)                 │
-│  • API Routes & Controllers                        │
-│  • Socket.IO Server (Real-time Chat)               │
-│  • Business Logic Services                         │
-└────┬─────────┬────────────┬──────────────┬─────────┘
-     │         │            │              │             
-     ▼         ▼            ▼              ▼            
-┌─────────┐ ┌─────┐  ┌──────────┐  ┌──────────┐  
-│ MongoDB │ │ LLM │  │  Vector  │  │   KNN    │ 
-│  Atlas  │ │(Llama│ │ Database │  │  Model   │ 
-│         │ │LLaVA)│ │(HNSWLib) │  │          │  
-└─────────┘ └─────┘  └──────────┘  └──────────┘  
-
-```
----
-
-## Core Modules & Contexts
-
-- **AuthContext**: Login/signup/logout, AsyncStorage sync, token refresh, interceptor-based 401 handling.
-- **RegisteredEventsContext**: Events catalogue, registration state, modal triggers, countdown to event capacity.
-- **GroupsContext**: Joined/available group caching, optimistic updates, server reconciliation.
-- **OrganizationsContext**: Admin organization metadata, fetch caching, seeding support.
-- **RecommendationsContext**: Content vs ML toggles, call deduplication, status messaging.
-- **ThemeContext**: Appearance listener, dynamic theme swapping, Redux-free theming.
-
 ---
 
 ## Technology Stack
@@ -222,6 +178,49 @@
 - **Azure Virtual Machine**: NGINX reverse proxy with Let's Encrypt SSL
 - **MongoDB Atlas**: Database cloud hosting
 - **Expo**: Mobile app development and testing platform
+
+---
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Client Applications                     │
+├──────────────────────────────┬──────────────────────────────┤
+│   Student Mobile App         │      Admin Web CMS           │
+│   (React Native + Expo)      │      (ReactJS)               │
+└──────────────┬───────────────┴────────────┬─────────────────┘
+               │                            │
+               │  RESTful API / WebSocket   │
+               │                            │
+┌──────────────┴────────────────────────────┴────────┐
+│                    Backend Server                  │
+│              (Node.js + Express.js)                │
+├────────────────────────────────────────────────────┤
+│  • Authentication Middleware (JWT)                 │
+│  • API Routes & Controllers                        │
+│  • Socket.IO Server (Real-time Chat)               │
+│  • Business Logic Services                         │
+└────┬─────────┬────────────┬──────────────┬─────────┘
+     │         │            │              │             
+     ▼         ▼            ▼              ▼            
+┌─────────┐ ┌─────┐  ┌──────────┐  ┌──────────┐  
+│ MongoDB │ │ LLM │  │  Vector  │  │   KNN    │ 
+│  Atlas  │ │(Llama│ │ Database │  │  Model   │ 
+│         │ │LLaVA)│ │(HNSWLib) │  │          │  
+└─────────┘ └─────┘  └──────────┘  └──────────┘  
+
+```
+---
+
+## Core Modules & Contexts
+
+- **AuthContext**: Login/signup/logout, AsyncStorage sync, token refresh, interceptor-based 401 handling.
+- **RegisteredEventsContext**: Events catalogue, registration state, modal triggers, countdown to event capacity.
+- **GroupsContext**: Joined/available group caching, optimistic updates, server reconciliation.
+- **OrganizationsContext**: Admin organization metadata, fetch caching, seeding support.
+- **RecommendationsContext**: Content vs ML toggles, call deduplication, status messaging.
+- **ThemeContext**: Appearance listener, dynamic theme swapping, Redux-free theming.
 
 ---
 
