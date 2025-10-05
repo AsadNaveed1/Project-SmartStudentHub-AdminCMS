@@ -54,16 +54,16 @@
 ## App Screenshots
 <table>
   <tr>
-    <td align="center"><b>Login Page</b><br><img src="Docs/images/LoginPage.png" width="150"/></td>
-    <td align="center"><b>Home Page</b><br><img src="Docs/images/EM.png" width="150"/></td>
+    <td align="center"><b>Login Page</b><br><img src="Docs/images/LoginPage.png" width="250"/></td>
+    <td align="center"><b>Home Page</b><br><img src="Docs/images/EM.png" width="250"/></td>
   </tr>
   <tr>
-    <td align="center"><b>Calendar Page</b><br><img src="Docs/images/Calendar.png" width="150"/></td>
-    <td align="center"><b>Groups Page</b><br><img src="Docs/images/Groups.png" width="150"/></td>
+    <td align="center"><b>Calendar Page</b><br><img src="Docs/images/Calendar.png" width="250"/></td>
+    <td align="center"><b>Groups Page</b><br><img src="Docs/images/Groups.png" width="250"/></td>
   </tr>
   <tr>
-    <td align="center"><b>Chatbot Page</b><br><img src="Docs/images/Chatbot-EventR.png" width="150"/></td>
-    <td align="center"><b>Profile Page</b><br><img src="Docs/images/ProfilePage.png" width="150"/></td>
+    <td align="center"><b>Chatbot Page</b><br><img src="Docs/images/Chatbot-EventR.png" width="250"/></td>
+    <td align="center"><b>Profile Page</b><br><img src="Docs/images/ProfilePage.png" width="250"/></td>
   </tr>
 </table>
 
