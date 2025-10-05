@@ -73,16 +73,16 @@
 
 <table>
   <tr>
-    <td align="center"><b>Login Page</b><br><img src="Docs/images/AdminCMS/Login.png" width="500"/></td>
-    <td align="center"><b>Dashboard Page</b><br><img src="Docs/images/AdminCMS/Dashboard.png" width="500"/></td>
+    <td align="center"><b>Login Page</b><br><img src="Docs/images/AdminCMS/Login.png" width="600"/></td>
+    <td align="center"><b>Dashboard Page</b><br><img src="Docs/images/AdminCMS/Dashboard.png" width="600"/></td>
   </tr>
   <tr>
-    <td align="center"><b>Create Event Page</b><br><img src="Docs/images/AdminCMS/CreateEvent.png" width="300"/></td>
-    <td align="center"><b>Manage Event Page</b><br><img src="Docs/images/AdminCMS/ManageEvent.png" width="300"/></td>
+    <td align="center"><b>Create Event Page</b><br><img src="Docs/images/AdminCMS/CreateEvent.png" width="600"/></td>
+    <td align="center"><b>Manage Event Page</b><br><img src="Docs/images/AdminCMS/ManageEvent.png" width="600"/></td>
   </tr>
   <tr>
-    <td align="center"><b>Edit Profile Page</b><br><img src="Docs/images/AdminCMS/EditProfile.png" width="300"/></td>
-    <td align="center"><b>Applicant Page</b><br><img src="Docs/images/AdminCMS/Applicant-2.png" width="300"/></td>
+    <td align="center"><b>Edit Profile Page</b><br><img src="Docs/images/AdminCMS/EditProfile.png" width="600"/></td>
+    <td align="center"><b>Applicant Page</b><br><img src="Docs/images/AdminCMS/Applicant-2.png" width="600"/></td>
   </tr>
 </table>
 
