@@ -73,8 +73,8 @@
 
 <table>
   <tr>
-    <td align="center"><b>Login Page</b><br><img src="Docs/images/AdminCMS/Login.png" width="300"/></td>
-    <td align="center"><b>Dashboard Page</b><br><img src="Docs/images/AdminCMS/Dashboard.png" width="300"/></td>
+    <td align="center"><b>Login Page</b><br><img src="Docs/images/AdminCMS/Login.png" width="500"/></td>
+    <td align="center"><b>Dashboard Page</b><br><img src="Docs/images/AdminCMS/Dashboard.png" width="500"/></td>
   </tr>
   <tr>
     <td align="center"><b>Create Event Page</b><br><img src="Docs/images/AdminCMS/CreateEvent.png" width="300"/></td>
