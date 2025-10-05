@@ -13,6 +13,8 @@
 
 ## 📑 Table of Contents
 - [Project Description](#project-description)
+- [App Screenshots](#app-screenshots)
+- [Admin CMS Screenshots](#admin-cms-screenshots)
 - [Key Features](#key-features)
   - [Student Mobile Application](#student-mobile-application)
     - [📅 Event Management](#📅-event-management)
@@ -47,6 +49,42 @@
 - **Interest-Based Groups**: Academic and social connection tools with real-time chat functionality
 - **ML Recommendations**: K-Nearest Neighbors algorithm for personalized event suggestions
 - **Admin Dashboard**: Comprehensive CMS with real-time analytics and streamlined event management
+
+---
+## App Screenshots
+<table>
+  <tr>
+    <td align="center"><b>Login Page</b><br><img src="Docs/images/LoginPage.png" width="300"/></td>
+    <td align="center"><b>Home Page</b><br><img src="Docs/images/EM.png" width="300"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Calendar Page</b><br><img src="Docs/images/Calendar.png" width="300"/></td>
+    <td align="center"><b>Groups Page</b><br><img src="Docs/images/Groups.png" width="300"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Chatbot Page</b><br><img src="Docs/images/Chatbot-EventR.png" width="300"/></td>
+    <td align="center"><b>Profile Page</b><br><img src="Docs/images/ProfilePage.png" width="300"/></td>
+  </tr>
+</table>
+
+---
+
+## Admin CMS Screenshots
+
+<table>
+  <tr>
+    <td align="center"><b>Login Page</b><br><img src="Docs/images/AdminCMS/Login.png" width="300"/></td>
+    <td align="center"><b>Dashboard Page</b><br><img src="Docs/images/AdminCMS/Dashboard.png" width="300"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Create Event Page</b><br><img src="Docs/images/AdminCMS/CreateEvent.png" width="300"/></td>
+    <td align="center"><b>Manage Event Page</b><br><img src="Docs/images/AdminCMS/ManageEvent.png" width="300"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Edit Profile Page</b><br><img src="Docs/images/AdminCMS/EditProfile.png" width="300"/></td>
+    <td align="center"><b>Applicant Page</b><br><img src="Docs/images/AdminCMS/Applicant-2.png" width="300"/></td>
+  </tr>
+</table>
 
 ---
 
